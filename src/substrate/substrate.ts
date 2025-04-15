@@ -14,6 +14,8 @@ import {
   BlockInfo,
   KeyringPairInfo,
   WalletInfo,
+  ExtrinsicResponse,
+  SubnetHyperparameters,
 } from './substrate.interface';
 import { getKeyringPair } from './substrate.utils';
 import path from 'path';
@@ -137,6 +139,22 @@ export class Substrate {
     }
   }
 
+  async getSubnetHyperparameters(netuid: number): Promise<SubnetHyperparameters> {
+    if (!this.client) {
+      throw new Error('Client is not connected');
+    }
+
+    const runtimeCall: string = 'SubnetInfoRuntimeApi_get_subnet_hyperparams';
+    const encodedParams: Uint8Array = this.client.registry.createType('u16', netuid).toU8a();
+    const hexParams: string = Buffer.from(encodedParams).toString('hex');
+
+    const response = await this.queryRuntimeApi(runtimeCall, '0x' + hexParams);
+
+    const subnetParams: SubnetHyperparameters = response.toJSON();
+
+    return subnetParams;
+  }
+
   async getNeuronsInfo(netuid: number): Promise<NeuronInfo[]> {
     if (!this.client) {
       throw new Error('Client is not connected');
@@ -252,7 +270,31 @@ export class Substrate {
       placeholder2,
     );
 
-    const hash = await axonTx.signAndSend(this.keyringPairInfo.keyringPair);
+    const unsub = await axonTx.signAndSend(this.keyringPairInfo.keyringPair, (result) => {
+      if (result.status.isFinalized) {
+        console.log(result);
+        unsub();
+      }
+    });
+  }
+
+  async setWeights(netuid: number, dests: number[], weights: number[], versionKey: number) {
+    if (!this.client) {
+      throw new Error('Client is not connected');
+    }
+
+    if (!this.keyringPairInfo) {
+      throw new Error('Keyring pair is not set, please call setKeyringPair() first');
+    }
+
+    const setWeightsTx = this.client.tx.subtensorModule.setWeights(
+      netuid,
+      dests,
+      weights,
+      versionKey,
+    );
+
+    const hash = await setWeightsTx.signAndSend(this.keyringPairInfo.keyringPair);
 
     const response = {
       hash: hash.toHex(),
@@ -261,40 +303,3 @@ export class Substrate {
     return response;
   }
 }
-
-// async function main() {
-//   const substrate = new Substrate({
-//     nodeUrl: 'ws://localhost:9944',
-//   });
-//   await substrate.connect();
-//
-//   const blockInfo = await substrate.getLatestBlock();
-//   console.log('Latest Block:', blockInfo);
-//
-//   const walletName = 'localnet-miner-1';
-//   const walletHotkey = 'miner-2';
-//   const walletPath: string = '$HOME/.bittensor/wallets'.replace('$HOME', process.env.HOME || '');
-//
-//   const walletFilePath = `${walletPath}/${walletName}/hotkeys/${walletHotkey}`;
-//   try {
-//     await fs.promises.access(walletFilePath, fs.constants.R_OK);
-//   } catch (error) {
-//     throw new Error(`File not found: ${walletFilePath}`);
-//   }
-//
-//   const fileContent = await fs.promises.readFile(walletFilePath, 'utf-8');
-//   const jsonContent = JSON.parse(fileContent);
-//   console.log('Wallet JSON:', jsonContent);
-//
-//   const keyring: Keyring = new Keyring({ type: 'sr25519' });
-//   const hotkey: KeyringPair = keyring.addFromMnemonic(jsonContent.secretPhrase);
-//
-//   const nonce = await substrate.getNonce(hotkey.address);
-//   console.log('Nonce:', nonce);
-//   // const register = await substrate.burnedRegister(2, hotkey.address, hotkey);
-//   // console.log('Register Response:', register);
-// }
-//
-// main().catch((error) => {
-//   console.error('Error:', error);
-// });
