@@ -1,3 +1,20 @@
+import { KeyringPair } from '@polkadot/keyring/types';
+
+export interface ExtrinsicResponse {
+  blockHash: string;
+  blockNumber: number;
+  events: object[];
+  status: {
+    isFinalized: boolean;
+    asFinalized: string;
+  };
+}
+
+export interface WalletInfo {
+  coldkey: string;
+  hotkey: string;
+}
+
 export interface SubstrateConfig {
   nodeUrl: string;
   timeout?: number;
@@ -22,29 +39,33 @@ export interface BlockInfo {
   // digest: BlockDigest; // uncomment if you need to include the digest
 }
 
+export interface AxonInfo {
+  block: number;
+  version: number;
+  ip: number;
+  port: number;
+  ip_type: number;
+  protocol: number;
+  placeholder1: number;
+  placeholder2: number;
+}
+
+export interface PrometheusInfo {
+  block: number;
+  version: number;
+  ip: number;
+  port: number;
+  ip_type: number;
+}
+
 export interface NeuronInfo {
   hotkey: string;
   coldkey: string;
   uid: number;
   netuid: number;
   active: boolean;
-  axon_info: {
-    block: number;
-    version: number;
-    ip: number;
-    port: number;
-    ip_type: number;
-    protocol: number;
-    placeholder1: number;
-    placeholder2: number;
-  };
-  prometheus_info: {
-    block: number;
-    version: number;
-    ip: number;
-    port: number;
-    ip_type: number;
-  };
+  axon_info: AxonInfo;
+  prometheus_info: PrometheusInfo;
   stake: [string, number][];
   rank: number;
   emission: number;
@@ -58,4 +79,22 @@ export interface NeuronInfo {
   weights: [number, number][];
   bonds: any[]; // You might want to specify a more precise type if you know the structure of bonds
   pruning_score: number;
+}
+
+export interface KeyringPairInfo {
+  keyringPair: KeyringPair;
+  walletColdkey: string;
+}
+
+export interface NonceInfo {
+  nonce: number;
+  consumers: number;
+  providers: number;
+  sufficients: number;
+  data: {
+    free: number;
+    reserved: number;
+    frozen: number;
+    flags: string;
+  };
 }
