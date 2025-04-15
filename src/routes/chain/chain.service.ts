@@ -1,6 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Substrate } from '../../substrate/substrate';
-import { NeuronInfo, BlockInfo, NonceInfo, WalletInfo } from '../../substrate/substrate.interface';
+import {
+  NeuronInfo,
+  BlockInfo,
+  NonceInfo,
+  WalletInfo,
+  SubnetHyperparameters,
+} from '../../substrate/substrate.interface';
 import { AxonCallParams } from '../../substrate/substrate.call-params.interface';
 
 @Injectable()
@@ -34,6 +40,17 @@ export class ChainService {
         this.logger.warn(`No neurons found for netuid: ${netuid}`);
       }
       return neurons as NeuronInfo[];
+    } catch (error) {
+      this.logger.error(`Failed to retrieve neurons: ${error.message}`);
+    }
+  }
+
+  async getSubnetHyperparameters(netuid: number): Promise<SubnetHyperparameters | undefined> {
+    try {
+      this.logger.log(`Retrieving subnet hyperparameters for netuid: ${netuid}...`);
+      const subnetParams: SubnetHyperparameters =
+        await this.substrate.getSubnetHyperparameters(netuid);
+      return subnetParams;
     } catch (error) {
       this.logger.error(`Failed to retrieve neurons: ${error.message}`);
     }

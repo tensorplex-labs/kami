@@ -13,18 +13,11 @@ export async function getKeyringPair(
     const coldkeyPath = `${walletPath}/${walletName}/coldkeypub.txt`;
     const hotkeyPath = `${walletPath}/${walletName}/hotkeys/${walletHotkey}`;
 
-    console.log('Coldkey Path:', coldkeyPath);
-    console.log('Hotkey Path:', hotkeyPath);
-
     await fs.promises.access(coldkeyPath, fs.constants.R_OK);
     await fs.promises.access(hotkeyPath, fs.constants.R_OK);
 
-    console.log('Coldkey and Hotkey files are accessible.');
-
     const coldkeyContent = await fs.promises.readFile(coldkeyPath, 'utf-8');
     const coldkeyJsonContent = JSON.parse(coldkeyContent);
-
-    console.log('Coldkey JSON Content:', coldkeyJsonContent);
 
     if (!coldkeyJsonContent.ss58Address) {
       throw new Error('Invalid coldkey format: missing ss58Address');
