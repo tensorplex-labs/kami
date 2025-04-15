@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { Substrate } from './substrate/substrate';
-import { NeuronInfo, BlockInfo } from './substrate/substrate.interface';
+import { Substrate } from '../../substrate/substrate';
+import { NeuronInfo, BlockInfo } from '../../substrate/substrate.interface';
 
 @Injectable()
 export class ChainService {

@@ -1,6 +1,6 @@
 import { Controller, Get, Param, UseInterceptors } from '@nestjs/common';
 import { ChainService } from './chain.service';
-import { TransformInterceptor } from '../commons/common-response.dto';
+import { TransformInterceptor } from '../../commons/common-response.dto';
 
 @Controller('chain')
 @UseInterceptors(TransformInterceptor)
