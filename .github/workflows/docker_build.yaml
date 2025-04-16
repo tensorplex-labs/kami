@@ -1,0 +1,54 @@
+on:
+  release:
+    types:
+      - published
+  workflow_call:
+
+jobs:
+  docker_publish:
+    name: Docker Build
+    runs-on: self-hosted
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '21.7.3'
+
+      - name: Cache node modules
+        uses: actions/cache@v4.2.2
+        with:
+          path: |
+            node_modules
+            ~/.npm
+          key: dojo-chain-api-node-modules
+          restore-keys: |
+            dojo-chain-api-node-modules
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Branch name
+        run: |
+          BRANCH_NAME=${GITHUB_REF#refs/heads/}
+          SANITIZED_BRANCH_NAME=${BRANCH_NAME//\//-}
+          echo "BRANCH_NAME=$SANITIZED_BRANCH_NAME" >> $GITHUB_ENV
+
+      - name: Build image with env tag
+        if: github.ref == 'refs/heads/main'
+          || github.ref == 'refs/heads/staging'
+          || github.ref == 'refs/heads/dev'
+        uses: macbre/push-to-ghcr@master
+        with:
+          image_name: ${{ github.repository }}
+          image_tag: ${{ env.BRANCH_NAME }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build image with semver tag
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: macbre/push-to-ghcr@master
+        with:
+          image_name: ${{ github.repository }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
