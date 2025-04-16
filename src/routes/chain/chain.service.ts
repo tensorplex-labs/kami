@@ -7,7 +7,10 @@ import {
   WalletInfo,
   SubnetHyperparameters,
 } from '../../substrate/substrate.interface';
-import { AxonCallParams } from '../../substrate/substrate.call-params.interface';
+import {
+  AxonCallParams,
+  SetWeightsCallParams,
+} from '../../substrate/substrate.call-params.interface';
 
 @Injectable()
 export class ChainService {
@@ -23,16 +26,31 @@ export class ChainService {
       },
       process.env.WALLET_PATH ||
         '$HOME/.bittensor/wallets'.replace('$HOME', process.env.HOME || ''),
-      process.env.WALLET_COLDKEY || 'default',
-      process.env.WALLET_HOTKEY || 'default',
+      process.env.WALLET_COLDKEY || '',
+      process.env.WALLET_HOTKEY || '',
     );
     this.substrate.connect();
-    this.substrate.setKeyringPair();
+
+    // if WALLET_COLDKEY and WALLET_HOTKEY are provided, set the keyring pair for signing txn
+    if (process.env.WALLET_COLKDEY && process.env.WALLET_HOTKEY) {
+      this.substrate.setKeyringPair();
+    }
   }
 
-  async retrieveNeurons(netuid: number): Promise<NeuronInfo[] | undefined> {
+  private async ensureConnection() {
+    if (!this.substrate.client || !this.substrate.client.isConnected) {
+      await this.substrate.connect();
+    }
+  }
+
+  async retrieveNeurons(netuid: number): Promise<NeuronInfo[] | Error> {
     try {
-      const neurons: NeuronInfo[] = await this.substrate.getNeuronsInfo(netuid);
+      await this.ensureConnection();
+      const neurons: NeuronInfo[] | Error = await this.substrate.getNeuronsInfo(netuid);
+      if (neurons instanceof Error) {
+        this.logger.error(`Failed to retrieve neurons: ${neurons.message}`);
+        return neurons;
+      }
 
       if (neurons.length > 0) {
         this.logger.log(`Successfully retrieved ${neurons.length} neurons.`);
@@ -41,54 +59,94 @@ export class ChainService {
       }
       return neurons as NeuronInfo[];
     } catch (error) {
-      this.logger.error(`Failed to retrieve neurons: ${error.message}`);
+      throw error;
     }
   }
 
-  async getSubnetHyperparameters(netuid: number): Promise<SubnetHyperparameters | undefined> {
+  private async getTotalNetworksInt(): Promise<number | Error> {
     try {
-      this.logger.log(`Retrieving subnet hyperparameters for netuid: ${netuid}...`);
-      const subnetParams: SubnetHyperparameters =
+      await this.ensureConnection();
+      const totalNetworks = await this.substrate.getTotalNetworks();
+
+      if (totalNetworks instanceof Error) {
+        this.logger.error(`Failed to retrieve total networks: ${totalNetworks.message}`);
+        return totalNetworks;
+      }
+      const totalNetworksInt = totalNetworks.totalNetworks;
+
+      return totalNetworksInt;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getSubnetHyperparameters(netuid: number): Promise<SubnetHyperparameters | Error> {
+    try {
+      await this.ensureConnection();
+      const totalNetworks = await this.getTotalNetworksInt();
+      if (totalNetworks instanceof Error) {
+        this.logger.error(`Failed to retrieve total networks: ${totalNetworks.message}`);
+        return totalNetworks;
+      }
+
+      if (netuid > totalNetworks) {
+        throw new Error(`Invalid netuid: ${netuid}. It should be less than ${totalNetworks}`);
+      }
+
+      const subnetParams: SubnetHyperparameters | Error =
         await this.substrate.getSubnetHyperparameters(netuid);
+      if (subnetParams instanceof Error) {
+        return subnetParams;
+      }
       return subnetParams;
     } catch (error) {
-      this.logger.error(`Failed to retrieve neurons: ${error.message}`);
+      throw error;
     }
   }
 
-  async getLatestBlock(): Promise<BlockInfo | undefined> {
+  async getLatestBlock(): Promise<BlockInfo | Error> {
     try {
-      this.logger.log('Retrieving latest block...');
+      await this.ensureConnection();
       const block = await this.substrate.getLatestBlock();
       return block;
     } catch (error) {
-      this.logger.error(`Failed to retrieve latest block: ${error.message}`);
+      throw error;
     }
   }
 
-  async getNonce(walletAddress: string): Promise<NonceInfo | undefined> {
+  async getNonce(walletAddress: string): Promise<NonceInfo | Error> {
     try {
-      this.logger.log(`Retrieving nonce for wallet: ${walletAddress}...`);
+      await this.ensureConnection();
       const nonce = await this.substrate.getNonce(walletAddress);
       return nonce;
     } catch (error) {
-      this.logger.error(`Failed to retrieve nonce: ${error.message}`);
+      throw error;
     }
   }
 
-  async getCurrentWalletInfo(): Promise<WalletInfo | undefined> {
+  async getCurrentWalletInfo(): Promise<WalletInfo | Error> {
     try {
-      this.logger.log('Retrieving current wallet info...');
+      await this.ensureConnection();
       const walletInfo = await this.substrate.getCurrentWalletInfo();
       return walletInfo;
     } catch (error) {
-      this.logger.error(`Failed to retrieve wallet info: ${error.message}`);
+      throw error;
     }
   }
 
-  async serveAxon(callParams: AxonCallParams): Promise<any> {
+  async getTotalNetworks(): Promise<any | Error> {
     try {
-      this.logger.log('Submitting serve axon...');
+      await this.ensureConnection();
+      const totalNetworks = await this.substrate.getTotalNetworks();
+      return totalNetworks;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async serveAxon(callParams: AxonCallParams): Promise<any | Error> {
+    try {
+      await this.ensureConnection();
       const { netuid, ip, port, ipType, protocol, placeholder1, placeholder2, version } =
         callParams;
 
@@ -105,7 +163,19 @@ export class ChainService {
 
       return result;
     } catch (error) {
-      this.logger.error(`Failed to submit serve axon: ${error.message}`);
+      throw error;
+    }
+  }
+  async setWeights(CallParams: SetWeightsCallParams): Promise<any | Error> {
+    try {
+      await this.ensureConnection();
+      const { netuid, dests, weights, versionKey } = CallParams;
+
+      const result = await this.substrate.setWeights(netuid, dests, weights, versionKey);
+
+      return result;
+    } catch (error) {
+      throw error;
     }
   }
 }

@@ -126,3 +126,7 @@ export interface SubnetHyperparameters {
   alphaLow: number;
   liquidAlphaEnabled: boolean;
 }
+
+export interface TotalNetworksInfo {
+  totalNetworks: number;
+}

@@ -10,8 +10,12 @@ import {
   Body,
 } from '@nestjs/common';
 import { ChainService } from './chain.service';
+import { ChainException } from './chain.exceptions';
 import { TransformInterceptor } from '../../commons/common-response.dto';
-import { AxonCallParams } from '../../substrate/substrate.call-params.interface';
+import {
+  AxonCallParams,
+  SetWeightsCallParams,
+} from '../../substrate/substrate.call-params.interface';
 
 @Controller('chain')
 @UseInterceptors(TransformInterceptor)
@@ -20,74 +24,107 @@ export class ChainController {
 
   @Get('neurons/:netuid')
   async getNeurons(@Param('netuid') netuid: number) {
-    const neurons = await this.chainService.retrieveNeurons(netuid);
-    if (!neurons) {
-      return {
-        statusCode: 400,
-        error: 'Neurons not found',
-      };
+    try {
+      const neurons = await this.chainService.retrieveNeurons(netuid);
+      return neurons;
+    } catch (error) {
+      if (error instanceof ChainException) {
+        throw error;
+      }
+      throw new ChainException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    return neurons;
   }
 
-  @Get('subnetHyperparams/:netuid')
+  @Get('subnet-hyperparameters/:netuid')
   async getSubnetHyperparams(@Param('netuid') netuid: number) {
-    const subnetHyperparams = await this.chainService.getSubnetHyperparameters(netuid);
-    if (!subnetHyperparams) {
-      return {
-        statusCode: 400,
-        error: 'Subnet hyperparameters not found',
-      };
+    try {
+      const subnetHyperparams = await this.chainService.getSubnetHyperparameters(netuid);
+      return subnetHyperparams;
+    } catch (error) {
+      if (error instanceof ChainException) {
+        throw error;
+      }
+      throw new ChainException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    return subnetHyperparams;
+  }
+
+  @Get('total-networks')
+  async getTotalNetworks() {
+    try {
+      const totalNetworks = await this.chainService.getTotalNetworks();
+      return totalNetworks;
+    } catch (error) {
+      if (error instanceof ChainException) {
+        throw error;
+      }
+      throw new ChainException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 
   @Get('latest-block')
   async getLatestBlock() {
-    const block = await this.chainService.getLatestBlock();
-    if (!block) {
-      return {
-        statusCode: 400,
-        error: 'Latest block not found',
-      };
+    try {
+      const block = await this.chainService.getLatestBlock();
+      return block;
+    } catch (error) {
+      if (error instanceof ChainException) {
+        throw error;
+      }
+      throw new ChainException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    return block;
   }
 
   @Get('nonce/:walletAddress')
   async getNonce(@Param('walletAddress') walletAddress: string) {
-    const nonce = await this.chainService.getNonce(walletAddress);
-    if (!nonce) {
-      return {
-        statusCode: 400,
-        error: 'Nonce not found',
-      };
+    try {
+      const nonce = await this.chainService.getNonce(walletAddress);
+      return nonce;
+    } catch (error) {
+      if (error instanceof ChainException) {
+        throw error;
+      }
+      throw new ChainException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    return nonce;
   }
 
-  @Get('currentWalletInfo')
+  @Get('current-wallet-info')
   async getCurrentWalletinfo() {
-    const walletInfo = await this.chainService.getCurrentWalletInfo();
-    if (!walletInfo) {
-      return {
-        statusCode: 400,
-        error: 'Wallet info not found',
-      };
+    try {
+      const walletInfo = await this.chainService.getCurrentWalletInfo();
+      return walletInfo;
+    } catch (error) {
+      if (error instanceof ChainException) {
+        throw error;
+      }
+      throw new ChainException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    return walletInfo;
   }
 
-  @Post('serveAxon')
+  @Post('serve-axon')
   @HttpCode(HttpStatus.CREATED)
   async serveAxon(@Body(ValidationPipe) callParams: AxonCallParams) {
-    const result = await this.chainService.serveAxon(callParams);
-    if (!result) {
-      return {
-        statusCode: 400,
-        error: 'Axon call failed',
-      };
+    try {
+      const result = await this.chainService.serveAxon(callParams);
+      return result;
+    } catch (error) {
+      if (error instanceof ChainException) {
+        throw error;
+      }
+      throw new ChainException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-    return result;
+  }
+
+  @Post('set-weights')
+  @HttpCode(HttpStatus.CREATED)
+  async setWeights(@Body(ValidationPipe) callParams: SetWeightsCallParams) {
+    try {
+      const result = await this.chainService.setWeights(callParams);
+      return result;
+    } catch (error) {
+      if (error instanceof ChainException) {
+        throw error;
+      }
+      throw new ChainException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 }
