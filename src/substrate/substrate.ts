@@ -82,8 +82,9 @@ export class Substrate {
   async setKeyringPair() {
     try {
       this.logger.log(`Setting keyring pair for wallet: ${this.walletName}`);
+      const correctedWalletPath = this.walletPath.replace('$HOME', process.env.HOME || '');
       this.keyringPairInfo = await getKeyringPair(
-        this.walletPath,
+        correctedWalletPath,
         this.walletName,
         this.walletHotkey,
       );
