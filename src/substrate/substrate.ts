@@ -14,10 +14,11 @@ import {
   BlockInfo,
   KeyringPairInfo,
   WalletInfo,
-  ExtrinsicResponse,
+  ExtrinsicResponse, // TODO: Refactor this to a more specific type for those submitting extrinsics.
   SubnetHyperparameters,
   TotalNetworksInfo,
 } from './substrate.interface';
+import { SubtensorException, SubtensorErrorCode } from './substrate.exceptions';
 import { getKeyringPair } from './substrate.utils';
 import path from 'path';
 
@@ -48,6 +49,18 @@ export class Substrate {
     this.walletName = walletName || 'default';
     this.walletHotkey = walletHotkey || 'default';
     this.walletPath = walletPath || path.join(process.env.HOME || '', '.bittensor/wallets');
+  }
+
+  private handleSubtensorError(error: any): Error {
+    if (error?.data && typeof error.data == 'string') {
+      const match = error.data.match(/Custom error: (\d+)/);
+      if (match && match[1]) {
+      }
+      const errorCode = parseInt(match[1], 10);
+      throw new SubtensorException(errorCode as SubtensorErrorCode);
+    } else {
+      throw error;
+    }
   }
 
   async getCurrentWalletInfo(): Promise<WalletInfo | Error> {
@@ -289,7 +302,7 @@ export class Substrate {
     }
   }
 
-  async burnedRegister(netuid: number, hotkey: string): Promise<any> {
+  async burnedRegister(netuid: number): Promise<any | Error> {
     try {
       if (!this.client) {
         throw new Error('Client is not connected');
@@ -298,14 +311,25 @@ export class Substrate {
         throw new Error('Keyring pair is not set, please call setKeyringPair() first');
       }
 
-      const register = this.client.tx.subtensorModule.burnedRegister(netuid, hotkey);
+      const unsub = await this.client.tx.subtensorModule
+        .burnedRegister(netuid, this.walletHotkey)
+        .signAndSend(this.keyringPairInfo.keyringPair, (result) => {
+          console.log(`Current status is: ${result.status}`);
+          console.log(`Result: ${result.toHuman()}`);
+          if (result.status.isInBlock) {
+          } else if (result.status.isFinalized) {
+            this.logger.log(`Transaction finalized in block: ${result.status.asFinalized}`);
+            unsub();
+          } else if (result.isError) {
+            this.logger.error(`Error: ${result.toHuman()}`);
+            unsub();
+            this.handleSubtensorError(result);
+          }
+        });
 
-      const result = await register.signAndSend(this.keyringPairInfo.keyringPair);
-
-      return result.toJSON();
+      return unsub;
     } catch (error) {
-      this.logger.error(`Failed to register burned: ${error.message}`);
-      throw new Error(`Failed to register burned: ${error.message}`);
+      this.handleSubtensorError(error);
     }
   }
 
@@ -341,8 +365,7 @@ export class Substrate {
       const result = await axonTx.signAndSend(this.keyringPairInfo.keyringPair);
       return result.toJSON();
     } catch (error) {
-      this.logger.error(`Failed to serve axon: ${error.message}`);
-      throw new Error(`Failed to serve axon: ${error.message}`);
+      this.handleSubtensorError(error);
     }
   }
 
@@ -367,8 +390,7 @@ export class Substrate {
 
       return result.toJSON();
     } catch (error) {
-      this.logger.error(`Failed to set weights: ${error.message}`);
-      throw new Error(`Failed to set weights: ${error.message}`);
+      this.handleSubtensorError(error);
     }
   }
 }
