@@ -20,16 +20,16 @@ import {
 } from './substrate.interface';
 import { SubtensorException, SubtensorErrorCode } from './substrate.exceptions';
 import { getKeyringPair } from './substrate.utils';
-import path from 'path';
+import * as path from 'path';
 
 export class Substrate {
   protected readonly logger = new Logger(this.constructor.name);
   protected config: SubstrateConfig;
   protected connectionStatus: ConnectionStatus = { isConnected: false };
   protected keyringPairInfo: KeyringPairInfo | null;
-  protected walletName: string;
-  protected walletHotkey: string;
-  protected walletPath: string;
+  protected walletName: string | undefined;
+  protected walletHotkey: string | undefined;
+  protected walletPath: string | undefined;
 
   public client: ApiPromise | null;
 
@@ -82,6 +82,9 @@ export class Substrate {
   async setKeyringPair() {
     try {
       this.logger.log(`Setting keyring pair for wallet: ${this.walletName}`);
+      if (!this.walletPath) {
+        throw new Error('Wallet path is not set');
+      }
       const correctedWalletPath = this.walletPath.replace('$HOME', process.env.HOME || '');
       this.keyringPairInfo = await getKeyringPair(
         correctedWalletPath,
