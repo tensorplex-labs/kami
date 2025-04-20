@@ -24,15 +24,14 @@ export class ChainService {
         timeout: 30000,
         maxRetries: 3,
       },
-      process.env.WALLET_PATH ||
-        '$HOME/.bittensor/wallets'.replace('$HOME', process.env.HOME || ''),
+      process.env.BITTENSOR_DIR || '$HOME/.bittensor'.replace('$HOME', process.env.HOME || ''),
       process.env.WALLET_COLDKEY || '',
       process.env.WALLET_HOTKEY || '',
     );
     this.substrate.connect();
 
-    // if WALLET_COLDKEY and WALLET_HOTKEY are provided, set the keyring pair for signing txn
-    if (process.env.WALLET_COLKDEY && process.env.WALLET_HOTKEY) {
+    // if WALLET_COLDKEY and WALLET_HOTKEY are provided, set the keyring pair for signing txn for miner/validator
+    if (process.env.WALLET_COLKDEY != '' && process.env.WALLET_HOTKEY != '') {
       this.substrate.setKeyringPair();
     }
   }
