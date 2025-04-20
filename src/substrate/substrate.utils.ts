@@ -5,9 +5,9 @@ import { KeyringPair } from '@polkadot/keyring/types';
 import { KeyringPairInfo } from './substrate.interface';
 
 export async function getKeyringPair(
-  walletPath: string,
-  walletName: string,
-  walletHotkey: string,
+  walletPath: string | undefined,
+  walletName: string | undefined,
+  walletHotkey: string | undefined,
 ): Promise<KeyringPairInfo> {
   try {
     const coldkeyPath = `${walletPath}/${walletName}/coldkeypub.txt`;
