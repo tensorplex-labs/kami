@@ -107,7 +107,7 @@ async function generateDocs() {
       // For local development, offer to start the server
       if (!isCI) {
         console.log('\nTo serve the documentation locally, run:');
-        console.log(`cd ${path.relative(process.cwd(), slateDir)} && bundle exec middleman server`);
+        console.log(`npm run serve-docs`);
       }
       
     } catch (error) {
