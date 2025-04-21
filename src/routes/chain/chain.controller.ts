@@ -17,8 +17,7 @@ import {
   AxonCallParams,
   SetWeightsCallParams,
 } from '../../substrate/substrate.call-params.interface';
-import { SubnetHyperparamsDto } from './dto/request/subnet-hyperparams.dto';
-import { SubnetHyperparamsResponseDto } from './dto/response/subnet-hyperparams-response.dto';
+import { SubnetHyperparamsDto, SubnetHyperparamsResponseDto } from '../dto/subnet-hyperparams.dto';
 
 @ApiTags('chain')
 @Controller('chain')
