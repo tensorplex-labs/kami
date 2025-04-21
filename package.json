@@ -18,7 +18,7 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "generate-docs": "node scripts/generate-docs.js",
+    "generate-docs": "ts-node scripts/generate-docs.ts",
     "serve-docs": "cd docs/slate && bundle exec middleman server"
   },
   "dependencies": {

@@ -1,28 +1,38 @@
-const fs = require('fs');
-const path = require('path');
-const widdershins = require('widdershins');
-const { execSync } = require('child_process');
+import * as fs from 'fs';
+import * as path from 'path';
+import { execSync } from 'child_process';
 
-async function generateDocs() {
+// Since widdershins might not have TypeScript typings
+const widdershins = require('widdershins');
+
+interface WidderShinsOptions {
+  codeSamples: boolean;
+  httpsnippet: boolean;
+  language_tabs: Array<Record<string, string>>;
+  includeLevel: number;
+  omitHeader: boolean;
+  theme: string;
+}
+
+async function generateDocs(): Promise<void> {
   try {
     console.log('Starting documentation generation process...');
     
     // Path to the Swagger JSON file
-    const swaggerFilePath = path.join(__dirname, '..', 'swagger-spec.json');
-    const docsDir = path.join(__dirname, '..', 'docs');
-    const slateDir = path.join(docsDir, 'slate');
-    const slateSourceDir = path.join(slateDir, 'source');
-    
+    const swaggerFilePath: string = path.join(__dirname, '..', 'swagger-spec.json');
+    const docsDir: string = path.join(__dirname, '..', 'docs');
+    const slateDir: string = path.join(docsDir, 'slate');
+    const slateSourceDir: string = path.join(slateDir, 'source');
     
     // Step 1: Read and parse the Swagger JSON file
     console.log('Reading Swagger JSON...');
-    const swaggerJsonContent = fs.readFileSync(swaggerFilePath, 'utf8');
-    let swaggerSpec;
+    const swaggerJsonContent: string = fs.readFileSync(swaggerFilePath, 'utf8');
+    let swaggerSpec: Record<string, any>;
     
     try {
       swaggerSpec = JSON.parse(swaggerJsonContent);
     } catch (e) {
-      throw new Error(`Failed to parse Swagger JSON: ${e.message}`);
+      throw new Error(`Failed to parse Swagger JSON: ${(e as Error).message}`);
     }
     
     // Step 2: Create docs directory and clone Slate if needed
@@ -39,13 +49,13 @@ async function generateDocs() {
           stdio: 'inherit'
         });
       } catch (error) {
-        throw new Error(`Failed to clone Slate repository: ${error.message}`);
+        throw new Error(`Failed to clone Slate repository: ${(error as Error).message}`);
       }
     }
     
     // Step 3: Configure widdershins options
     console.log('Configuring Widdershins options...');
-    const options = {
+    const options: WidderShinsOptions = {
       codeSamples: true,
       httpsnippet: true,
       language_tabs: [
@@ -60,7 +70,7 @@ async function generateDocs() {
     
     // Step 4: Convert to Slate-compatible markdown
     console.log('Converting to Slate Markdown...');
-    const markdownOutput = await widdershins.convert(swaggerSpec, options);
+    const markdownOutput: string = await widdershins.convert(swaggerSpec, options);
     
     // Ensure the slate/source directory exists
     if (!fs.existsSync(slateSourceDir)) {
@@ -75,7 +85,7 @@ async function generateDocs() {
     console.log('Installing Slate dependencies and building documentation...');
     try {
       // Determine if we need to detect local Ruby or use GitHub Actions setup
-      const isCI = process.env.CI === 'true';
+      const isCI: boolean = process.env.CI === 'true';
       
       if (!isCI) {
         console.log('Checking Ruby installation...');
@@ -111,13 +121,14 @@ async function generateDocs() {
       }
       
     } catch (error) {
-      throw new Error(`Failed to build Slate documentation: ${error.message}`);
+      throw new Error(`Failed to build Slate documentation: ${(error as Error).message}`);
     }
     
   } catch (error) {
-    console.error(`Error generating documentation: ${error.message}`);
+    console.error(`Error generating documentation: ${(error as Error).message}`);
     process.exit(1);
   }
 }
 
+// Execute the function
 generateDocs();

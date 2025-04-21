@@ -94,7 +94,7 @@ jobs:
 
       - name: Generate Slate documentation
         id: build-docs
-        run: node scripts/generate-docs.js
+        run: npx ts-node scripts/generate-docs.ts
 
       - name: Set artifact info
         id: artifact-info
