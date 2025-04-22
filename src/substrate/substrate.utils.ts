@@ -3,6 +3,7 @@ import { Logger } from '@nestjs/common';
 import { Keyring } from '@polkadot/keyring';
 import { KeyringPair } from '@polkadot/keyring/types';
 import { KeyringPairInfo } from './substrate.interface';
+import { Address4, Address6 } from 'ip-address';
 
 export async function getKeyringPair(
   walletPath: string | undefined,
@@ -46,40 +47,21 @@ export async function getKeyringPair(
   }
 }
 
-export async function ipToInt(strVal: string): Promise<number | bigint> {
-  if (strVal.indexOf(':') === -1) {
-    const parts = strVal.split('.');
-    if (parts.length !== 4) {
-      throw new Error('Invalid IPv4 address format');
+export async function intToIp(ip: number | string, type: number): Promise<string> {
+  try {
+    if (type === 4) {
+      const ipVal = Address4.fromBigInt(BigInt(ip));
+      return ipVal.correctForm();
+    } else if (type === 6) {
+      if (typeof ip != 'string') {
+        throw new Error('Invalid IP type');
+      }
+      const ipVal = new Address6(ip);
+      return ipVal.correctForm();
+    } else {
+      throw new Error('Invalid IP type');
     }
-
-    return parts.reduce((acc, octet) => {
-      return (acc << 8) + parseInt(octet, 10);
-    }, 0);
-  } else {
-    const addr = await normalizeIPv6(strVal);
-    const parts = addr.split(':');
-
-    return parts.reduce((acc: bigint, hextet) => {
-      return (acc << 16n) + BigInt(parseInt(hextet, 16));
-    }, 0n);
+  } catch (error) {
+    throw error;
   }
-}
-
-export async function normalizeIPv6(ip: string): Promise<string> {
-  if (ip.includes('::')) {
-    const parts = ip.split('::');
-    const missing =
-      8 - (parts[0].split(':').filter(Boolean).length + parts[1].split(':').filter(Boolean).length);
-    const zeroes = Array(missing).fill('0').join(':');
-
-    ip = parts[0] + ':' + (parts[0] && zeroes ? zeroes + ':' : zeroes) + parts[1];
-  }
-
-  return ip
-    .split(':')
-    .map((segment) => {
-      return segment.length === 0 ? '0' : segment.padStart(4, '0');
-    })
-    .join(':');
 }

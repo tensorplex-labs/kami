@@ -42,7 +42,7 @@ export interface AxonInfo {
   version: number;
   ip: number;
   port: number;
-  ip_type: number;
+  ipType: number;
   protocol: number;
   placeholder1: number;
   placeholder2: number;
@@ -62,8 +62,8 @@ export interface NeuronInfo {
   uid: number;
   netuid: number;
   active: boolean;
-  axon_info: AxonInfo;
-  prometheus_info: PrometheusInfo;
+  axonInfo: AxonInfo;
+  prometheusInfo: PrometheusInfo;
   stake: [string, number][];
   rank: number;
   emission: number;
