@@ -134,7 +134,7 @@ export class Substrate {
     }
   }
 
-  async queryRuntimeApi(method: string, params: string, block?: number): Promise<any | Error> {
+  async queryRuntimeApi(method: string, params: string): Promise<any | Error> {
     try {
       if (!this.client) {
         throw new Error('Client is not connected');
