@@ -17,6 +17,7 @@ import {
   ExtrinsicResponse, // TODO: Refactor this to a more specific type for those submitting extrinsics.
   SubnetHyperparameters,
   TotalNetworksInfo,
+  SubnetMetagraph,
 } from './substrate.interface';
 import { SubtensorException, SubtensorErrorCode } from './substrate.exceptions';
 import { getKeyringPair } from './substrate.utils';
@@ -133,7 +134,7 @@ export class Substrate {
     }
   }
 
-  async queryRuntimeApi(method: string, params: string, block?: number): Promise<any | Error> {
+  async queryRuntimeApi(method: string, params: string): Promise<any | Error> {
     try {
       if (!this.client) {
         throw new Error('Client is not connected');
@@ -193,6 +194,27 @@ export class Substrate {
       return subnetParams;
     } catch (error) {
       throw new Error(`Failed to retrieve subnet hyperparameters: ${error.message}`);
+    }
+  }
+
+  async getSubnetMetagraph(netuid: number): Promise<SubnetMetagraph | Error> {
+    try {
+      if (!this.client) {
+        throw new Error('Client is not connected');
+      }
+
+      const runtimeCall: string = 'SubnetInfoRuntimeApi_get_metagraph';
+      const encodedParams: Uint8Array = this.client.registry.createType('u16', netuid).toU8a();
+      const hexParams: string = Buffer.from(encodedParams).toString('hex');
+
+      const response = await this.queryRuntimeApi(runtimeCall, '0x' + hexParams);
+
+      const subnetParams: SubnetMetagraph = response.toJSON();
+
+      return subnetParams;
+    } catch (error) {
+      this.logger.error(`Failed to retrieve subnet metagraph: ${error.message}`);
+      throw new Error(`Failed to retrieve subnet metagraph: ${error.message}`);
     }
   }
 

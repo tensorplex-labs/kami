@@ -6,6 +6,7 @@ import {
   NonceInfo,
   WalletInfo,
   SubnetHyperparameters,
+  SubnetMetagraph,
   AxonInfo,
 } from '../../substrate/substrate.interface';
 import {
@@ -127,6 +128,30 @@ export class ChainService {
         throw new Error(`Failed to retrieve subnet hyperparameters: ${subnetParams.message}`);
       }
       return subnetParams;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async getSubnetMetagraph(netuid: number): Promise<SubnetMetagraph | Error> {
+    try {
+      await this.ensureConnection();
+      const totalNetworks = await this.getTotalNetworksInt();
+      if (totalNetworks instanceof Error) {
+        this.logger.error(`Failed to retrieve total networks: ${totalNetworks.message}`);
+        return totalNetworks;
+      }
+
+      if (netuid > totalNetworks) {
+        throw new Error(`Invalid netuid: ${netuid}. It should be less than ${totalNetworks}`);
+      }
+
+      const subnetMetagraph: SubnetMetagraph | Error =
+        await this.substrate.getSubnetMetagraph(netuid);
+      if (subnetMetagraph instanceof Error) {
+        return subnetMetagraph;
+      }
+      return subnetMetagraph;
     } catch (error) {
       throw error;
     }

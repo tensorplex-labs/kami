@@ -127,6 +127,101 @@ export interface SubnetHyperparameters {
   liquidAlphaEnabled: boolean;
 }
 
+export interface SubnetMetagraph {
+  netuid: number;
+  name: number[];
+  symbol: number[];
+  identity: {
+    subnetName: string;
+    githubRepo: string;
+    subnetContact: string;
+    subnetUrl: string;
+    discord: string;
+    description: string;
+    additional: string;  
+  };
+  networkRegisteredAt: number;
+  ownerHotkey: string;
+  ownerColdkey: string;
+  block: number;
+  tempo: number;
+  lastStep: number;
+  blocksSinceLastStep: number;
+  subnetEmission: number;
+  alphaIn: number;
+  alphaOut: number;
+  taoIn: number;
+  alphaOutEmission: number;
+  alphaInEmission: number;
+  taoInEmission: number;
+  pendingAlphaEmission: number;
+  pendingRootEmission: number;
+  subnetVolume: number;
+  movingPrice: {
+    bits: number;
+  };
+  rho: number;
+  kappa: number;
+  minAllowedWeights: number;
+  maxAllowedWeights: number;
+  weightsVersion: number;
+  weightsRateLimit: number;
+  activityCutoff: number;
+  maxValidators: number;
+  numUids: number;
+  maxUids: number;
+  burn: number;
+  difficulty: number;
+  registrationAllowed: boolean;
+  powRegistrationAllowed: boolean;
+  immunityPeriod: number;
+  minDifficulty: number;
+  maxDifficulty: string;
+  minBurn: number;
+  maxBurn: number;
+  adjustmentAlpha: string;
+  adjustmentInterval: number;
+  targetRegsPerInterval: boolean;
+  maxRegsPerBlock: number;
+  servingRateLimit: number;
+  commitRevealWeightsEnabled: boolean;
+  commitRevealPeriod: number;
+  liquidAlphaEnabled: boolean;
+  alphaHigh: number;
+  alphaLow: number;
+  bondsMovingAvg: number;
+  hotkeys: string[];
+  coldkeys: string[]; 
+  identities: IdentitiesInfo[];
+  axons: AxonInfo[];
+  active: boolean[];
+  validatorPermit: boolean[];
+  pruningScore: number[];
+  lastUpdate: number[];
+  emission: number[];
+  dividends: number[];
+  incentives: number[];
+  consensus: number[];
+  trust: number[];
+  rank: number[];
+  blockAtRegistration: number[];
+  alphaStake: number[];
+  taoStake: number[];
+  totalStake: number[];
+  taoDividendsPerHotkey: [string, number][];
+  alphaDividendsPerHotkey: [string, number][];
+}
+
+export interface IdentitiesInfo {
+  name: string;
+  url: string;
+  githubRepo: string;
+  image: string;
+  discord: string;
+  description: string;
+  additional: string;  
+}
+
 export interface TotalNetworksInfo {
   totalNetworks: number;
 }
