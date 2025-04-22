@@ -17,7 +17,7 @@ import {
   SetWeightsCallParams,
 } from '../../substrate/substrate.call-params.interface';
 
-@Controller('chain')
+@Controller('chain') 
 @UseInterceptors(TransformInterceptor)
 export class ChainController {
   constructor(private readonly chainService: ChainService) {}
@@ -40,6 +40,19 @@ export class ChainController {
     try {
       const subnetHyperparams = await this.chainService.getSubnetHyperparameters(netuid);
       return subnetHyperparams;
+    } catch (error) {
+      if (error instanceof ChainException) {
+        throw error;
+      }
+      throw new ChainException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Get('subnet-metagraph/:netuid')
+  async getSubnetMetagraph(@Param('netuid') netuid: number) {
+    try {
+      const subnetMetagraph = await this.chainService.getSubnetMetagraph(netuid);
+      return subnetMetagraph;
     } catch (error) {
       if (error instanceof ChainException) {
         throw error;
