@@ -8,7 +8,9 @@ import {
   UseInterceptors,
   Post,
   Body,
+  Query,
 } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiParam, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { ChainService } from './chain.service';
 import { ChainException } from './chain.exceptions';
 import { TransformInterceptor } from '../../commons/common-response.dto';
@@ -16,15 +18,30 @@ import {
   AxonCallParams,
   SetWeightsCallParams,
 } from '../../substrate/substrate.call-params.interface';
+import { SubnetHyperparamsDto, SubnetHyperparamsResponseDto } from '../dto/subnet-hyperparams.dto';
 
-@Controller('chain') 
+
+@ApiTags('chain')
+@Controller('chain')
 @UseInterceptors(TransformInterceptor)
 export class ChainController {
   constructor(private readonly chainService: ChainService) {}
 
   @Get('neurons/:netuid')
-  async getNeurons(@Param('netuid') netuid: number) {
+  async getNeurons(
+    @Param('netuid') netuid: number,
+    @Query('hotkey') hotkey?: boolean,
+    @Query('axon') axon?: boolean,
+  ) {
     try {
+      if (hotkey) {
+        const neurons = await this.chainService.retrieveNeurons(netuid, { hotkey: true });
+        return neurons;
+      } else if (axon) {
+        const neurons = await this.chainService.retrieveNeurons(netuid, { axon: true });
+        return neurons;
+      }
+
       const neurons = await this.chainService.retrieveNeurons(netuid);
       return neurons;
     } catch (error) {
@@ -36,10 +53,38 @@ export class ChainController {
   }
 
   @Get('subnet-hyperparameters/:netuid')
-  async getSubnetHyperparams(@Param('netuid') netuid: number) {
+  @ApiOperation({
+    summary: 'Get subnet hyperparameters',
+    description: 'Retrieves all hyperparameters for a specific subnet identified by netuid'
+  })
+  @ApiParam({
+    name: 'netuid',
+    description: 'Network UID identifying the subnet',
+    type: 'number',
+    example: 1,
+    required: true
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Subnet hyperparameters retrieved successfully',
+    type: SubnetHyperparamsResponseDto 
+  })
+  @ApiResponse({ 
+    status: 400, 
+    description: 'Invalid netuid parameter' 
+  })
+  @ApiResponse({ 
+    status: 404, 
+    description: 'Subnet not found' 
+  })
+  @ApiResponse({ 
+    status: 500, 
+    description: 'Internal server error during blockchain communication' 
+  })
+  async getSubnetHyperparams(@Param() params: SubnetHyperparamsDto): Promise<SubnetHyperparamsResponseDto> {
     try {
-      const subnetHyperparams = await this.chainService.getSubnetHyperparameters(netuid);
-      return subnetHyperparams;
+      const subnetHyperparams = await this.chainService.getSubnetHyperparameters(params.netuid);
+      return subnetHyperparams as SubnetHyperparamsResponseDto;
     } catch (error) {
       if (error instanceof ChainException) {
         throw error;

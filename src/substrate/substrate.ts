@@ -134,7 +134,7 @@ export class Substrate {
     }
   }
 
-  async queryRuntimeApi(method: string, params: string): Promise<any | Error> {
+  async queryRuntimeApi(method: string, params: string, block?: number): Promise<any | Error> {
     try {
       if (!this.client) {
         throw new Error('Client is not connected');
@@ -171,11 +171,9 @@ export class Substrate {
         const result: any = this.client.createType(typeDef, resultBytes);
         return result;
       } catch (error) {
-        this.logger.error(`Failed to decode result: ${error.message}`);
         throw new Error(`Failed to decode result: ${error.message}`);
       }
     } catch (error) {
-      this.logger.error(`Failed to query runtime API: ${error.message}`);
       throw new Error(`Failed to query runtime API: ${error.message}`);
     }
   }
@@ -185,7 +183,6 @@ export class Substrate {
       if (!this.client) {
         throw new Error('Client is not connected');
       }
-
       const runtimeCall: string = 'SubnetInfoRuntimeApi_get_subnet_hyperparams';
       const encodedParams: Uint8Array = this.client.registry.createType('u16', netuid).toU8a();
       const hexParams: string = Buffer.from(encodedParams).toString('hex');
@@ -196,7 +193,6 @@ export class Substrate {
 
       return subnetParams;
     } catch (error) {
-      this.logger.error(`Failed to retrieve subnet hyperparameters: ${error.message}`);
       throw new Error(`Failed to retrieve subnet hyperparameters: ${error.message}`);
     }
   }
@@ -239,7 +235,6 @@ export class Substrate {
 
       return neuronInfo;
     } catch (error) {
-      this.logger.error(`Failed to retrieve neurons: ${error.message}`);
       throw new Error(`Failed to retrieve neurons: ${error.message}`);
     }
   }
@@ -258,7 +253,6 @@ export class Substrate {
       };
       return result;
     } catch (error) {
-      this.logger.error(`Failed to retrieve latest block: ${error.message}`);
       throw new Error(`Failed to retrieve latest block: ${error.message}`);
     }
   }
@@ -301,7 +295,6 @@ export class Substrate {
       };
       return nonceInfo;
     } catch (error) {
-      this.logger.error(`Failed to retrieve nonce: ${error.message}`);
       throw new Error(`Failed to retrieve nonce: ${error.message}`);
     }
   }
@@ -323,7 +316,6 @@ export class Substrate {
 
       return totalNetworks;
     } catch (error) {
-      this.logger.error(`Failed to retrieve total subnets: ${error.message}`);
       throw new Error(`Failed to retrieve total subnets: ${error.message}`);
     }
   }
