@@ -8,6 +8,7 @@ import {
   UseInterceptors,
   Post,
   Body,
+  Query,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiParam, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { ChainService } from './chain.service';
@@ -26,8 +27,20 @@ export class ChainController {
   constructor(private readonly chainService: ChainService) {}
 
   @Get('neurons/:netuid')
-  async getNeurons(@Param('netuid') netuid: number) {
+  async getNeurons(
+    @Param('netuid') netuid: number,
+    @Query('hotkey') hotkey?: boolean,
+    @Query('axon') axon?: boolean,
+  ) {
     try {
+      if (hotkey) {
+        const neurons = await this.chainService.retrieveNeurons(netuid, { hotkey: true });
+        return neurons;
+      } else if (axon) {
+        const neurons = await this.chainService.retrieveNeurons(netuid, { axon: true });
+        return neurons;
+      }
+
       const neurons = await this.chainService.retrieveNeurons(netuid);
       return neurons;
     } catch (error) {

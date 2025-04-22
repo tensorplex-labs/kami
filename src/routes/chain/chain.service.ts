@@ -6,6 +6,7 @@ import {
   NonceInfo,
   WalletInfo,
   SubnetHyperparameters,
+  AxonInfo,
 } from '../../substrate/substrate.interface';
 import {
   AxonCallParams,
@@ -42,13 +43,41 @@ export class ChainService {
     }
   }
 
-  async retrieveNeurons(netuid: number): Promise<NeuronInfo[] | Error> {
+  async retrieveNeurons(
+    netuid: number,
+    options?: { hotkey?: boolean; axon?: boolean },
+  ): Promise<NeuronInfo[] | AxonInfo[] | string[] | Error> {
     try {
       await this.ensureConnection();
       const neurons: NeuronInfo[] | Error = await this.substrate.getNeuronsInfo(netuid);
       if (neurons instanceof Error) {
         this.logger.error(`Failed to retrieve neurons: ${neurons.message}`);
         return neurons;
+      }
+
+      if (options?.hotkey) {
+        const hotkeysArray: string[] = [];
+        for (const neuron of neurons) {
+          if (options?.hotkey) {
+            const hotkey = neuron.hotkey;
+            if (hotkey) {
+              hotkeysArray.push(hotkey);
+            }
+          }
+        }
+        return hotkeysArray;
+      } else if (options?.axon) {
+        const axonArray: AxonInfo[] = [];
+        for (const neuron of neurons) {
+          if (options?.axon) {
+            const axon = neuron.axonInfo;
+            if (axon) {
+              axonArray.push(axon);
+            }
+          }
+        }
+
+        return axonArray;
       }
 
       if (neurons.length > 0) {
@@ -95,7 +124,7 @@ export class ChainService {
       const subnetParams: SubnetHyperparameters | Error =
         await this.substrate.getSubnetHyperparameters(netuid);
       if (subnetParams instanceof Error) {
-        return subnetParams;
+        throw new Error(`Failed to retrieve subnet hyperparameters: ${subnetParams.message}`);
       }
       return subnetParams;
     } catch (error) {
