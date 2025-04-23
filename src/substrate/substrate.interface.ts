@@ -131,15 +131,7 @@ export interface SubnetMetagraph {
   netuid: number;
   name: number[];
   symbol: number[];
-  identity: {
-    subnetName: string;
-    githubRepo: string;
-    subnetContact: string;
-    subnetUrl: string;
-    discord: string;
-    description: string;
-    additional: string;
-  };
+  identity: SubnetIdentity;
   networkRegisteredAt: number;
   ownerHotkey: string;
   ownerColdkey: string;
@@ -210,6 +202,16 @@ export interface SubnetMetagraph {
   totalStake: number[];
   taoDividendsPerHotkey: [string, number][];
   alphaDividendsPerHotkey: [string, number][];
+}
+
+export interface SubnetIdentity {
+  subnetName: string;
+  githubRepo: string;
+  subnetContact: string;
+  subnetUrl: string;
+  discord: string;
+  description: string;
+  additional: string;
 }
 
 export interface IdentitiesInfo {

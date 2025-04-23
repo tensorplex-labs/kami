@@ -1,7 +1,10 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
 
 export class SubstrateException extends HttpException {
-  constructor(message: string, statusCode: HttpStatus = HttpStatus.BAD_REQUEST) {
+  constructor(
+    message: string,
+    statusCode: HttpStatus = HttpStatus.BAD_REQUEST,
+  ) {
     super(
       {
         statusCode,
@@ -46,13 +49,16 @@ interface SubtensorErrorDetails {
   description: string;
 }
 
-function getSubtensorErrorDetails(errorCode: SubtensorErrorCode): SubtensorErrorDetails {
+function getSubtensorErrorDetails(
+  errorCode: SubtensorErrorCode,
+): SubtensorErrorDetails {
   switch (errorCode) {
     case SubtensorErrorCode.COLD_KEY_IN_SWAP_SCHEDULE:
       return {
         code: errorCode,
         name: 'ColdKeyInSwapSchedule',
-        description: 'Your coldkey is set to be swapped. No transfer operations are possible.',
+        description:
+          'Your coldkey is set to be swapped. No transfer operations are possible.',
       };
     case SubtensorErrorCode.STAKE_AMOUNT_TOO_LOW:
       return {
@@ -65,7 +71,8 @@ function getSubtensorErrorDetails(errorCode: SubtensorErrorCode): SubtensorError
       return {
         code: errorCode,
         name: 'BalanceTooLow',
-        description: 'The amount of stake you have is less than you have requested.',
+        description:
+          'The amount of stake you have is less than you have requested.',
       };
     case SubtensorErrorCode.SUBNET_DOESNT_EXIST:
       return {
@@ -90,19 +97,22 @@ function getSubtensorErrorDetails(errorCode: SubtensorErrorCode): SubtensorError
       return {
         code: errorCode,
         name: 'RateLimitExceeded',
-        description: 'Too many transactions submitted (other than Axon serve/publish extrinsic).',
+        description:
+          'Too many transactions submitted (other than Axon serve/publish extrinsic).',
       };
     case SubtensorErrorCode.INSUFFICIENT_LIQUIDITY:
       return {
         code: errorCode,
         name: 'InsufficientLiquidity',
-        description: "The subnet's pool does not have sufficient liquidity for this transaction.",
+        description:
+          "The subnet's pool does not have sufficient liquidity for this transaction.",
       };
     case SubtensorErrorCode.SLIPPAGE_TOO_HIGH:
       return {
         code: errorCode,
         name: 'SlippageTooHigh',
-        description: 'The slippage exceeds your limit. Try reducing the transaction amount.',
+        description:
+          'The slippage exceeds your limit. Try reducing the transaction amount.',
       };
     case SubtensorErrorCode.TRANSFER_DISALLOWED:
       return {
@@ -120,7 +130,8 @@ function getSubtensorErrorDetails(errorCode: SubtensorErrorCode): SubtensorError
       return {
         code: errorCode,
         name: 'InvalidIpAddress',
-        description: 'Axon connection info cannot be parsed into a valid IP address.',
+        description:
+          'Axon connection info cannot be parsed into a valid IP address.',
       };
     case SubtensorErrorCode.SERVING_RATE_LIMIT_EXCEEDED:
       return {
