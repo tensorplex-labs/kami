@@ -197,6 +197,26 @@ export class ChainService {
     }
   }
 
+  async checkHotkey(netuid: number, hotkey: string, block?: number): Promise<boolean | Error> {
+    try {
+      await this.ensureConnection();
+      if (!netuid || !hotkey) {
+        throw new Error('Netuid and hotkey are required');
+      }
+      let result: boolean | Error = false;
+
+      if (block) {
+        result = await this.substrate.checkHotkey(netuid, hotkey, block);
+      } else {
+        result = await this.substrate.checkHotkey(netuid, hotkey);
+      }
+
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  }
+
   async serveAxon(callParams: AxonCallParams): Promise<any | Error> {
     try {
       await this.ensureConnection();

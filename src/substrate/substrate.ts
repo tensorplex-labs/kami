@@ -64,6 +64,19 @@ export class Substrate {
     }
   }
 
+  // async getApiAt(blockHash: string): Promise<ApiPromise | Error> {
+  //   try {
+  //     if (!this.client) {
+  //       throw new Error('Client is not connected');
+  //     }
+  //     const apiAt = await this.client.at(blockHash).;
+  //     return apiAt;
+  //   } catch (error) {
+  //     this.logger.error(`Failed to get API at block hash ${blockHash}: ${error.message}`);
+  //     throw new Error(`Failed to get API at block hash ${blockHash}: ${error.message}`);
+  //   }
+  // }
+
   async getCurrentWalletInfo(): Promise<WalletInfo | Error> {
     try {
       if (!this.keyringPairInfo) {
@@ -257,6 +270,22 @@ export class Substrate {
     }
   }
 
+  async getBlockHash(block: number): Promise<string | Error> {
+    try {
+      if (!this.client) {
+        throw new Error('Client is not connected');
+      }
+      const blockHash = await this.client.query.system.blockHash(block);
+      if (!blockHash) {
+        throw new Error(`Block hash not found for block number ${block}`);
+      }
+      const blockHashHex = blockHash.toHex();
+      return blockHashHex;
+    } catch (error) {
+      throw new Error(`Failed to retrieve block hash: ${error.message}`);
+    }
+  }
+
   async getNonce(walletAddress: string): Promise<NonceInfo> {
     try {
       if (!this.client) {
@@ -317,6 +346,36 @@ export class Substrate {
       return totalNetworks;
     } catch (error) {
       throw new Error(`Failed to retrieve total subnets: ${error.message}`);
+    }
+  }
+
+  async checkHotkey(netuid: number, hotkey: string, block?: number): Promise<boolean | Error> {
+    try {
+      if (!this.client) {
+        throw new Error('Client is not connected');
+      }
+      let response = null;
+
+      if (block) {
+        const getBlockHash: string | Error = await this.getBlockHash(block);
+        if (getBlockHash instanceof Error) {
+          throw new Error(`Failed to get block hash: ${getBlockHash.message}`);
+        }
+        const blockApi = await this.client.at(getBlockHash);
+        response = await blockApi.query.subtensorModule.isNetworkMember(hotkey, netuid);
+      } else {
+        response = await this.client.query.subtensorModule.isNetworkMember(hotkey, netuid);
+      }
+
+      if (response == null) {
+        throw new Error('Failed to retrieve hotkey');
+      }
+
+      const isHotkey: boolean = response.toJSON() as boolean;
+
+      return isHotkey;
+    } catch (error) {
+      throw error;
     }
   }
 
