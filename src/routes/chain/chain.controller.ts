@@ -30,7 +30,6 @@ import {
   SubnetHyperparamsResponseDto,
 } from '../dto/subnet-hyperparams.dto';
 import { SubnetMetagraphMapper } from '../mappers/subnet-metagraph.mapper';
-import { SubnetMetagraph } from 'src/substrate/substrate.interface';
 
 @ApiTags('chain')
 @Controller('chain')
@@ -41,35 +40,6 @@ export class ChainController {
     private readonly chainService: ChainService,
     private readonly subnetMetagraphMapper: SubnetMetagraphMapper,
   ) {}
-
-  @Get('neurons/:netuid')
-  async getNeurons(
-    @Param('netuid') netuid: number,
-    @Query('hotkey') hotkey?: boolean,
-    @Query('axon') axon?: boolean,
-  ) {
-    try {
-      if (hotkey) {
-        const neurons = await this.chainService.retrieveNeurons(netuid, {
-          hotkey: true,
-        });
-        return neurons;
-      } else if (axon) {
-        const neurons = await this.chainService.retrieveNeurons(netuid, {
-          axon: true,
-        });
-        return neurons;
-      }
-
-      const neurons = await this.chainService.retrieveNeurons(netuid);
-      return neurons;
-    } catch (error) {
-      if (error instanceof ChainException) {
-        throw error;
-      }
-      throw new ChainException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-  }
 
   @Get('subnet-hyperparameters/:netuid')
   @ApiOperation({

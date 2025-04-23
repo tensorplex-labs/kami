@@ -1,11 +1,11 @@
 import { Injectable } from '@nestjs/common';
 
 import { SubnetMetagraph } from 'src/substrate/substrate.interface';
-import { 
-  SubnetMetagraphDto, 
-  SubnetIdentityDto, 
-  IdentitiesInfoDto, 
-  AxonInfoDto 
+import {
+  SubnetMetagraphDto,
+  SubnetIdentityDto,
+  IdentitiesInfoDto,
+  AxonInfoDto,
 } from '../dto';
 
 @Injectable()
@@ -114,8 +114,12 @@ export class SubnetMetagraphMapper {
       alphaStake: subnetMetagraph.alphaStake,
       taoStake: subnetMetagraph.taoStake,
       totalStake: subnetMetagraph.totalStake,
-      taoDividendsPerHotkey: subnetMetagraph.taoDividendsPerHotkey.map(([hotkey, amount]) => [hotkey, amount / 1_000_000_000]),
-      alphaDividendsPerHotkey: subnetMetagraph.alphaDividendsPerHotkey.map(([hotkey, amount]) => [hotkey, amount / 1_000_000_000]),
+      taoDividendsPerHotkey: subnetMetagraph.taoDividendsPerHotkey.map(
+        ([hotkey, amount]) => [hotkey, amount / 1_000_000_000],
+      ),
+      alphaDividendsPerHotkey: subnetMetagraph.alphaDividendsPerHotkey.map(
+        ([hotkey, amount]) => [hotkey, amount / 1_000_000_000],
+      ),
     });
   }
 }

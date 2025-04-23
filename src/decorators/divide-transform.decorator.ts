@@ -12,17 +12,17 @@ export function DivideBy(divisor: number) {
     if (value === null || value === undefined) {
       return value;
     }
-    
+
     // Handle arrays
     if (Array.isArray(value)) {
-      return value.map(item => {
+      return value.map((item) => {
         if (item === null || item === undefined) {
           return item;
         }
         return processValue(item, divisor);
       });
     }
-    
+
     // Handle single values
     return processValue(value, divisor);
   });
@@ -33,7 +33,7 @@ export function DivideBy(divisor: number) {
  */
 function processValue(value: any, divisor: number): number {
   let numValue: number;
-  
+
   // Handle different input formats (string, hex, bigint, etc.)
   if (typeof value === 'string') {
     // Handle hexadecimal strings
@@ -45,7 +45,7 @@ function processValue(value: any, divisor: number): number {
   } else {
     numValue = Number(value);
   }
-  
+
   // Perform the division
   return numValue / divisor;
 }
