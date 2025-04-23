@@ -5,7 +5,7 @@
 
   FROM base AS dependencies
   COPY package*.json ./
-  RUN npm ci
+  RUN npm install --force
 
   FROM dependencies AS build
   COPY . .
@@ -25,5 +25,5 @@
 
   EXPOSE 3000
 
-  CMD ["node", "dist/main"]
+  CMD ["node", "dist/src/main"]
 
