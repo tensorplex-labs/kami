@@ -16,6 +16,13 @@
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": true,
     "strictBindCallApply": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "paths": {
+      "@app/utils": ["src/utils"],
+      "@app/decorators": ["src/decorators"],
+      "@app/substrate/*": ["src/substrate/*"],
+      "@app/routes/*": ["src/routes/*"],
+      "@app/commons/*": ["src/commons/*"]
+    }
   }
 }

@@ -9,6 +9,7 @@ import {
   Post,
   Body,
   Query,
+  ClassSerializerInterceptor,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiParam, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { ChainService } from './chain.service';
@@ -19,13 +20,18 @@ import {
   SetWeightsCallParams,
 } from '../../substrate/substrate.call-params.interface';
 import { SubnetHyperparamsDto, SubnetHyperparamsResponseDto } from '../dto/subnet-hyperparams.dto';
-
+import { SubnetMetagraphMapper } from '../mappers/subnet-metagraph.mapper';
+import { SubnetMetagraph } from 'src/substrate/substrate.interface';
 
 @ApiTags('chain')
 @Controller('chain')
 @UseInterceptors(TransformInterceptor)
+@UseInterceptors(ClassSerializerInterceptor)
 export class ChainController {
-  constructor(private readonly chainService: ChainService) {}
+  constructor(
+    private readonly chainService: ChainService,
+    private readonly subnetMetagraphMapper: SubnetMetagraphMapper
+  ) {}
 
   @Get('neurons/:netuid')
   async getNeurons(
@@ -97,7 +103,10 @@ export class ChainController {
   async getSubnetMetagraph(@Param('netuid') netuid: number) {
     try {
       const subnetMetagraph = await this.chainService.getSubnetMetagraph(netuid);
-      return subnetMetagraph;
+      if (subnetMetagraph instanceof Error) {
+        throw subnetMetagraph;
+      }
+      return this.subnetMetagraphMapper.toDto(subnetMetagraph);
     } catch (error) {
       if (error instanceof ChainException) {
         throw error;

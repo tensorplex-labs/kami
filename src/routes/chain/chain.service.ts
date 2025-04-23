@@ -139,7 +139,7 @@ export class ChainService {
       const totalNetworks = await this.getTotalNetworksInt();
       if (totalNetworks instanceof Error) {
         this.logger.error(`Failed to retrieve total networks: ${totalNetworks.message}`);
-        return totalNetworks;
+        throw totalNetworks;
       }
 
       if (netuid > totalNetworks) {
@@ -149,7 +149,7 @@ export class ChainService {
       const subnetMetagraph: SubnetMetagraph | Error =
         await this.substrate.getSubnetMetagraph(netuid);
       if (subnetMetagraph instanceof Error) {
-        return subnetMetagraph;
+        throw subnetMetagraph;
       }
       return subnetMetagraph;
     } catch (error) {
