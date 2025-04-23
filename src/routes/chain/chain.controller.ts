@@ -61,33 +61,35 @@ export class ChainController {
   @Get('subnet-hyperparameters/:netuid')
   @ApiOperation({
     summary: 'Get subnet hyperparameters',
-    description: 'Retrieves all hyperparameters for a specific subnet identified by netuid'
+    description: 'Retrieves all hyperparameters for a specific subnet identified by netuid',
   })
   @ApiParam({
     name: 'netuid',
     description: 'Network UID identifying the subnet',
     type: 'number',
     example: 1,
-    required: true
+    required: true,
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'Subnet hyperparameters retrieved successfully',
-    type: SubnetHyperparamsResponseDto 
+    type: SubnetHyperparamsResponseDto,
   })
-  @ApiResponse({ 
-    status: 400, 
-    description: 'Invalid netuid parameter' 
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid netuid parameter',
   })
-  @ApiResponse({ 
-    status: 404, 
-    description: 'Subnet not found' 
+  @ApiResponse({
+    status: 404,
+    description: 'Subnet not found',
   })
-  @ApiResponse({ 
-    status: 500, 
-    description: 'Internal server error during blockchain communication' 
+  @ApiResponse({
+    status: 500,
+    description: 'Internal server error during blockchain communication',
   })
-  async getSubnetHyperparams(@Param() params: SubnetHyperparamsDto): Promise<SubnetHyperparamsResponseDto> {
+  async getSubnetHyperparams(
+    @Param() params: SubnetHyperparamsDto,
+  ): Promise<SubnetHyperparamsResponseDto> {
     try {
       const subnetHyperparams = await this.chainService.getSubnetHyperparameters(params.netuid);
       return subnetHyperparams as SubnetHyperparamsResponseDto;
@@ -159,6 +161,32 @@ export class ChainController {
     try {
       const walletInfo = await this.chainService.getCurrentWalletInfo();
       return walletInfo;
+    } catch (error) {
+      if (error instanceof ChainException) {
+        throw error;
+      }
+      throw new ChainException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  @Get('check-hotkey')
+  async checkHotkey(
+    @Query('netuid') netuid: number,
+    @Query('hotkey') hotkey: string,
+    @Query('block') block?: number,
+  ) {
+    try {
+      if (!netuid || !hotkey) {
+        throw new ChainException('netuid and hotkey are required', HttpStatus.BAD_REQUEST);
+      }
+      let isHotkeyValid: boolean | Error = false;
+      if (block) {
+        isHotkeyValid = await this.chainService.checkHotkey(netuid, hotkey, block);
+        return { isHotkeyValid };
+      } else {
+        isHotkeyValid = await this.chainService.checkHotkey(netuid, hotkey);
+      }
+      return { isHotkeyValid };
     } catch (error) {
       if (error instanceof ChainException) {
         throw error;
