@@ -33,7 +33,9 @@ export async function getKeyringPair(
     }
 
     const keyring: Keyring = new Keyring({ type: 'sr25519' });
-    const hotkey: KeyringPair = keyring.addFromMnemonic(hotkeyJsonContent.secretPhrase);
+    const hotkey: KeyringPair = keyring.addFromMnemonic(
+      hotkeyJsonContent.secretPhrase,
+    );
 
     return {
       keyringPair: hotkey,
@@ -47,7 +49,10 @@ export async function getKeyringPair(
   }
 }
 
-export async function intToIp(ip: number | string, type: number): Promise<string> {
+export async function intToIp(
+  ip: number | string,
+  type: number,
+): Promise<string> {
   try {
     if (type === 4) {
       const ipVal = Address4.fromBigInt(BigInt(ip));

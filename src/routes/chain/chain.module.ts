@@ -9,4 +9,3 @@ import { SubnetMetagraphMapper } from '../mappers/subnet-metagraph.mapper';
   exports: [ChainService], // export incase other modules need
 })
 export class ChainModule {}
-  

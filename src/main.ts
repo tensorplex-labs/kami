@@ -17,12 +17,11 @@ async function bootstrap() {
     .build();
 
   const document = SwaggerModule.createDocument(app, config);
-  
-  
+
   const outputPath = path.resolve(process.cwd(), 'swagger-spec.json');
   fs.writeFileSync(outputPath, JSON.stringify(document));
   console.log(`Swagger JSON saved to ${outputPath}`);
-  
+
   SwaggerModule.setup('api', app, document);
 
   await app.listen(process.env.PORT ?? 3000);

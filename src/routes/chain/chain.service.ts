@@ -22,7 +22,8 @@ export class ChainService {
   constructor() {
     this.substrate = new Substrate(
       {
-        nodeUrl: process.env.SUBTENSOR_NETWORK || 'wss://lite.sub.latent.to:443',
+        nodeUrl:
+          process.env.SUBTENSOR_NETWORK || 'wss://lite.sub.latent.to:443',
         timeout: 30000,
         maxRetries: 3,
       },
@@ -50,7 +51,8 @@ export class ChainService {
   ): Promise<NeuronInfo[] | AxonInfo[] | string[] | Error> {
     try {
       await this.ensureConnection();
-      const neurons: NeuronInfo[] | Error = await this.substrate.getNeuronsInfo(netuid);
+      const neurons: NeuronInfo[] | Error =
+        await this.substrate.getNeuronsInfo(netuid);
       if (neurons instanceof Error) {
         this.logger.error(`Failed to retrieve neurons: ${neurons.message}`);
         return neurons;
@@ -86,7 +88,7 @@ export class ChainService {
       } else {
         this.logger.warn(`No neurons found for netuid: ${netuid}`);
       }
-      return neurons as NeuronInfo[];
+      return neurons;
     } catch (error) {
       throw error;
     }
@@ -98,7 +100,9 @@ export class ChainService {
       const totalNetworks = await this.substrate.getTotalNetworks();
 
       if (totalNetworks instanceof Error) {
-        this.logger.error(`Failed to retrieve total networks: ${totalNetworks.message}`);
+        this.logger.error(
+          `Failed to retrieve total networks: ${totalNetworks.message}`,
+        );
         return totalNetworks;
       }
       const totalNetworksInt = totalNetworks.totalNetworks;
@@ -109,23 +113,31 @@ export class ChainService {
     }
   }
 
-  async getSubnetHyperparameters(netuid: number): Promise<SubnetHyperparameters | Error> {
+  async getSubnetHyperparameters(
+    netuid: number,
+  ): Promise<SubnetHyperparameters | Error> {
     try {
       await this.ensureConnection();
       const totalNetworks = await this.getTotalNetworksInt();
       if (totalNetworks instanceof Error) {
-        this.logger.error(`Failed to retrieve total networks: ${totalNetworks.message}`);
+        this.logger.error(
+          `Failed to retrieve total networks: ${totalNetworks.message}`,
+        );
         return totalNetworks;
       }
 
       if (netuid > totalNetworks) {
-        throw new Error(`Invalid netuid: ${netuid}. It should be less than ${totalNetworks}`);
+        throw new Error(
+          `Invalid netuid: ${netuid}. It should be less than ${totalNetworks}`,
+        );
       }
 
       const subnetParams: SubnetHyperparameters | Error =
         await this.substrate.getSubnetHyperparameters(netuid);
       if (subnetParams instanceof Error) {
-        throw new Error(`Failed to retrieve subnet hyperparameters: ${subnetParams.message}`);
+        throw new Error(
+          `Failed to retrieve subnet hyperparameters: ${subnetParams.message}`,
+        );
       }
       return subnetParams;
     } catch (error) {
@@ -138,12 +150,16 @@ export class ChainService {
       await this.ensureConnection();
       const totalNetworks = await this.getTotalNetworksInt();
       if (totalNetworks instanceof Error) {
-        this.logger.error(`Failed to retrieve total networks: ${totalNetworks.message}`);
+        this.logger.error(
+          `Failed to retrieve total networks: ${totalNetworks.message}`,
+        );
         throw totalNetworks;
       }
 
       if (netuid > totalNetworks) {
-        throw new Error(`Invalid netuid: ${netuid}. It should be less than ${totalNetworks}`);
+        throw new Error(
+          `Invalid netuid: ${netuid}. It should be less than ${totalNetworks}`,
+        );
       }
 
       const subnetMetagraph: SubnetMetagraph | Error =
@@ -197,7 +213,11 @@ export class ChainService {
     }
   }
 
-  async checkHotkey(netuid: number, hotkey: string, block?: number): Promise<boolean | Error> {
+  async checkHotkey(
+    netuid: number,
+    hotkey: string,
+    block?: number,
+  ): Promise<boolean | Error> {
     try {
       await this.ensureConnection();
       if (!netuid || !hotkey) {
@@ -220,8 +240,16 @@ export class ChainService {
   async serveAxon(callParams: AxonCallParams): Promise<any | Error> {
     try {
       await this.ensureConnection();
-      const { netuid, ip, port, ipType, protocol, placeholder1, placeholder2, version } =
-        callParams;
+      const {
+        netuid,
+        ip,
+        port,
+        ipType,
+        protocol,
+        placeholder1,
+        placeholder2,
+        version,
+      } = callParams;
 
       const result = await this.substrate.serveAxon(
         netuid,
@@ -244,7 +272,12 @@ export class ChainService {
       await this.ensureConnection();
       const { netuid, dests, weights, versionKey } = CallParams;
 
-      const result = await this.substrate.setWeights(netuid, dests, weights, versionKey);
+      const result = await this.substrate.setWeights(
+        netuid,
+        dests,
+        weights,
+        versionKey,
+      );
 
       return result;
     } catch (error) {

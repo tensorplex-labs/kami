@@ -49,7 +49,8 @@ export class Substrate {
     this.keyringPairInfo = null;
     this.walletName = walletName || 'default';
     this.walletHotkey = walletHotkey || 'default';
-    this.walletPath = walletPath || path.join(process.env.HOME || '', '.bittensor/wallets');
+    this.walletPath =
+      walletPath || path.join(process.env.HOME || '', '.bittensor/wallets');
   }
 
   private handleSubtensorError(error: any): Error {
@@ -80,7 +81,9 @@ export class Substrate {
   async getCurrentWalletInfo(): Promise<WalletInfo | Error> {
     try {
       if (!this.keyringPairInfo) {
-        throw new Error('Keyring pair is not set, please call setKeyringPair() first');
+        throw new Error(
+          'Keyring pair is not set, please call setKeyringPair() first',
+        );
       }
       const walletInfo: WalletInfo = {
         coldkey: this.keyringPairInfo.walletColdkey,
@@ -99,7 +102,10 @@ export class Substrate {
       if (!this.walletPath) {
         throw new Error('Wallet path is not set');
       }
-      const correctedWalletPath = this.walletPath.replace('$HOME', process.env.HOME || '');
+      const correctedWalletPath = this.walletPath.replace(
+        '$HOME',
+        process.env.HOME || '',
+      );
       this.keyringPairInfo = await getKeyringPair(
         correctedWalletPath,
         this.walletName,
@@ -116,7 +122,9 @@ export class Substrate {
       this.logger.log(`Connecting to ${this.config.nodeUrl}...`);
 
       await new Promise((resolve) => setTimeout(resolve, 500));
-      this.client = new ApiPromise({ provider: new WsProvider(this.config.nodeUrl) });
+      this.client = new ApiPromise({
+        provider: new WsProvider(this.config.nodeUrl),
+      });
 
       await this.client.isReady;
       this.logger.log('Connected to Substrate node!');
@@ -158,14 +166,17 @@ export class Substrate {
       const methodName: string = method.slice(split + 1);
 
       const runtimeDef: RuntimeApiMetadataV15 | undefined =
-        this.client.runtimeMetadata.asV15.apis.find((api: any) => api.name.toString() === apiName);
+        this.client.runtimeMetadata.asV15.apis.find(
+          (api: any) => api.name.toString() === apiName,
+        );
       if (!runtimeDef) {
         throw new Error(`API ${apiName} not found in runtime metadata`);
       }
 
-      const callDef: RuntimeApiMethodMetadataV15 | undefined = runtimeDef.methods.find(
-        (method: any) => method.name.toString() === methodName,
-      );
+      const callDef: RuntimeApiMethodMetadataV15 | undefined =
+        runtimeDef.methods.find(
+          (method: any) => method.name.toString() === methodName,
+        );
       if (!callDef) {
         throw new Error(`Method ${methodName} not found in API ${apiName}`);
       }
@@ -177,7 +188,10 @@ export class Substrate {
 
       // const paramTypes = callDef.inputs.map((input: any) => input.type);
 
-      const resultBytes: Bytes = await this.client.rpc.state.call(method, params);
+      const resultBytes: Bytes = await this.client.rpc.state.call(
+        method,
+        params,
+      );
 
       const typeDef: string = this.client.registry.createLookupType(outputType);
       try {
@@ -191,22 +205,31 @@ export class Substrate {
     }
   }
 
-  async getSubnetHyperparameters(netuid: number): Promise<SubnetHyperparameters | Error> {
+  async getSubnetHyperparameters(
+    netuid: number,
+  ): Promise<SubnetHyperparameters | Error> {
     try {
       if (!this.client) {
         throw new Error('Client is not connected');
       }
       const runtimeCall: string = 'SubnetInfoRuntimeApi_get_subnet_hyperparams';
-      const encodedParams: Uint8Array = this.client.registry.createType('u16', netuid).toU8a();
+      const encodedParams: Uint8Array = this.client.registry
+        .createType('u16', netuid)
+        .toU8a();
       const hexParams: string = Buffer.from(encodedParams).toString('hex');
 
-      const response = await this.queryRuntimeApi(runtimeCall, '0x' + hexParams);
+      const response = await this.queryRuntimeApi(
+        runtimeCall,
+        '0x' + hexParams,
+      );
 
       const subnetParams: SubnetHyperparameters = response.toJSON();
 
       return subnetParams;
     } catch (error) {
-      throw new Error(`Failed to retrieve subnet hyperparameters: ${error.message}`);
+      throw new Error(
+        `Failed to retrieve subnet hyperparameters: ${error.message}`,
+      );
     }
   }
 
@@ -217,16 +240,23 @@ export class Substrate {
       }
 
       const runtimeCall: string = 'SubnetInfoRuntimeApi_get_metagraph';
-      const encodedParams: Uint8Array = this.client.registry.createType('u16', netuid).toU8a();
+      const encodedParams: Uint8Array = this.client.registry
+        .createType('u16', netuid)
+        .toU8a();
       const hexParams: string = Buffer.from(encodedParams).toString('hex');
 
-      const response = await this.queryRuntimeApi(runtimeCall, '0x' + hexParams);
+      const response = await this.queryRuntimeApi(
+        runtimeCall,
+        '0x' + hexParams,
+      );
 
       const subnetParams: SubnetMetagraph = response.toJSON();
 
       return subnetParams;
     } catch (error) {
-      this.logger.error(`Failed to retrieve subnet metagraph: ${error.message}`);
+      this.logger.error(
+        `Failed to retrieve subnet metagraph: ${error.message}`,
+      );
       throw new Error(`Failed to retrieve subnet metagraph: ${error.message}`);
     }
   }
@@ -239,10 +269,15 @@ export class Substrate {
       }
 
       const runtimeCall: string = 'NeuronInfoRuntimeApi_get_neurons';
-      const encodedParams: Uint8Array = this.client.registry.createType('u16', netuid).toU8a();
+      const encodedParams: Uint8Array = this.client.registry
+        .createType('u16', netuid)
+        .toU8a();
       const hexParams: string = Buffer.from(encodedParams).toString('hex');
 
-      const response = await this.queryRuntimeApi(runtimeCall, '0x' + hexParams);
+      const response = await this.queryRuntimeApi(
+        runtimeCall,
+        '0x' + hexParams,
+      );
 
       const neuronInfo: NeuronInfo[] = response.toJSON();
 
@@ -349,7 +384,11 @@ export class Substrate {
     }
   }
 
-  async checkHotkey(netuid: number, hotkey: string, block?: number): Promise<boolean | Error> {
+  async checkHotkey(
+    netuid: number,
+    hotkey: string,
+    block?: number,
+  ): Promise<boolean | Error> {
     try {
       if (!this.client) {
         throw new Error('Client is not connected');
@@ -362,9 +401,15 @@ export class Substrate {
           throw new Error(`Failed to get block hash: ${getBlockHash.message}`);
         }
         const blockApi = await this.client.at(getBlockHash);
-        response = await blockApi.query.subtensorModule.isNetworkMember(hotkey, netuid);
+        response = await blockApi.query.subtensorModule.isNetworkMember(
+          hotkey,
+          netuid,
+        );
       } else {
-        response = await this.client.query.subtensorModule.isNetworkMember(hotkey, netuid);
+        response = await this.client.query.subtensorModule.isNetworkMember(
+          hotkey,
+          netuid,
+        );
       }
 
       if (response == null) {
@@ -385,7 +430,9 @@ export class Substrate {
         throw new Error('Client is not connected');
       }
       if (!this.keyringPairInfo) {
-        throw new Error('Keyring pair is not set, please call setKeyringPair() first');
+        throw new Error(
+          'Keyring pair is not set, please call setKeyringPair() first',
+        );
       }
 
       const unsub = await this.client.tx.subtensorModule
@@ -395,7 +442,9 @@ export class Substrate {
           console.log(`Result: ${result.toHuman()}`);
           if (result.status.isInBlock) {
           } else if (result.status.isFinalized) {
-            this.logger.log(`Transaction finalized in block: ${result.status.asFinalized}`);
+            this.logger.log(
+              `Transaction finalized in block: ${result.status.asFinalized}`,
+            );
             unsub();
           } else if (result.isError) {
             this.logger.error(`Error: ${result.toHuman()}`);
@@ -425,7 +474,9 @@ export class Substrate {
         throw new Error('Client is not connected');
       }
       if (!this.keyringPairInfo) {
-        throw new Error('Keyring pair is not set, please call setKeyringPair() first');
+        throw new Error(
+          'Keyring pair is not set, please call setKeyringPair() first',
+        );
       }
 
       const axonTx = this.client.tx.subtensorModule.serveAxon(
@@ -446,14 +497,21 @@ export class Substrate {
     }
   }
 
-  async setWeights(netuid: number, dests: number[], weights: number[], versionKey: number) {
+  async setWeights(
+    netuid: number,
+    dests: number[],
+    weights: number[],
+    versionKey: number,
+  ) {
     try {
       if (!this.client) {
         throw new Error('Client is not connected');
       }
 
       if (!this.keyringPairInfo) {
-        throw new Error('Keyring pair is not set, please call setKeyringPair() first');
+        throw new Error(
+          'Keyring pair is not set, please call setKeyringPair() first',
+        );
       }
 
       const setWeightsTx = this.client.tx.subtensorModule.setWeights(
@@ -463,7 +521,9 @@ export class Substrate {
         versionKey,
       );
 
-      const result = await setWeightsTx.signAndSend(this.keyringPairInfo.keyringPair);
+      const result = await setWeightsTx.signAndSend(
+        this.keyringPairInfo.keyringPair,
+      );
 
       return result.toJSON();
     } catch (error) {

@@ -11,7 +11,13 @@ import {
   Query,
   ClassSerializerInterceptor,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiParam, ApiResponse, ApiBody } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiBody,
+} from '@nestjs/swagger';
 import { ChainService } from './chain.service';
 import { ChainException } from './chain.exceptions';
 import { TransformInterceptor } from '../../commons/common-response.dto';
@@ -19,7 +25,10 @@ import {
   AxonCallParams,
   SetWeightsCallParams,
 } from '../../substrate/substrate.call-params.interface';
-import { SubnetHyperparamsDto, SubnetHyperparamsResponseDto } from '../dto/subnet-hyperparams.dto';
+import {
+  SubnetHyperparamsDto,
+  SubnetHyperparamsResponseDto,
+} from '../dto/subnet-hyperparams.dto';
 import { SubnetMetagraphMapper } from '../mappers/subnet-metagraph.mapper';
 import { SubnetMetagraph } from 'src/substrate/substrate.interface';
 
@@ -30,7 +39,7 @@ import { SubnetMetagraph } from 'src/substrate/substrate.interface';
 export class ChainController {
   constructor(
     private readonly chainService: ChainService,
-    private readonly subnetMetagraphMapper: SubnetMetagraphMapper
+    private readonly subnetMetagraphMapper: SubnetMetagraphMapper,
   ) {}
 
   @Get('neurons/:netuid')
@@ -41,10 +50,14 @@ export class ChainController {
   ) {
     try {
       if (hotkey) {
-        const neurons = await this.chainService.retrieveNeurons(netuid, { hotkey: true });
+        const neurons = await this.chainService.retrieveNeurons(netuid, {
+          hotkey: true,
+        });
         return neurons;
       } else if (axon) {
-        const neurons = await this.chainService.retrieveNeurons(netuid, { axon: true });
+        const neurons = await this.chainService.retrieveNeurons(netuid, {
+          axon: true,
+        });
         return neurons;
       }
 
@@ -61,7 +74,8 @@ export class ChainController {
   @Get('subnet-hyperparameters/:netuid')
   @ApiOperation({
     summary: 'Get subnet hyperparameters',
-    description: 'Retrieves all hyperparameters for a specific subnet identified by netuid',
+    description:
+      'Retrieves all hyperparameters for a specific subnet identified by netuid',
   })
   @ApiParam({
     name: 'netuid',
@@ -91,7 +105,8 @@ export class ChainController {
     @Param() params: SubnetHyperparamsDto,
   ): Promise<SubnetHyperparamsResponseDto> {
     try {
-      const subnetHyperparams = await this.chainService.getSubnetHyperparameters(params.netuid);
+      const subnetHyperparams =
+        await this.chainService.getSubnetHyperparameters(params.netuid);
       return subnetHyperparams as SubnetHyperparamsResponseDto;
     } catch (error) {
       if (error instanceof ChainException) {
@@ -104,7 +119,8 @@ export class ChainController {
   @Get('subnet-metagraph/:netuid')
   async getSubnetMetagraph(@Param('netuid') netuid: number) {
     try {
-      const subnetMetagraph = await this.chainService.getSubnetMetagraph(netuid);
+      const subnetMetagraph =
+        await this.chainService.getSubnetMetagraph(netuid);
       if (subnetMetagraph instanceof Error) {
         throw subnetMetagraph;
       }
@@ -177,11 +193,18 @@ export class ChainController {
   ) {
     try {
       if (!netuid || !hotkey) {
-        throw new ChainException('netuid and hotkey are required', HttpStatus.BAD_REQUEST);
+        throw new ChainException(
+          'netuid and hotkey are required',
+          HttpStatus.BAD_REQUEST,
+        );
       }
       let isHotkeyValid: boolean | Error = false;
       if (block) {
-        isHotkeyValid = await this.chainService.checkHotkey(netuid, hotkey, block);
+        isHotkeyValid = await this.chainService.checkHotkey(
+          netuid,
+          hotkey,
+          block,
+        );
         return { isHotkeyValid };
       } else {
         isHotkeyValid = await this.chainService.checkHotkey(netuid, hotkey);
