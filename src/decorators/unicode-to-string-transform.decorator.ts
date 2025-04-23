@@ -2,15 +2,15 @@ import { Transform } from 'class-transformer';
 import { unicodeCodePointsToString } from '@app/utils';
 
 /**
- * Transforms a hex string (0x-prefixed) to a regular UTF-8 string
- * Use this decorator on DTO properties to automatically convert hex values to human-readable strings
+ * Transforms an array of Unicode code points to a readable string
+ * Use this decorator on DTO properties that contain Unicode code point arrays
  *
  * @example
  * @Expose()
  * @UnicodeToString()
- * subnetName: string;
+ * name: number[]; // [72, 101, 108, 108, 111] will be transformed to "Hello"
  *
- * @returns Property decorator that transforms hex strings to UTF-8 strings
+ * @returns Property decorator that converts Unicode code point arrays to human-readable strings
  */
 export function UnicodeToString() {
   return Transform(({ value }) => unicodeCodePointsToString(value));

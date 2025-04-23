@@ -2,15 +2,15 @@ import { Transform } from 'class-transformer';
 import { intToIp } from '@app/utils';
 
 /**
- * Transforms a hex string (0x-prefixed) to a regular UTF-8 string
- * Use this decorator on DTO properties to automatically convert hex values to human-readable strings
+ * Transforms a numeric IP representation to a human-readable IP address string
+ * Uses the ipType value to determine whether to format as IPv4 or IPv6
  *
  * @example
  * @Expose()
  * @IpToString()
- * subnetName: string;
+ * ip: number; // Will be transformed to a string like "192.168.1.1" or IPv6 equivalent
  *
- * @returns Property decorator that transforms hex strings to UTF-8 strings
+ * @returns Property decorator that converts numeric IP values to formatted address strings
  */
 export function IpToString() {
   return Transform(({ value, obj }) => intToIp(value, obj.ipType));
