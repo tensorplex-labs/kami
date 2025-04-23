@@ -138,7 +138,7 @@ export interface SubnetMetagraph {
     subnetUrl: string;
     discord: string;
     description: string;
-    additional: string;  
+    additional: string;
   };
   networkRegisteredAt: number;
   ownerHotkey: string;
@@ -191,7 +191,7 @@ export interface SubnetMetagraph {
   alphaLow: number;
   bondsMovingAvg: number;
   hotkeys: string[];
-  coldkeys: string[]; 
+  coldkeys: string[];
   identities: IdentitiesInfo[];
   axons: AxonInfo[];
   active: boolean[];
@@ -219,7 +219,7 @@ export interface IdentitiesInfo {
   image: string;
   discord: string;
   description: string;
-  additional: string;  
+  additional: string;
 }
 
 export interface TotalNetworksInfo {
