@@ -18,6 +18,7 @@ import { ChainException } from './chain.exceptions';
 import { TransformInterceptor } from '../../commons/common-response.dto';
 import {
   AxonCallParams,
+  CommitRevealWeightsCallParams,
   SetWeightsCallParams,
 } from '../../substrate/substrate.call-params.interface';
 import { SubnetHyperparamsDto, SubnetHyperparamsResponseDto } from '../dto/subnet-hyperparams.dto';
@@ -223,6 +224,24 @@ export class ChainController {
       }
       this.logger.log(`Setting weights with params: ${JSON.stringify(callParams)}`);
       const result = await this.chainService.setWeights(callParams);
+      return result;
+    } catch (error) {
+      this.logger.error(`Error setting weights: ${error.message}`);
+      if (error instanceof ChainException) {
+        throw error;
+      }
+      throw new ChainException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+  @Post('set-commit-reveal-weights')
+  @HttpCode(HttpStatus.CREATED)
+  async setCommitRevealWeights(@Body(ValidationPipe) callParams: CommitRevealWeightsCallParams) {
+    try {
+      if (!callParams) {
+        throw new ChainException('SetWeightsCallParams is required', HttpStatus.BAD_REQUEST);
+      }
+      this.logger.log(`Setting weights with params: ${JSON.stringify(callParams)}`);
+      const result = await this.chainService.setCommitRevealWeights(callParams);
       return result;
     } catch (error) {
       this.logger.error(`Error setting weights: ${error.message}`);
