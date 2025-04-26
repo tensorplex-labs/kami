@@ -1,12 +1,7 @@
 import { Injectable } from '@nestjs/common';
 
 import { SubnetMetagraph } from 'src/substrate/substrate.interface';
-import {
-  SubnetMetagraphDto,
-  SubnetIdentityDto,
-  IdentitiesInfoDto,
-  AxonInfoDto,
-} from '../dto';
+import { SubnetMetagraphDto, SubnetIdentityDto, IdentitiesInfoDto, AxonInfoDto } from '../dto';
 
 @Injectable()
 export class SubnetMetagraphMapper {
@@ -15,15 +10,25 @@ export class SubnetMetagraphMapper {
       netuid: subnetMetagraph.netuid,
       name: subnetMetagraph.name,
       symbol: subnetMetagraph.symbol,
-      identity: new SubnetIdentityDto({
-        subnetName: subnetMetagraph.identity.subnetName,
-        githubRepo: subnetMetagraph.identity.githubRepo,
-        subnetContact: subnetMetagraph.identity.subnetContact,
-        subnetUrl: subnetMetagraph.identity.subnetUrl,
-        discord: subnetMetagraph.identity.discord,
-        description: subnetMetagraph.identity.description,
-        additional: subnetMetagraph.identity.additional,
-      }),
+      identity: subnetMetagraph.identity // this will check if identity is null or not, if it is null, it will assign an empty string
+        ? new SubnetIdentityDto({
+            subnetName: subnetMetagraph.identity.subnetName,
+            githubRepo: subnetMetagraph.identity.githubRepo,
+            subnetContact: subnetMetagraph.identity.subnetContact,
+            subnetUrl: subnetMetagraph.identity.subnetUrl,
+            discord: subnetMetagraph.identity.discord,
+            description: subnetMetagraph.identity.description,
+            additional: subnetMetagraph.identity.additional,
+          })
+        : new SubnetIdentityDto({
+            subnetName: '',
+            githubRepo: '',
+            subnetContact: '',
+            subnetUrl: '',
+            discord: '',
+            description: '',
+            additional: '',
+          }),
       networkRegisteredAt: subnetMetagraph.networkRegisteredAt,
       ownerHotkey: subnetMetagraph.ownerHotkey,
       ownerColdkey: subnetMetagraph.ownerColdkey,
@@ -114,12 +119,14 @@ export class SubnetMetagraphMapper {
       alphaStake: subnetMetagraph.alphaStake,
       taoStake: subnetMetagraph.taoStake,
       totalStake: subnetMetagraph.totalStake,
-      taoDividendsPerHotkey: subnetMetagraph.taoDividendsPerHotkey.map(
-        ([hotkey, amount]) => [hotkey, amount / 1_000_000_000],
-      ),
-      alphaDividendsPerHotkey: subnetMetagraph.alphaDividendsPerHotkey.map(
-        ([hotkey, amount]) => [hotkey, amount / 1_000_000_000],
-      ),
+      taoDividendsPerHotkey: subnetMetagraph.taoDividendsPerHotkey.map(([hotkey, amount]) => [
+        hotkey,
+        amount / 1_000_000_000,
+      ]),
+      alphaDividendsPerHotkey: subnetMetagraph.alphaDividendsPerHotkey.map(([hotkey, amount]) => [
+        hotkey,
+        amount / 1_000_000_000,
+      ]),
     });
   }
 }

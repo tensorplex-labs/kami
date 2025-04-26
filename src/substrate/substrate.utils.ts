@@ -11,8 +11,8 @@ export async function getKeyringPair(
   walletHotkey: string | undefined,
 ): Promise<KeyringPairInfo> {
   try {
-    const coldkeyPath = `${walletPath}/${walletName}/coldkeypub.txt`;
-    const hotkeyPath = `${walletPath}/${walletName}/hotkeys/${walletHotkey}`;
+    const coldkeyPath = `${walletPath}/wallets/${walletName}/coldkeypub.txt`;
+    const hotkeyPath = `${walletPath}/wallets/${walletName}/hotkeys/${walletHotkey}`;
 
     await fs.promises.access(coldkeyPath, fs.constants.R_OK);
     await fs.promises.access(hotkeyPath, fs.constants.R_OK);
@@ -33,9 +33,7 @@ export async function getKeyringPair(
     }
 
     const keyring: Keyring = new Keyring({ type: 'sr25519' });
-    const hotkey: KeyringPair = keyring.addFromMnemonic(
-      hotkeyJsonContent.secretPhrase,
-    );
+    const hotkey: KeyringPair = keyring.addFromMnemonic(hotkeyJsonContent.secretPhrase);
 
     return {
       keyringPair: hotkey,
@@ -49,10 +47,7 @@ export async function getKeyringPair(
   }
 }
 
-export async function intToIp(
-  ip: number | string,
-  type: number,
-): Promise<string> {
+export async function intToIp(ip: number | string, type: number): Promise<string> {
   try {
     if (type === 4) {
       const ipVal = Address4.fromBigInt(BigInt(ip));
