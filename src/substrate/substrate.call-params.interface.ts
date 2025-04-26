@@ -15,3 +15,9 @@ export interface SetWeightsCallParams {
   weights: number[];
   versionKey: number;
 }
+
+export interface CommitRevealWeightsCallParams {
+  netuid: number;
+  commit: string;
+  revealRound: number;
+}
