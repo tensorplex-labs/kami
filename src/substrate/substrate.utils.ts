@@ -14,8 +14,8 @@ export async function getKeyringPair(
   walletHotkey: string | undefined,
 ): Promise<KeyringPairInfo> {
   try {
-    const coldkeyPath = `${walletPath}/${walletName}/coldkeypub.txt`;
-    const hotkeyPath = `${walletPath}/${walletName}/hotkeys/${walletHotkey}`;
+    const coldkeyPath = `${walletPath}/wallets/${walletName}/coldkeypub.txt`;
+    const hotkeyPath = `${walletPath}/wallets/${walletName}/hotkeys/${walletHotkey}`;
 
     await fs.promises.access(coldkeyPath, fs.constants.R_OK);
     await fs.promises.access(hotkeyPath, fs.constants.R_OK);

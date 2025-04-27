@@ -3,6 +3,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Substrate } from '../../substrate/substrate';
 import {
   AxonCallParams,
+  CommitRevealWeightsCallParams,
   SetWeightsCallParams,
 } from '../../substrate/substrate.call-params.interface';
 import {
@@ -246,6 +247,19 @@ export class ChainService {
       const { netuid, dests, weights, versionKey } = CallParams;
 
       const result = await this.substrate.setWeights(netuid, dests, weights, versionKey);
+
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async setCommitRevealWeights(CallParams: CommitRevealWeightsCallParams): Promise<any | Error> {
+    try {
+      await this.ensureConnection();
+      const { netuid, commit, revealRound } = CallParams;
+
+      const result = await this.substrate.setCommitRevealWeights(netuid, commit, revealRound);
 
       return result;
     } catch (error) {

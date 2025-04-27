@@ -473,7 +473,34 @@ export class Substrate {
 
       return result.toJSON();
     } catch (error) {
-      this.handleSubtensorError(error);
+      throw this.handleSubtensorError(error);
+    }
+  }
+  async setCommitRevealWeights(
+    netuid: number,
+    commit: string,
+    revealRound: number,
+  ): Promise<string | Error> {
+    try {
+      if (!this.client) {
+        throw new Error('Client is not connected');
+      }
+
+      if (!this.keyringPairInfo) {
+        throw new Error('Keyring pair is not set, please call setKeyringPair() first');
+      }
+
+      const setWeightsTx = this.client.tx.subtensorModule.commitCrv3Weights(
+        netuid,
+        commit,
+        revealRound,
+      );
+
+      const result = await setWeightsTx.signAndSend(this.keyringPairInfo.keyringPair);
+
+      return result.toJSON();
+    } catch (error) {
+      throw this.handleSubtensorError(error);
     }
   }
 }

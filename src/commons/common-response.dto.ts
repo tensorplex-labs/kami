@@ -5,10 +5,8 @@ import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nes
 
 export interface Response<T> {
   statusCode: number;
-  message: string;
+  success: boolean;
   data?: T | null;
-  error?: string | null;
-  reqId?: string;
 }
 @Injectable()
 export class TransformInterceptor<T> implements NestInterceptor<T, Response<T>> {
@@ -18,17 +16,14 @@ export class TransformInterceptor<T> implements NestInterceptor<T, Response<T>> 
         if (data && data.statusCode && data.statusCode >= 400) {
           return {
             statusCode: data.statusCode,
-            reqId: context.switchToHttp().getRequest().reqId,
-            message: data.message || 'Error occurred',
-            error: data.error,
-            data: null,
+            success: false,
+            data: data,
           };
         }
 
         return {
           statusCode: 200,
-          reqId: context.switchToHttp().getRequest().reqId,
-          message: data.message || 'success',
+          success: true,
           data: data,
         };
       }),

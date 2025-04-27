@@ -5,6 +5,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Logger,
   Param,
   Post,
   Query,
@@ -26,6 +27,7 @@ import {
 import { TransformInterceptor } from '../../commons/common-response.dto';
 import {
   AxonCallParams,
+  CommitRevealWeightsCallParams,
   SetWeightsCallParams,
 } from '../../substrate/substrate.call-params.interface';
 import { SubnetHyperparamsDto, SubnetHyperparamsResponseDto } from '../dto/subnet-hyperparams.dto';
@@ -42,6 +44,7 @@ export class ChainController {
   constructor(
     private readonly chainService: ChainService,
     private readonly subnetMetagraphMapper: SubnetMetagraphMapper,
+    private readonly logger: Logger,
   ) {}
 
   @Get('subnet-hyperparameters/:netuid')
@@ -73,9 +76,11 @@ export class ChainController {
     @Param() params: SubnetHyperparamsDto,
   ): Promise<SubnetHyperparamsResponseDto> {
     try {
+      this.logger.log(`Fetching subnet hyperparameters for netuid: ${params.netuid}`);
       const subnetHyperparams = await this.chainService.getSubnetHyperparameters(params.netuid);
       return subnetHyperparams as SubnetHyperparamsResponseDto;
     } catch (error) {
+      this.logger.error(`Error fetching subnet hyperparameters: ${error.message}`);
       if (error instanceof ChainException) {
         throw error;
       }
@@ -110,12 +115,20 @@ export class ChainController {
   })
   async getSubnetMetagraph(@Param('netuid') netuid: number) {
     try {
+      if (!netuid) {
+        throw new ChainException('netuid is required', HttpStatus.BAD_REQUEST);
+      }
+      this.logger.log(`Fetching subnet metagraph for netuid: ${netuid}`);
       const subnetMetagraph = await this.chainService.getSubnetMetagraph(netuid);
       if (subnetMetagraph instanceof Error) {
         throw subnetMetagraph;
       }
+      if (!subnetMetagraph) {
+        throw new ChainException('Subnet metagraph not found', HttpStatus.NOT_FOUND);
+      }
       return this.subnetMetagraphMapper.toDto(subnetMetagraph);
     } catch (error) {
+      this.logger.error(`Error fetching subnet metagraph: ${error.message}`);
       if (error instanceof ChainException) {
         throw error;
       }
@@ -126,9 +139,11 @@ export class ChainController {
   @Get('total-networks')
   async getTotalNetworks() {
     try {
+      this.logger.log('Fetching total networks');
       const totalNetworks = await this.chainService.getTotalNetworks();
       return totalNetworks;
     } catch (error) {
+      this.logger.error(`Error fetching total networks: ${error.message}`);
       if (error instanceof ChainException) {
         throw error;
       }
@@ -139,9 +154,11 @@ export class ChainController {
   @Get('latest-block')
   async getLatestBlock() {
     try {
+      this.logger.log('Fetching latest block');
       const block = await this.chainService.getLatestBlock();
       return block;
     } catch (error) {
+      this.logger.error(`Error fetching latest block: ${error.message}`);
       if (error instanceof ChainException) {
         throw error;
       }
@@ -152,9 +169,14 @@ export class ChainController {
   @Get('nonce/:walletAddress')
   async getNonce(@Param('walletAddress') walletAddress: string) {
     try {
+      if (!walletAddress) {
+        throw new ChainException('walletAddress is required', HttpStatus.BAD_REQUEST);
+      }
+      this.logger.log(`Fetching nonce for wallet address: ${walletAddress}`);
       const nonce = await this.chainService.getNonce(walletAddress);
       return nonce;
     } catch (error) {
+      this.logger.error(`Error fetching nonce: ${error.message}`);
       if (error instanceof ChainException) {
         throw error;
       }
@@ -165,9 +187,11 @@ export class ChainController {
   @Get('current-wallet-info')
   async getCurrentWalletinfo() {
     try {
+      this.logger.log('Fetching current wallet info');
       const walletInfo = await this.chainService.getCurrentWalletInfo();
       return walletInfo;
     } catch (error) {
+      this.logger.error(`Error fetching current wallet info: ${error.message}`);
       if (error instanceof ChainException) {
         throw error;
       }
@@ -185,6 +209,8 @@ export class ChainController {
       if (!netuid || !hotkey) {
         throw new ChainException('netuid and hotkey are required', HttpStatus.BAD_REQUEST);
       }
+      this.logger.log(`Checking hotkey for netuid: ${netuid}, hotkey: ${hotkey}`);
+
       let isHotkeyValid: boolean | Error = false;
       if (block) {
         isHotkeyValid = await this.chainService.checkHotkey(netuid, hotkey, block);
@@ -194,6 +220,7 @@ export class ChainController {
       }
       return { isHotkeyValid };
     } catch (error) {
+      this.logger.error(`Error checking hotkey: ${error.message}`);
       if (error instanceof ChainException) {
         throw error;
       }
@@ -205,9 +232,14 @@ export class ChainController {
   @HttpCode(HttpStatus.CREATED)
   async serveAxon(@Body(ValidationPipe) callParams: AxonCallParams) {
     try {
+      if (!callParams) {
+        throw new ChainException('AxonCallParams is required', HttpStatus.BAD_REQUEST);
+      }
+      this.logger.log(`Serving axon with params: ${JSON.stringify(callParams)}`);
       const result = await this.chainService.serveAxon(callParams);
       return result;
     } catch (error) {
+      this.logger.error(`Error serving axon: ${error.message}`);
       if (error instanceof ChainException) {
         throw error;
       }
@@ -219,9 +251,32 @@ export class ChainController {
   @HttpCode(HttpStatus.CREATED)
   async setWeights(@Body(ValidationPipe) callParams: SetWeightsCallParams) {
     try {
+      if (!callParams) {
+        throw new ChainException('SetWeightsCallParams is required', HttpStatus.BAD_REQUEST);
+      }
+      this.logger.log(`Setting weights with params: ${JSON.stringify(callParams)}`);
       const result = await this.chainService.setWeights(callParams);
       return result;
     } catch (error) {
+      this.logger.error(`Error setting weights: ${error.message}`);
+      if (error instanceof ChainException) {
+        throw error;
+      }
+      throw new ChainException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+  @Post('set-commit-reveal-weights')
+  @HttpCode(HttpStatus.CREATED)
+  async setCommitRevealWeights(@Body(ValidationPipe) callParams: CommitRevealWeightsCallParams) {
+    try {
+      if (!callParams) {
+        throw new ChainException('SetWeightsCallParams is required', HttpStatus.BAD_REQUEST);
+      }
+      this.logger.log(`Setting weights with params: ${JSON.stringify(callParams)}`);
+      const result = await this.chainService.setCommitRevealWeights(callParams);
+      return result;
+    } catch (error) {
+      this.logger.error(`Error setting weights: ${error.message}`);
       if (error instanceof ChainException) {
         throw error;
       }
