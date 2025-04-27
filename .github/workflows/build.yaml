@@ -117,4 +117,4 @@ jobs:
       packages: write
     needs:
       - build_ui
-      - build_docs
+      # - build_docs
