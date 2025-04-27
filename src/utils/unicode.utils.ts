@@ -4,5 +4,5 @@
  * @returns The decoded string
  */
 export function unicodeCodePointsToString(codePoints: number[]): string {
-  return codePoints.map((cp) => String.fromCodePoint(cp)).join('');
+  return codePoints.map(cp => String.fromCodePoint(cp)).join('');
 }

@@ -1,10 +1,7 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
 
 export class ChainException extends HttpException {
-  constructor(
-    message: string,
-    statusCode: HttpStatus = HttpStatus.BAD_REQUEST,
-  ) {
+  constructor(message: string, statusCode: HttpStatus = HttpStatus.BAD_REQUEST) {
     super(
       {
         statusCode,

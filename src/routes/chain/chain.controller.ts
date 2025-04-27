@@ -1,35 +1,38 @@
 import {
-  HttpStatus,
-  HttpCode,
-  ValidationPipe,
+  Body,
+  ClassSerializerInterceptor,
   Controller,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
-  UseInterceptors,
   Post,
-  Body,
   Query,
-  ClassSerializerInterceptor,
+  UseInterceptors,
+  ValidationPipe,
 } from '@nestjs/common';
 import {
-  ApiTags,
+  ApiBadRequestResponse,
+  ApiBody,
+  ApiInternalServerErrorResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
   ApiOperation,
   ApiParam,
   ApiResponse,
-  ApiBody,
+  ApiTags,
 } from '@nestjs/swagger';
-import { ChainService } from './chain.service';
-import { ChainException } from './chain.exceptions';
+
 import { TransformInterceptor } from '../../commons/common-response.dto';
 import {
   AxonCallParams,
   SetWeightsCallParams,
 } from '../../substrate/substrate.call-params.interface';
-import {
-  SubnetHyperparamsDto,
-  SubnetHyperparamsResponseDto,
-} from '../dto/subnet-hyperparams.dto';
+import { SubnetHyperparamsDto, SubnetHyperparamsResponseDto } from '../dto/subnet-hyperparams.dto';
+import { SubnetMetagraphDto } from '../dto/subnet-metagraph.dto';
 import { SubnetMetagraphMapper } from '../mappers/subnet-metagraph.mapper';
+import { ChainException } from './chain.exceptions';
+import { ChainService } from './chain.service';
 
 @ApiTags('chain')
 @Controller('chain')
@@ -43,40 +46,34 @@ export class ChainController {
 
   @Get('subnet-hyperparameters/:netuid')
   @ApiOperation({
-    summary: 'Get subnet hyperparameters',
-    description:
-      'Retrieves all hyperparameters for a specific subnet identified by netuid',
+    summary: 'Get subnet hyperparameters by subnet netuid',
+    description: 'Retrieves all hyperparameters for a specific subnet identified by netuid',
   })
   @ApiParam({
     name: 'netuid',
-    description: 'Network UID identifying the subnet',
+    description: 'Subnet UID',
     type: 'number',
     example: 1,
     required: true,
   })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Subnet hyperparameters retrieved successfully',
     type: SubnetHyperparamsResponseDto,
   })
-  @ApiResponse({
-    status: 400,
+  @ApiBadRequestResponse({
     description: 'Invalid netuid parameter',
   })
-  @ApiResponse({
-    status: 404,
+  @ApiNotFoundResponse({
     description: 'Subnet not found',
   })
-  @ApiResponse({
-    status: 500,
+  @ApiInternalServerErrorResponse({
     description: 'Internal server error during blockchain communication',
   })
   async getSubnetHyperparams(
     @Param() params: SubnetHyperparamsDto,
   ): Promise<SubnetHyperparamsResponseDto> {
     try {
-      const subnetHyperparams =
-        await this.chainService.getSubnetHyperparameters(params.netuid);
+      const subnetHyperparams = await this.chainService.getSubnetHyperparameters(params.netuid);
       return subnetHyperparams as SubnetHyperparamsResponseDto;
     } catch (error) {
       if (error instanceof ChainException) {
@@ -87,10 +84,33 @@ export class ChainController {
   }
 
   @Get('subnet-metagraph/:netuid')
+  @ApiOperation({
+    summary: 'Get subnet metagraph by subnet netuid',
+    description: 'Retrieves the metagraph for a specific subnet',
+  })
+  @ApiParam({
+    name: 'netuid',
+    description: 'Subnet UID',
+    type: 'number',
+    example: 1,
+    required: true,
+  })
+  @ApiOkResponse({
+    description: 'Subnet metagraph retrieved successfully',
+    type: SubnetMetagraphDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid netuid parameter',
+  })
+  @ApiNotFoundResponse({
+    description: 'Subnet not found',
+  })
+  @ApiInternalServerErrorResponse({
+    description: 'Internal server error during blockchain communication',
+  })
   async getSubnetMetagraph(@Param('netuid') netuid: number) {
     try {
-      const subnetMetagraph =
-        await this.chainService.getSubnetMetagraph(netuid);
+      const subnetMetagraph = await this.chainService.getSubnetMetagraph(netuid);
       if (subnetMetagraph instanceof Error) {
         throw subnetMetagraph;
       }
@@ -163,18 +183,11 @@ export class ChainController {
   ) {
     try {
       if (!netuid || !hotkey) {
-        throw new ChainException(
-          'netuid and hotkey are required',
-          HttpStatus.BAD_REQUEST,
-        );
+        throw new ChainException('netuid and hotkey are required', HttpStatus.BAD_REQUEST);
       }
       let isHotkeyValid: boolean | Error = false;
       if (block) {
-        isHotkeyValid = await this.chainService.checkHotkey(
-          netuid,
-          hotkey,
-          block,
-        );
+        isHotkeyValid = await this.chainService.checkHotkey(netuid, hotkey, block);
         return { isHotkeyValid };
       } else {
         isHotkeyValid = await this.chainService.checkHotkey(netuid, hotkey);

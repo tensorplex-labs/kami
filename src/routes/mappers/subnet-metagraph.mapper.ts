@@ -1,12 +1,8 @@
+import { SubnetMetagraph } from 'src/substrate/substrate.interface';
+
 import { Injectable } from '@nestjs/common';
 
-import { SubnetMetagraph } from 'src/substrate/substrate.interface';
-import {
-  SubnetMetagraphDto,
-  SubnetIdentityDto,
-  IdentitiesInfoDto,
-  AxonInfoDto,
-} from '../dto';
+import { AxonInfoDto, IdentitiesInfoDto, SubnetIdentityDto, SubnetMetagraphDto } from '../dto';
 
 @Injectable()
 export class SubnetMetagraphMapper {
@@ -74,7 +70,7 @@ export class SubnetMetagraphMapper {
       bondsMovingAvg: subnetMetagraph.bondsMovingAvg,
       hotkeys: subnetMetagraph.hotkeys,
       coldkeys: subnetMetagraph.coldkeys,
-      identities: subnetMetagraph.identities.map((identity) =>
+      identities: subnetMetagraph.identities.map(identity =>
         identity
           ? new IdentitiesInfoDto({
               name: identity.name,
@@ -88,7 +84,7 @@ export class SubnetMetagraphMapper {
           : null,
       ),
       axons: subnetMetagraph.axons.map(
-        (axon) =>
+        axon =>
           new AxonInfoDto({
             block: axon.block,
             version: axon.version,
@@ -114,12 +110,14 @@ export class SubnetMetagraphMapper {
       alphaStake: subnetMetagraph.alphaStake,
       taoStake: subnetMetagraph.taoStake,
       totalStake: subnetMetagraph.totalStake,
-      taoDividendsPerHotkey: subnetMetagraph.taoDividendsPerHotkey.map(
-        ([hotkey, amount]) => [hotkey, amount / 1_000_000_000],
-      ),
-      alphaDividendsPerHotkey: subnetMetagraph.alphaDividendsPerHotkey.map(
-        ([hotkey, amount]) => [hotkey, amount / 1_000_000_000],
-      ),
+      taoDividendsPerHotkey: subnetMetagraph.taoDividendsPerHotkey.map(([hotkey, amount]) => [
+        hotkey,
+        amount / 1_000_000_000,
+      ]),
+      alphaDividendsPerHotkey: subnetMetagraph.alphaDividendsPerHotkey.map(([hotkey, amount]) => [
+        hotkey,
+        amount / 1_000_000_000,
+      ]),
     });
   }
 }

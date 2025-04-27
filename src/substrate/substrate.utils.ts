@@ -1,9 +1,12 @@
 import * as fs from 'fs';
+import { Address4, Address6 } from 'ip-address';
+
 import { Logger } from '@nestjs/common';
+
 import { Keyring } from '@polkadot/keyring';
 import { KeyringPair } from '@polkadot/keyring/types';
+
 import { KeyringPairInfo } from './substrate.interface';
-import { Address4, Address6 } from 'ip-address';
 
 export async function getKeyringPair(
   walletPath: string | undefined,
@@ -33,9 +36,7 @@ export async function getKeyringPair(
     }
 
     const keyring: Keyring = new Keyring({ type: 'sr25519' });
-    const hotkey: KeyringPair = keyring.addFromMnemonic(
-      hotkeyJsonContent.secretPhrase,
-    );
+    const hotkey: KeyringPair = keyring.addFromMnemonic(hotkeyJsonContent.secretPhrase);
 
     return {
       keyringPair: hotkey,
@@ -49,10 +50,7 @@ export async function getKeyringPair(
   }
 }
 
-export async function intToIp(
-  ip: number | string,
-  type: number,
-): Promise<string> {
+export async function intToIp(ip: number | string, type: number): Promise<string> {
   try {
     if (type === 4) {
       const ipVal = Address4.fromBigInt(BigInt(ip));

@@ -1,5 +1,5 @@
-import { Transform } from 'class-transformer';
 import { utf16ToUtf8String } from '@app/utils';
+import { Transform } from 'class-transformer';
 
 /**
  * Transforms an array of UTF-16 code units to a UTF-8 string

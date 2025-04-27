@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
+
+import { SubnetMetagraphMapper } from '../mappers/subnet-metagraph.mapper';
 import { ChainController } from './chain.controller';
 import { ChainService } from './chain.service';
-import { SubnetMetagraphMapper } from '../mappers/subnet-metagraph.mapper';
 
 @Module({
   controllers: [ChainController],
