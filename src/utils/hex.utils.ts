@@ -7,9 +7,7 @@
  * @param hexString - Hex string in the format "0x..."
  * @returns Decoded UTF-8 string or empty string if invalid
  */
-export function hexToString(
-  hexString: `0x${string}` | string | null | undefined,
-): string {
+export function hexToString(hexString: `0x${string}` | string | null | undefined): string {
   if (!hexString) return '';
 
   // Validate the hex string format
@@ -26,9 +24,7 @@ export function hexToString(
     // Convert hex to buffer and then to UTF-8 string
     const bytes = Buffer.from(hexWithoutPrefix, 'hex');
     // Filter out non-printable characters and null bytes
-    const filtered = Buffer.from(
-      bytes.filter((byte) => byte >= 32 && byte <= 126),
-    );
+    const filtered = Buffer.from(bytes.filter(byte => byte >= 32 && byte <= 126));
 
     return filtered.toString('utf8');
   } catch (error) {

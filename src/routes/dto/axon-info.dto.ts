@@ -1,5 +1,5 @@
-import { Expose } from 'class-transformer';
 import { IpToString } from '@app/decorators';
+import { Expose } from 'class-transformer';
 
 export class AxonInfoDto {
   @Expose()

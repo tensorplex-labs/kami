@@ -1,20 +1,29 @@
 import {
-  HttpStatus,
-  HttpCode,
-  ValidationPipe,
+  Body,
+  ClassSerializerInterceptor,
   Controller,
   Get,
-  Param,
-  UseInterceptors,
-  Post,
-  Body,
-  Query,
-  ClassSerializerInterceptor,
+  HttpCode,
+  HttpStatus,
   Logger,
+  Param,
+  Post,
+  Query,
+  UseInterceptors,
+  ValidationPipe,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiParam, ApiResponse, ApiBody } from '@nestjs/swagger';
-import { ChainService } from './chain.service';
-import { ChainException } from './chain.exceptions';
+import {
+  ApiBadRequestResponse,
+  ApiBody,
+  ApiInternalServerErrorResponse,
+  ApiNotFoundResponse,
+  ApiOkResponse,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
+
 import { TransformInterceptor } from '../../commons/common-response.dto';
 import {
   AxonCallParams,
@@ -22,7 +31,10 @@ import {
   SetWeightsCallParams,
 } from '../../substrate/substrate.call-params.interface';
 import { SubnetHyperparamsDto, SubnetHyperparamsResponseDto } from '../dto/subnet-hyperparams.dto';
+import { SubnetMetagraphDto } from '../dto/subnet-metagraph.dto';
 import { SubnetMetagraphMapper } from '../mappers/subnet-metagraph.mapper';
+import { ChainException } from './chain.exceptions';
+import { ChainService } from './chain.service';
 
 @ApiTags('chain')
 @Controller('chain')
@@ -37,31 +49,27 @@ export class ChainController {
 
   @Get('subnet-hyperparameters/:netuid')
   @ApiOperation({
-    summary: 'Get subnet hyperparameters',
+    summary: 'Get subnet hyperparameters by subnet netuid',
     description: 'Retrieves all hyperparameters for a specific subnet identified by netuid',
   })
   @ApiParam({
     name: 'netuid',
-    description: 'Network UID identifying the subnet',
+    description: 'Subnet UID',
     type: 'number',
     example: 1,
     required: true,
   })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Subnet hyperparameters retrieved successfully',
     type: SubnetHyperparamsResponseDto,
   })
-  @ApiResponse({
-    status: 400,
+  @ApiBadRequestResponse({
     description: 'Invalid netuid parameter',
   })
-  @ApiResponse({
-    status: 404,
+  @ApiNotFoundResponse({
     description: 'Subnet not found',
   })
-  @ApiResponse({
-    status: 500,
+  @ApiInternalServerErrorResponse({
     description: 'Internal server error during blockchain communication',
   })
   async getSubnetHyperparams(
@@ -81,6 +89,30 @@ export class ChainController {
   }
 
   @Get('subnet-metagraph/:netuid')
+  @ApiOperation({
+    summary: 'Get subnet metagraph by subnet netuid',
+    description: 'Retrieves the metagraph for a specific subnet',
+  })
+  @ApiParam({
+    name: 'netuid',
+    description: 'Subnet UID',
+    type: 'number',
+    example: 1,
+    required: true,
+  })
+  @ApiOkResponse({
+    description: 'Subnet metagraph retrieved successfully',
+    type: SubnetMetagraphDto,
+  })
+  @ApiBadRequestResponse({
+    description: 'Invalid netuid parameter',
+  })
+  @ApiNotFoundResponse({
+    description: 'Subnet not found',
+  })
+  @ApiInternalServerErrorResponse({
+    description: 'Internal server error during blockchain communication',
+  })
   async getSubnetMetagraph(@Param('netuid') netuid: number) {
     try {
       if (!netuid) {

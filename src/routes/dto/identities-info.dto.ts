@@ -1,5 +1,6 @@
-import { Expose } from 'class-transformer';
 import { HexToString } from '@app/decorators';
+import { Expose } from 'class-transformer';
+
 export class IdentitiesInfoDto {
   @Expose()
   @HexToString()

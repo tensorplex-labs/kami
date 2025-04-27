@@ -1,5 +1,5 @@
-import { Transform } from 'class-transformer';
 import { hexToString } from '@app/utils';
+import { Transform } from 'class-transformer';
 
 /**
  * Transforms a hex string (0x-prefixed) to a regular UTF-8 string

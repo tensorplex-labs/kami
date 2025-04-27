@@ -1,6 +1,7 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsNumber, IsInt, Min } from 'class-validator';
 import { Type } from 'class-transformer';
+import { IsInt, IsNumber, Min } from 'class-validator';
+
+import { ApiProperty } from '@nestjs/swagger';
 
 export class SubnetHyperparamsDto {
   @IsNumber()
@@ -30,8 +31,7 @@ export class SubnetHyperparamsResponseDto {
   immunityPeriod: number;
 
   @ApiProperty({
-    description:
-      'Minimum number of weights for a validator to set when setting weights.',
+    description: 'Minimum number of weights for a validator to set when setting weights.',
   })
   minAllowedWeights: number;
 
@@ -48,8 +48,7 @@ export class SubnetHyperparamsResponseDto {
   tempo: number;
 
   @ApiProperty({
-    description:
-      'The minimum of the range of the proof-of-work for registering on the subnet.',
+    description: 'The minimum of the range of the proof-of-work for registering on the subnet.',
   })
   minDifficulty: number;
 
@@ -66,8 +65,7 @@ export class SubnetHyperparamsResponseDto {
   weightsVersion: number;
 
   @ApiProperty({
-    description:
-      'How long, in blocks, a validator must wait between weight commits on a subnet.',
+    description: 'How long, in blocks, a validator must wait between weight commits on a subnet.',
   })
   weightsRateLimit: number;
 
@@ -96,14 +94,12 @@ export class SubnetHyperparamsResponseDto {
   targetRegsPerInterval: number;
 
   @ApiProperty({
-    description:
-      'The minimum of the range of the dynamic burn cost for registering on the subnet.',
+    description: 'The minimum of the range of the dynamic burn cost for registering on the subnet.',
   })
   minBurn: number;
 
   @ApiProperty({
-    description:
-      'he maximum of the dynamic range for TAO cost of burn registration on the subnet.',
+    description: 'he maximum of the dynamic range for TAO cost of burn registration on the subnet.',
   })
   maxBurn: number;
 
@@ -129,8 +125,7 @@ export class SubnetHyperparamsResponseDto {
   maxValidators: number;
 
   @ApiProperty({
-    description:
-      'AdjustmentAlpha is the rate at which difficulty and burn are adjusted up or down',
+    description: 'AdjustmentAlpha is the rate at which difficulty and burn are adjusted up or down',
   })
   adjustmentAlpha: number;
 

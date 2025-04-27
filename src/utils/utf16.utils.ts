@@ -29,8 +29,7 @@ export function utf16ToUtf8String(codeUnits: number[]): string {
         // Check if next unit is a low surrogate
         if (nextUnit >= 0xdc00 && nextUnit <= 0xdfff) {
           // Calculate the unicode code point from the surrogate pair
-          const codePoint =
-            ((unit - 0xd800) << 10) + (nextUnit - 0xdc00) + 0x10000;
+          const codePoint = ((unit - 0xd800) << 10) + (nextUnit - 0xdc00) + 0x10000;
           result += String.fromCodePoint(codePoint);
           i++; // Skip the next unit as we've already used it
           continue;

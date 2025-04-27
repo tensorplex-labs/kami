@@ -1,19 +1,20 @@
 import { Injectable, Logger } from '@nestjs/common';
+
 import { Substrate } from '../../substrate/substrate';
-import {
-  NeuronInfo,
-  BlockInfo,
-  NonceInfo,
-  WalletInfo,
-  SubnetHyperparameters,
-  SubnetMetagraph,
-  AxonInfo,
-} from '../../substrate/substrate.interface';
 import {
   AxonCallParams,
   CommitRevealWeightsCallParams,
   SetWeightsCallParams,
 } from '../../substrate/substrate.call-params.interface';
+import {
+  AxonInfo,
+  BlockInfo,
+  NeuronInfo,
+  NonceInfo,
+  SubnetHyperparameters,
+  SubnetMetagraph,
+  WalletInfo,
+} from '../../substrate/substrate.interface';
 
 @Injectable()
 export class ChainService {

@@ -1,27 +1,31 @@
+import * as path from 'path';
+
 import { Logger } from '@nestjs/common';
+
 import { ApiPromise, WsProvider } from '@polkadot/api';
+import { Bytes } from '@polkadot/types';
 import {
   RuntimeApiMetadataV15,
   RuntimeApiMethodMetadataV15,
   SiLookupTypeId,
 } from '@polkadot/types/interfaces';
-import { Bytes } from '@polkadot/types';
+
+import { SubtensorErrorCode, SubtensorException } from './substrate.exceptions';
 import {
-  SubstrateConfig,
+  BlockInfo,
   ConnectionStatus,
+  ExtrinsicResponse,
+  KeyringPairInfo,
   NeuronInfo,
   NonceInfo,
-  BlockInfo,
-  KeyringPairInfo,
-  WalletInfo,
-  ExtrinsicResponse, // TODO: Refactor this to a more specific type for those submitting extrinsics.
+  // TODO: Refactor this to a more specific type for those submitting extrinsics.
   SubnetHyperparameters,
-  TotalNetworksInfo,
   SubnetMetagraph,
+  SubstrateConfig,
+  TotalNetworksInfo,
+  WalletInfo,
 } from './substrate.interface';
-import { SubtensorException, SubtensorErrorCode } from './substrate.exceptions';
 import { getKeyringPair } from './substrate.utils';
-import * as path from 'path';
 
 export class Substrate {
   protected readonly logger = new Logger(this.constructor.name);
@@ -115,7 +119,7 @@ export class Substrate {
     try {
       this.logger.log(`Connecting to ${this.config.nodeUrl}...`);
 
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 500));
       this.client = new ApiPromise({
         provider: new WsProvider(this.config.nodeUrl),
       });
@@ -392,7 +396,7 @@ export class Substrate {
 
       const unsub = await this.client.tx.subtensorModule
         .burnedRegister(netuid, this.walletHotkey)
-        .signAndSend(this.keyringPairInfo.keyringPair, (result) => {
+        .signAndSend(this.keyringPairInfo.keyringPair, result => {
           console.log(`Current status is: ${result.status}`);
           console.log(`Result: ${result.toHuman()}`);
           if (result.status.isInBlock) {
@@ -448,12 +452,7 @@ export class Substrate {
     }
   }
 
-  async setWeights(
-    netuid: number,
-    dests: number[],
-    weights: number[],
-    versionKey: number,
-  ): Promise<any | Error> {
+  async setWeights(netuid: number, dests: number[], weights: number[], versionKey: number) {
     try {
       if (!this.client) {
         throw new Error('Client is not connected');

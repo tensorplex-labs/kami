@@ -1,5 +1,5 @@
-import { Transform } from 'class-transformer';
 import { unicodeCodePointsToString } from '@app/utils';
+import { Transform } from 'class-transformer';
 
 /**
  * Transforms an array of Unicode code points to a readable string
