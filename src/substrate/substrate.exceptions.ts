@@ -28,6 +28,7 @@ export enum SubtensorErrorCode {
   INVALID_IP_ADDRESS = 11,
   SERVING_RATE_LIMIT_EXCEEDED = 12,
   INVALID_PORT = 13,
+  TRANSACTION_PRIORITY_TOO_LOW = 14,
   BAD_REQUEST = 255,
 }
 
@@ -139,6 +140,12 @@ function getSubtensorErrorDetails(errorCode: SubtensorErrorCode): SubtensorError
         code: errorCode,
         name: 'BadRequest',
         description: 'Unclassified error.',
+      };
+    case SubtensorErrorCode.TRANSACTION_PRIORITY_TOO_LOW:
+      return {
+        code: errorCode,
+        name: 'TransactionPriorityTooLow',
+        description: 'The transaction priority has too low priority to replace another transaction already in the pool. Please try again later.',
       };
     default:
       return {
