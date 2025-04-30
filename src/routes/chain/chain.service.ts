@@ -266,4 +266,14 @@ export class ChainService {
       throw error;
     }
   }
+
+  async availableRuntimeApis() {
+    try {
+      await this.ensureConnection();
+      const result = await this.substrate.availableRuntimeApis();
+      return result;
+    } catch (error) {
+      throw error;
+    }
+  }
 }

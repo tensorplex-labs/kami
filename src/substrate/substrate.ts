@@ -134,7 +134,7 @@ export class Substrate {
       this.connectionStatus = {
         isConnected: true,
         lastConnected: new Date(),
-        chainId: 'Bittensor Mainnet',
+        chainId: (await this.client.rpc.system.chain()).toString(),
       };
       return this.connectionStatus;
     } catch (error) {
@@ -157,37 +157,43 @@ export class Substrate {
     }
   }
 
-  async queryRuntimeApi(method: string, params: string): Promise<any | Error> {
+  async queryRuntimeApi(
+    runtimeDefName: string,
+    methodName: string,
+    params: any,
+  ): Promise<any | Error> {
     try {
       if (!this.client) {
         throw new Error('Client is not connected');
       }
 
-      const split: number = method.indexOf('_');
-      const apiName: string = method.slice(0, split);
-      const methodName: string = method.slice(split + 1);
-
       const runtimeDef: RuntimeApiMetadataV15 | undefined =
-        this.client.runtimeMetadata.asV15.apis.find((api: any) => api.name.toString() === apiName);
+        this.client.runtimeMetadata.asV15.apis.find(
+          (api: any) => api.name.toString() === runtimeDefName,
+        );
       if (!runtimeDef) {
-        throw new Error(`API ${apiName} not found in runtime metadata`);
+        throw new Error(`API ${runtimeDefName} not found in runtime metadata`);
       }
 
       const callDef: RuntimeApiMethodMetadataV15 | undefined = runtimeDef.methods.find(
         (method: any) => method.name.toString() === methodName,
       );
       if (!callDef) {
-        throw new Error(`Method ${methodName} not found in API ${apiName}`);
+        throw new Error(`Method ${methodName} not found in API ${runtimeDefName}`);
       }
+
+      // const paramTypes = callDef.inputs.map((input: any) => input.type);
+      const hexParams: string = Buffer.from(params).toString('hex');
 
       const outputType: SiLookupTypeId = callDef.output;
       if (!outputType) {
         throw new Error(`Output type not found for method ${methodName}`);
       }
 
-      // const paramTypes = callDef.inputs.map((input: any) => input.type);
-
-      const resultBytes: Bytes = await this.client.rpc.state.call(method, params);
+      const resultBytes: Bytes = await this.client.rpc.state.call(
+        [runtimeDefName, methodName].join('_'),
+        '0x' + hexParams,
+      );
 
       const typeDef: string = this.client.registry.createLookupType(outputType);
       try {
@@ -206,11 +212,11 @@ export class Substrate {
       if (!this.client) {
         throw new Error('Client is not connected');
       }
-      const runtimeCall: string = 'SubnetInfoRuntimeApi_get_subnet_hyperparams';
+      const runtimeApiName: string = 'SubnetInfoRuntimeApi';
+      const methodName: string = 'get_subnet_hyperparams';
       const encodedParams: Uint8Array = this.client.registry.createType('u16', netuid).toU8a();
-      const hexParams: string = Buffer.from(encodedParams).toString('hex');
 
-      const response = await this.queryRuntimeApi(runtimeCall, '0x' + hexParams);
+      const response = await this.queryRuntimeApi(runtimeApiName, methodName, encodedParams);
 
       const subnetParams: SubnetHyperparameters = response.toJSON();
 
@@ -226,11 +232,11 @@ export class Substrate {
         throw new Error('Client is not connected');
       }
 
-      const runtimeCall: string = 'SubnetInfoRuntimeApi_get_metagraph';
+      const runtimeApiName: string = 'SubnetInfoRuntimeApi';
+      const methodName: string = 'get_metagraph';
       const encodedParams: Uint8Array = this.client.registry.createType('u16', netuid).toU8a();
-      const hexParams: string = Buffer.from(encodedParams).toString('hex');
 
-      const response = await this.queryRuntimeApi(runtimeCall, '0x' + hexParams);
+      const response = await this.queryRuntimeApi(runtimeApiName, methodName, encodedParams);
 
       const subnetParams: SubnetMetagraph = response.toJSON();
 
@@ -248,11 +254,11 @@ export class Substrate {
         throw new Error('Client is not connected');
       }
 
-      const runtimeCall: string = 'NeuronInfoRuntimeApi_get_neurons';
+      const runtimeApiName: string = 'NeuronInfoRuntimeApi';
+      const methodName: string = 'get_neurons';
       const encodedParams: Uint8Array = this.client.registry.createType('u16', netuid).toU8a();
-      const hexParams: string = Buffer.from(encodedParams).toString('hex');
 
-      const response = await this.queryRuntimeApi(runtimeCall, '0x' + hexParams);
+      const response = await this.queryRuntimeApi(runtimeApiName, methodName, encodedParams);
 
       const neuronInfo: NeuronInfo[] = response.toJSON();
 
@@ -505,6 +511,44 @@ export class Substrate {
       return result.toJSON();
     } catch (error) {
       throw this.handleSubtensorError(error);
+    }
+  }
+
+  async availableRuntimeApis() {
+    try {
+      if (!this.client) {
+        throw new Error('Client is not connected');
+      }
+
+      const netuid = 2;
+
+      const response = this.client.runtimeMetadata.asV15.apis;
+
+      const runtimeApiName = 'SubnetInfoRuntimeApi';
+      const methodName = 'get_metagraph';
+
+      const runtimeDef = this.client.runtimeMetadata.asV15.apis.find(
+        (api: any) => api.name.toString() === runtimeApiName,
+      );
+      if (!runtimeDef) {
+        throw new Error('SubnetInfoRuntimeApi not found in runtime metadata');
+      }
+
+      const callDef = runtimeDef.methods.find(
+        (method: any) => method.name.toString() === methodName,
+      );
+      if (!callDef) {
+        throw new Error('getMetagraph method not found in SubnetInfoRuntimeApi');
+      }
+
+      const outputType: SiLookupTypeId = callDef.output;
+      if (response == null) {
+        throw new Error('Failed');
+      }
+
+      return response.toJSON();
+    } catch (error) {
+      throw new Error(`Failed to retrieve total subnets: ${error.message}`);
     }
   }
 }

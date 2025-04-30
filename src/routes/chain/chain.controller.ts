@@ -58,6 +58,12 @@ export class ChainController {
     private readonly logger: Logger,
   ) {}
 
+  @Get('available-runtime-apis')
+  async availableRuntimeApis() {
+    const result = await this.chainService.availableRuntimeApis();
+    return result;
+  }
+
   @Get('subnet-hyperparameters/:netuid')
   @ApiOperation({
     summary: 'Get subnet hyperparameters by subnet netuid',
