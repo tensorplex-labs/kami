@@ -520,35 +520,11 @@ export class Substrate {
         throw new Error('Client is not connected');
       }
 
-      const netuid = 2;
-
       const response = this.client.runtimeMetadata.asV15.apis;
-
-      const runtimeApiName = 'SubnetInfoRuntimeApi';
-      const methodName = 'get_metagraph';
-
-      const runtimeDef = this.client.runtimeMetadata.asV15.apis.find(
-        (api: any) => api.name.toString() === runtimeApiName,
-      );
-      if (!runtimeDef) {
-        throw new Error('SubnetInfoRuntimeApi not found in runtime metadata');
-      }
-
-      const callDef = runtimeDef.methods.find(
-        (method: any) => method.name.toString() === methodName,
-      );
-      if (!callDef) {
-        throw new Error('getMetagraph method not found in SubnetInfoRuntimeApi');
-      }
-
-      const outputType: SiLookupTypeId = callDef.output;
-      if (response == null) {
-        throw new Error('Failed');
-      }
 
       return response.toJSON();
     } catch (error) {
-      throw new Error(`Failed to retrieve total subnets: ${error.message}`);
+      throw new Error(`Failed to retrieve available runtime APIs: ${error.message}`);
     }
   }
 }
