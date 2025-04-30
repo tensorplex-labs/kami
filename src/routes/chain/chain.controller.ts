@@ -1,5 +1,6 @@
 import { error } from 'console';
 import {
+  AxonCallParamsDto,
   BlockInfoDto,
   SubnetHyperparamsDto,
   SubnetHyperparamsResponseDto,
@@ -283,6 +284,13 @@ export class ChainController {
 
   @Post('serve-axon')
   @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({
+    summary: 'Serve axon',
+    description: 'Must setup Bittensor wallet in env',
+  })
+  @ApiBody({
+    type: AxonCallParamsDto,
+  })
   async serveAxon(@Body(ValidationPipe) callParams: AxonCallParams) {
     try {
       if (!callParams) {
