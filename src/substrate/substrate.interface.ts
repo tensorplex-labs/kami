@@ -173,7 +173,7 @@ export interface SubnetMetagraph {
   maxBurn: number;
   adjustmentAlpha: string;
   adjustmentInterval: number;
-  targetRegsPerInterval: boolean;
+  targetRegsPerInterval: number;
   maxRegsPerBlock: number;
   servingRateLimit: number;
   commitRevealWeightsEnabled: boolean;

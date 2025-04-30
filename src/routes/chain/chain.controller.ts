@@ -1,4 +1,10 @@
-import { SubnetHyperparamsDto, SubnetHyperparamsResponseDto, SubnetMetagraphDto } from 'src/dto';
+import {
+  BlockInfoDto,
+  SubnetHyperparamsDto,
+  SubnetHyperparamsResponseDto,
+  SubnetMetagraphDto,
+  TotalNetworkResponseDto,
+} from 'src/dto';
 import { MapperService } from 'src/mapper/mapper-service';
 
 import {
@@ -137,11 +143,19 @@ export class ChainController {
   }
 
   @Get('total-networks')
+  @ApiOperation({
+    summary: 'Get total networks',
+    description: 'Retrieves the total number of subnets (including the root subnet)',
+  })
+  @ApiOkResponse({
+    description: 'Total networks retrieved successfully',
+    type: TotalNetworkResponseDto,
+  })
   async getTotalNetworks() {
     try {
       this.logger.log('Fetching total networks');
       const totalNetworks = await this.chainService.getTotalNetworks();
-      return totalNetworks;
+      return this.mapperService.toTotalNetworkDto(totalNetworks);
     } catch (error) {
       this.logger.error(`Error fetching total networks: ${error.message}`);
       if (error instanceof ChainException) {
@@ -152,11 +166,22 @@ export class ChainController {
   }
 
   @Get('latest-block')
+  @ApiOperation({
+    summary: 'Get latest block',
+    description: 'Retrieves the latest block from the blockchain',
+  })
+  @ApiOkResponse({
+    description: 'Latest block retrieved successfully',
+    type: BlockInfoDto,
+  })
   async getLatestBlock() {
     try {
       // this.logger.log('Fetching latest block');
       const block = await this.chainService.getLatestBlock();
-      return block;
+      if (block instanceof Error) {
+        throw block;
+      }
+      return this.mapperService.toBlockInfoDto(block);
     } catch (error) {
       this.logger.error(`Error fetching latest block: ${error.message}`);
       if (error instanceof ChainException) {

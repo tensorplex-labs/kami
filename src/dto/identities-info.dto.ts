@@ -1,32 +1,54 @@
 import { HexToString } from '@app/decorators';
-import { Expose } from 'class-transformer';
+
+import { ApiProperty } from '@nestjs/swagger';
 
 export class IdentitiesInfoDto {
-  @Expose()
+  @ApiProperty({
+    description: 'Name',
+    example: '',
+  })
   @HexToString()
   name: string;
 
-  @Expose()
+  @ApiProperty({
+    description: 'URL',
+    example: '',
+  })
   @HexToString()
   url: string;
 
-  @Expose()
+  @ApiProperty({
+    description: 'GitHub Repository',
+    example: '',
+  })
   @HexToString()
   githubRepo: string;
 
-  @Expose()
+  @ApiProperty({
+    description: 'Image',
+    example: '',
+  })
   @HexToString()
   image: string;
 
-  @Expose()
+  @ApiProperty({
+    description: 'Discord',
+    example: '',
+  })
   @HexToString()
   discord: string;
 
-  @Expose()
+  @ApiProperty({
+    description: 'Description',
+    example: '',
+  })
   @HexToString()
   description: string;
 
-  @Expose()
+  @ApiProperty({
+    description: 'Additional',
+    example: '',
+  })
   @HexToString()
   additional: string;
 

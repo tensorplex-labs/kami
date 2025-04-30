@@ -1,31 +1,57 @@
 import { IpToString } from '@app/decorators';
-import { Expose } from 'class-transformer';
+
+import { ApiProperty } from '@nestjs/swagger';
 
 export class AxonInfoDto {
-  @Expose()
+  @ApiProperty({
+    description: 'Block',
+    example: 0,
+  })
   block: number;
 
-  @Expose()
+  @ApiProperty({
+    description: 'Version',
+    example: 0,
+  })
   version: number;
 
-  @Expose()
+  @ApiProperty({
+    description: 'IP',
+    example: 0,
+  })
   @IpToString()
   ip: number;
 
-  @Expose()
+  @ApiProperty({
+    description: 'Port',
+    example: 0,
+  })
   port: number;
 
-  @Expose()
+  @ApiProperty({
+    description: 'IP Type (v4 or v6)',
+    example: 4,
+  })
   ipType: number;
 
-  @Expose()
+  @ApiProperty({
+    description: 'Protocol',
+    example: 4,
+  })
   protocol: number;
 
-  @Expose()
+  @ApiProperty({
+    description: 'Placeholder 1',
+    example: 0,
+  })
   placeholder1: number;
 
-  @Expose()
+  @ApiProperty({
+    description: 'Placeholder 2',
+    example: 0,
+  })
   placeholder2: number;
+
   constructor(partial: Partial<AxonInfoDto>) {
     Object.assign(this, partial);
   }
