@@ -23,6 +23,17 @@
 $ npm install
 ```
 
+## Env setup
+| Variable            | Description                                                       | Default Value                               | Remarks                                                                                                                                                     |
+| ------------------- | ----------------------------------------------------------------- | ------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| BITTENSOR_DIR       | Bittensor directory                                               | $HOME/.bittensor                            |                                                                                                                                                             |
+| WALLET_COLDKEY      | Bittensor coldkey name                                            | -                                           |                                                                                                                                                             |
+| WALLET_HOTKEY       | Bittensor hotkey name                                             | -                                           |                                                                                                                                                             |                                                                                                                       |
+| SUBTENSOR_NETWORK   | Network name                                                      | -                                     | if not set, falls back to Latent Holdings Subtensor <br> ws://localhost:9944 (local subtensor)                                                                                             |
+| KAMI_PORT   | Port                                                      | 8882                                     | if not set, falls back to 3000                           
+
+
+
 ## Compile and run the project
 
 ```bash
