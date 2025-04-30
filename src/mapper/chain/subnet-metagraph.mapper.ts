@@ -1,8 +1,7 @@
+import { AxonInfoDto, IdentitiesInfoDto, SubnetIdentityDto, SubnetMetagraphDto } from 'src/dto';
 import { SubnetMetagraph } from 'src/substrate/substrate.interface';
 
 import { Injectable } from '@nestjs/common';
-
-import { AxonInfoDto, IdentitiesInfoDto, SubnetIdentityDto, SubnetMetagraphDto } from '../dto';
 
 @Injectable()
 export class SubnetMetagraphMapper {

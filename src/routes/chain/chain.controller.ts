@@ -1,3 +1,6 @@
+import { SubnetHyperparamsDto, SubnetHyperparamsResponseDto, SubnetMetagraphDto } from 'src/dto';
+import { MapperService } from 'src/mapper/mapper-service';
+
 import {
   Body,
   ClassSerializerInterceptor,
@@ -30,9 +33,6 @@ import {
   CommitRevealWeightsCallParams,
   SetWeightsCallParams,
 } from '../../substrate/substrate.call-params.interface';
-import { SubnetHyperparamsDto, SubnetHyperparamsResponseDto } from '../dto/subnet-hyperparams.dto';
-import { SubnetMetagraphDto } from '../dto/subnet-metagraph.dto';
-import { SubnetMetagraphMapper } from '../mappers/subnet-metagraph.mapper';
 import { ChainException } from './chain.exceptions';
 import { ChainService } from './chain.service';
 
@@ -43,7 +43,7 @@ import { ChainService } from './chain.service';
 export class ChainController {
   constructor(
     private readonly chainService: ChainService,
-    private readonly subnetMetagraphMapper: SubnetMetagraphMapper,
+    private readonly mapperService: MapperService,
     private readonly logger: Logger,
   ) {}
 
@@ -126,7 +126,7 @@ export class ChainController {
       if (!subnetMetagraph) {
         throw new ChainException('Subnet metagraph not found', HttpStatus.NOT_FOUND);
       }
-      return this.subnetMetagraphMapper.toDto(subnetMetagraph);
+      return this.mapperService.toSubnetMetagraphDto(subnetMetagraph);
     } catch (error) {
       this.logger.error(`Error fetching subnet metagraph: ${error.message}`);
       if (error instanceof ChainException) {
@@ -154,7 +154,7 @@ export class ChainController {
   @Get('latest-block')
   async getLatestBlock() {
     try {
-      this.logger.log('Fetching latest block');
+      // this.logger.log('Fetching latest block');
       const block = await this.chainService.getLatestBlock();
       return block;
     } catch (error) {

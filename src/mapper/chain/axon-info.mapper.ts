@@ -1,8 +1,7 @@
+import { AxonInfoDto } from 'src/dto';
 import { AxonInfo } from 'src/substrate/substrate.interface';
 
 import { Injectable } from '@nestjs/common';
-
-import { AxonInfoDto } from '../dto';
 
 @Injectable()
 export class AxonInfoMapper {

@@ -63,9 +63,9 @@ export class Substrate {
       }
       const errorCode = parseInt(match[1], 10);
       throw new SubtensorException(errorCode as SubtensorErrorCode);
-    } 
-    if (error?.message && typeof error.message =='string') {
-      if (error.message.includes(`Priority is too low`)) { 
+    }
+    if (error?.message && typeof error.message == 'string') {
+      if (error.message.includes(`Priority is too low`)) {
         throw new SubtensorException(SubtensorErrorCode.TRANSACTION_PRIORITY_TOO_LOW);
       }
     }

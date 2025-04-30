@@ -145,7 +145,8 @@ function getSubtensorErrorDetails(errorCode: SubtensorErrorCode): SubtensorError
       return {
         code: errorCode,
         name: 'TransactionPriorityTooLow',
-        description: 'The transaction priority has too low priority to replace another transaction already in the pool. Please try again later.',
+        description:
+          'The transaction priority has too low priority to replace another transaction already in the pool. Please try again later.',
       };
     default:
       return {
