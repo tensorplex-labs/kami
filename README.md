@@ -47,6 +47,9 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
+## API Documentation
+Swagger Docs can be found on: ```http://localhost:KAMI_PORT/api```
+
 ## Run tests
 
 ```bash
