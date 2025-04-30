@@ -7,3 +7,4 @@ export * from './total-network.dto';
 export * from './block-info.dto';
 export * from './check-hotkey.dto';
 export * from './serve-axon.dto';
+export * from './set-weights.dto';

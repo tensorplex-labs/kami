@@ -2,11 +2,13 @@ import { error } from 'console';
 import {
   AxonCallParamsDto,
   BlockInfoDto,
+  SetWeightsParamsDto,
   SubnetHyperparamsDto,
   SubnetHyperparamsResponseDto,
   SubnetMetagraphDto,
   TotalNetworkResponseDto,
 } from 'src/dto';
+import { SetCommitRevealWeightsParamsDto } from 'src/dto/set-commit-reveal-weights.dto';
 import { MapperService } from 'src/mapper/mapper-service';
 
 import {
@@ -310,6 +312,17 @@ export class ChainController {
 
   @Post('set-weights')
   @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({
+    summary: 'Set weights',
+    description: 'Must setup Bittensor wallet in env',
+  })
+  @ApiBody({
+    type: SetWeightsParamsDto,
+  })
+  @ApiResponse({
+    description: 'Commit hash (To be used for Commit Reveal)',
+    example: '0x8141db6ceb557923a25fe19255adb17e4576013942da669855ac2f831e582cce',
+  })
   async setWeights(@Body(ValidationPipe) callParams: SetWeightsCallParams) {
     try {
       if (!callParams) {
@@ -328,6 +341,13 @@ export class ChainController {
   }
   @Post('set-commit-reveal-weights')
   @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({
+    summary: 'Set commit reveal weights',
+    description: 'Must setup Bittensor wallet in env',
+  })
+  @ApiBody({
+    type: SetCommitRevealWeightsParamsDto,
+  })
   async setCommitRevealWeights(@Body(ValidationPipe) callParams: CommitRevealWeightsCallParams) {
     try {
       if (!callParams) {
