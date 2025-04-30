@@ -5,3 +5,4 @@ export * from './identities-info.dto';
 export * from './axon-info.dto';
 export * from './total-network.dto';
 export * from './block-info.dto';
+export * from './check-hotkey.dto';

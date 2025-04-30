@@ -1,3 +1,4 @@
+import { error } from 'console';
 import {
   BlockInfoDto,
   SubnetHyperparamsDto,
@@ -29,6 +30,7 @@ import {
   ApiOkResponse,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
@@ -225,6 +227,26 @@ export class ChainController {
   }
 
   @Get('check-hotkey')
+  @ApiQuery({
+    name: 'netuid',
+    description: 'Subnet UID',
+    type: 'number',
+    example: 52,
+    required: true,
+  })
+  @ApiQuery({
+    name: 'hotkey',
+    description: 'Hotkey',
+    type: 'string',
+    example: '5E4z3h9yVhmQyCFWNbY9BPpwhx4xFiPwq3eeqmBgVF6KULde',
+    required: true,
+  })
+  @ApiQuery({
+    name: 'block',
+    description: 'Block',
+    type: 'number',
+    required: false,
+  })
   async checkHotkey(
     @Query('netuid') netuid: number,
     @Query('hotkey') hotkey: string,
@@ -239,11 +261,17 @@ export class ChainController {
       let isHotkeyValid: boolean | Error = false;
       if (block) {
         isHotkeyValid = await this.chainService.checkHotkey(netuid, hotkey, block);
-        return { isHotkeyValid };
+        if (isHotkeyValid instanceof Error) {
+          throw isHotkeyValid;
+        }
+        return this.mapperService.toCheckHotkeyDto(isHotkeyValid);
       } else {
         isHotkeyValid = await this.chainService.checkHotkey(netuid, hotkey);
+        if (isHotkeyValid instanceof Error) {
+          throw isHotkeyValid;
+        }
+        return this.mapperService.toCheckHotkeyDto(isHotkeyValid);
       }
-      return { isHotkeyValid };
     } catch (error) {
       this.logger.error(`Error checking hotkey: ${error.message}`);
       if (error instanceof ChainException) {

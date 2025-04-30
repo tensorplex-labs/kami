@@ -1,4 +1,10 @@
-import { AxonInfoDto, BlockInfoDto, SubnetMetagraphDto, TotalNetworkResponseDto } from 'src/dto';
+import {
+  AxonInfoDto,
+  BlockInfoDto,
+  CheckHotkeyDto,
+  SubnetMetagraphDto,
+  TotalNetworkResponseDto,
+} from 'src/dto';
 import {
   AxonInfo,
   BlockInfo,
@@ -11,6 +17,7 @@ import { Injectable } from '@nestjs/common';
 import {
   AxonInfoMapper,
   BlockInfoMapper,
+  CheckHotkeyMapper,
   SubnetMetagraphMapper,
   TotalNetworkMapper,
 } from './chain';
@@ -22,6 +29,7 @@ export class MapperService {
     private readonly axonInfoMapper: AxonInfoMapper,
     private readonly totalNetworkMapper: TotalNetworkMapper,
     private readonly blockInfoMapper: BlockInfoMapper,
+    private readonly checkHotkeyMapper: CheckHotkeyMapper,
   ) {}
 
   toSubnetMetagraphDto(subnetMetagraph: SubnetMetagraph): SubnetMetagraphDto {
@@ -38,5 +46,9 @@ export class MapperService {
 
   toBlockInfoDto(blockInfo: BlockInfo): BlockInfoDto {
     return this.blockInfoMapper.toDto(blockInfo);
+  }
+
+  toCheckHotkeyDto(isHotkeyValid: boolean): CheckHotkeyDto {
+    return this.checkHotkeyMapper.toDto(isHotkeyValid);
   }
 }

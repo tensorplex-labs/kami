@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import {
   AxonInfoMapper,
   BlockInfoMapper,
+  CheckHotkeyMapper,
   SubnetMetagraphMapper,
   TotalNetworkMapper,
 } from './chain';
@@ -15,6 +16,7 @@ import { MapperService } from './mapper-service';
     AxonInfoMapper,
     TotalNetworkMapper,
     BlockInfoMapper,
+    CheckHotkeyMapper,
   ],
   exports: [MapperService],
 })
