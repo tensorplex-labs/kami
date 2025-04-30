@@ -181,7 +181,7 @@ export class ChainController {
   })
   async getLatestBlock() {
     try {
-      // this.logger.log('Fetching latest block');
+      this.logger.debug('Fetching latest block');
       const block = await this.chainService.getLatestBlock();
       if (block instanceof Error) {
         throw block;
