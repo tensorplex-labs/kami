@@ -2,8 +2,8 @@ import { Module } from '@nestjs/common';
 
 import {
   AxonInfoMapper,
-  BlockInfoMapper,
   CheckHotkeyMapper,
+  LatestBlockMapper,
   SubnetMetagraphMapper,
   TotalNetworkMapper,
 } from './chain';
@@ -15,7 +15,7 @@ import { MapperService } from './mapper-service';
     SubnetMetagraphMapper,
     AxonInfoMapper,
     TotalNetworkMapper,
-    BlockInfoMapper,
+    LatestBlockMapper,
     CheckHotkeyMapper,
   ],
   exports: [MapperService],

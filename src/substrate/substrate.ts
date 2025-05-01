@@ -10,7 +10,7 @@ import {
   SiLookupTypeId,
 } from '@polkadot/types/interfaces';
 
-import { SubtensorErrorCode, SubtensorException } from './substrate.exceptions';
+import { SubtensorErrorCode, SubtensorException } from '../core/substrate/substrate.exceptions';
 import {
   BlockInfo,
   ConnectionStatus,

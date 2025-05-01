@@ -1,15 +1,4 @@
 import { error } from 'console';
-import {
-  AxonCallParamsDto,
-  BlockInfoDto,
-  SetWeightsParamsDto,
-  SubnetHyperparamsDto,
-  SubnetHyperparamsResponseDto,
-  SubnetMetagraphDto,
-  TotalNetworkResponseDto,
-} from 'src/dto';
-import { SetCommitRevealWeightsParamsDto } from 'src/dto/set-commit-reveal-weights.dto';
-import { MapperService } from 'src/mapper/mapper-service';
 
 import {
   Body,
@@ -39,6 +28,17 @@ import {
 } from '@nestjs/swagger';
 
 import { TransformInterceptor } from '../../commons/common-response.dto';
+import { TotalNetworkResponseDto } from '../../commons/dto';
+import { LatestBlockDto } from '../../features/latest-block/latest-block.dto';
+import { AxonCallParamsDto } from '../../features/serve-axon/serve-axon.dto';
+import { SetCommitRevealWeightsParamsDto } from '../../features/set-commit-reveal-weights/set-commit-reveal-weights.dto';
+import { SetWeightsParamsDto } from '../../features/set-weights/set-weights.dto';
+import {
+  SubnetHyperparamsDto,
+  SubnetHyperparamsResponseDto,
+} from '../../features/subnet-hyperparameter/subnet-hyperparameter.dto';
+import { SubnetMetagraphDto } from '../../features/subnet-metagraph/subnet-metagraph.dto';
+import { MapperService } from '../../mapper/mapper-service';
 import {
   AxonCallParams,
   CommitRevealWeightsCallParams,
@@ -183,16 +183,16 @@ export class ChainController {
   })
   @ApiOkResponse({
     description: 'Latest block retrieved successfully',
-    type: BlockInfoDto,
+    type: LatestBlockDto,
   })
   async getLatestBlock() {
     try {
-      this.logger.debug('Fetching latest block');
+      // this.logger.debug('Fetching latest block');
       const block = await this.chainService.getLatestBlock();
       if (block instanceof Error) {
         throw block;
       }
-      return this.mapperService.toBlockInfoDto(block);
+      return this.mapperService.toLatestBlockDto(block);
     } catch (error) {
       this.logger.error(`Error fetching latest block: ${error.message}`);
       if (error instanceof ChainException) {

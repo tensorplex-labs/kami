@@ -1,23 +1,19 @@
-import {
-  AxonInfoDto,
-  BlockInfoDto,
-  CheckHotkeyDto,
-  SubnetMetagraphDto,
-  TotalNetworkResponseDto,
-} from 'src/dto';
+import { Injectable } from '@nestjs/common';
+
+import { AxonInfoDto, TotalNetworkResponseDto } from '../commons/dto';
+import { CheckHotkeyDto } from '../features/check-hotkey/check-hotkey.dto';
+import { LatestBlockDto } from '../features/latest-block/latest-block.dto';
+import { SubnetMetagraphDto } from '../features/subnet-metagraph/subnet-metagraph.dto';
 import {
   AxonInfo,
   BlockInfo,
   SubnetMetagraph,
   TotalNetworksInfo,
-} from 'src/substrate/substrate.interface';
-
-import { Injectable } from '@nestjs/common';
-
+} from '../substrate/substrate.interface';
 import {
   AxonInfoMapper,
-  BlockInfoMapper,
   CheckHotkeyMapper,
+  LatestBlockMapper,
   SubnetMetagraphMapper,
   TotalNetworkMapper,
 } from './chain';
@@ -28,7 +24,7 @@ export class MapperService {
     private readonly subnetMetagraphMapper: SubnetMetagraphMapper,
     private readonly axonInfoMapper: AxonInfoMapper,
     private readonly totalNetworkMapper: TotalNetworkMapper,
-    private readonly blockInfoMapper: BlockInfoMapper,
+    private readonly latestBlockMapper: LatestBlockMapper,
     private readonly checkHotkeyMapper: CheckHotkeyMapper,
   ) {}
 
@@ -44,8 +40,8 @@ export class MapperService {
     return this.totalNetworkMapper.toDto(totalNetworks);
   }
 
-  toBlockInfoDto(blockInfo: BlockInfo): BlockInfoDto {
-    return this.blockInfoMapper.toDto(blockInfo);
+  toLatestBlockDto(blockInfo: BlockInfo): LatestBlockDto {
+    return this.latestBlockMapper.toDto(blockInfo);
   }
 
   toCheckHotkeyDto(isHotkeyValid: boolean): CheckHotkeyDto {
