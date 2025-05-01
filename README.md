@@ -1,9 +1,7 @@
 <p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
+  <a href="http://tensorplex.ai" target="blank"><img src="docs/assets/tensorplex-kami-logo.jpg" width="120" alt="Tensorplex Kami Logo" /></a>
 </p>
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
 
   <p align="center">Tensorplex Kami</p>
     <p align="center">

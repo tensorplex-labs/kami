@@ -2,7 +2,7 @@
 /dist
 /node_modules
 /build
-/docs
+/docs/slate
 
 # Logs
 logs
