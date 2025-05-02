@@ -30,7 +30,7 @@ import { AxonCallParamsDto } from './serve-axon.dto';
 import { ServeAxonService } from './serve-axon.service';
 
 @ApiTags('subnet')
-@Controller('chainV2')
+@Controller('chain')
 @UseInterceptors(TransformInterceptor)
 @UseInterceptors(ClassSerializerInterceptor)
 export class ServeAxonController {

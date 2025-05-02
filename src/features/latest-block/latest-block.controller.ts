@@ -16,7 +16,7 @@ import { LatestBlockDto } from './latest-block.dto';
 import { LatestBlockMapper } from './latest-block.mapper';
 import { LatestBlockService } from './latest-block.service';
 
-@Controller('chainV2')
+@Controller('chain')
 @ApiTags('substrate')
 @UseInterceptors(TransformInterceptor)
 export class LatestBlockController {

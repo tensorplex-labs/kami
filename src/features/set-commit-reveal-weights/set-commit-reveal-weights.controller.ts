@@ -18,7 +18,7 @@ import { CommitRevealWeightsCallParams } from './set-commit-reveal-weights.call-
 import { SetCommitRevealWeightsParamsDto } from './set-commit-reveal-weights.dto';
 import { SetCommitRevealWeightsService } from './set-commit-reveal-weights.service';
 
-@Controller('chainV2')
+@Controller('chain')
 @ApiTags('subnet')
 @UseInterceptors(TransformInterceptor)
 @UseInterceptors(ClassSerializerInterceptor)

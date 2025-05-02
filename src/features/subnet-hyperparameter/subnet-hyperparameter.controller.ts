@@ -15,7 +15,7 @@ import { SubnetHyperparamsDto, SubnetHyperparamsResponseDto } from './subnet-hyp
 import { SubnetHyperparameterMapper } from './subnet-hyperparameter.mapper';
 import { SubnetHyperparameterService } from './subnet-hyperparameter.service';
 
-@Controller('chainV2')
+@Controller('chain')
 @ApiTags('subnet')
 @UseInterceptors(TransformInterceptor)
 export class SubnetHyperparameterController {

@@ -18,7 +18,7 @@ import { SetWeightsCallParams } from './set-weights.call-params.interface';
 import { SetWeightsParamsDto } from './set-weights.dto';
 import { SetWeightsService } from './set-weights.service';
 
-@Controller('chainV2')
+@Controller('chain')
 @ApiTags('subnet')
 @UseInterceptors(TransformInterceptor)
 @UseInterceptors(ClassSerializerInterceptor)

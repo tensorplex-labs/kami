@@ -7,7 +7,7 @@ import { ApiQuery, ApiTags } from '@nestjs/swagger';
 import { CheckHotkeyMapper } from './check-hotkey.mapper';
 import { CheckHotkeyService } from './check-hotkey.service';
 
-@Controller('chainV2')
+@Controller('chain')
 @ApiTags('subnet')
 @UseInterceptors(TransformInterceptor)
 export class CheckHotkeyController {
