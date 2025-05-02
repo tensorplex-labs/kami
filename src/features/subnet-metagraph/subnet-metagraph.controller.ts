@@ -15,7 +15,7 @@ import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { SubnetMetagraphService } from './subnet-metagraph.service';
 
-@Controller('chainV2')
+@Controller('chain')
 @ApiTags('subnet')
 @UseInterceptors(TransformInterceptor)
 export class SubnetMetagraphController {
