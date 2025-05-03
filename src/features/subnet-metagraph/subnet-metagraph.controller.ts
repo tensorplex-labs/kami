@@ -2,22 +2,19 @@ import { TransformInterceptor } from '@app/commons/common-response.dto';
 import { SubnetMetagraphDto } from 'src/features/subnet-metagraph/subnet-metagraph.dto';
 import { SubnetMetagraphMapper } from 'src/features/subnet-metagraph/subnet-metagraph.mapper';
 
-import {
-  Controller,
-  Get,
-  HttpException,
-  HttpStatus,
-  Logger,
-  Param,
-  UseInterceptors,
-} from '@nestjs/common';
+import { Controller, Get, Logger, Param, UseInterceptors } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 
+import { ConnectionFailedException } from '../../core/substrate/substrate-connection.exception';
+import {
+  InvalidSubnetIdException,
+  SubnetMetagraphFetchException,
+  SubnetMetagraphNotFoundException,
+} from './subnet-metagraph.exceptions';
 import { SubnetMetagraphService } from './subnet-metagraph.service';
 
 @Controller('chain')
 @ApiTags('subnet')
-@UseInterceptors(TransformInterceptor)
 export class SubnetMetagraphController {
   private readonly logger = new Logger(SubnetMetagraphController.name);
   private readonly maxRetries = 3;
@@ -44,6 +41,11 @@ export class SubnetMetagraphController {
     type: SubnetMetagraphDto,
   })
   async getSubnetMetagraph(@Param('netuid') netuid: number) {
+    // Validate the netuid parameter
+    if (isNaN(netuid) || netuid < 0) {
+      throw new InvalidSubnetIdException(netuid);
+    }
+
     let retries = 0;
     let lastError: Error | null = null;
 
@@ -54,13 +56,8 @@ export class SubnetMetagraphController {
         );
         const result = await this.subnetMetagraphService.getSubnetMetagraph(netuid);
 
-        // Check if the result is an Error
-        if (result instanceof Error) {
-          throw result;
-        }
-
         if (!result) {
-          throw new HttpException('Subnet metagraph not found', HttpStatus.NOT_FOUND);
+          throw new SubnetMetagraphNotFoundException(netuid);
         }
 
         const subnetMetagraphDto = this.subnetMetagraphMapper.toDto(result);
@@ -70,26 +67,40 @@ export class SubnetMetagraphController {
       } catch (error) {
         lastError = error;
 
+        // If it's already one of our domain-specific exceptions, no need to retry
+        if (
+          error instanceof SubnetMetagraphNotFoundException ||
+          error instanceof InvalidSubnetIdException
+        ) {
+          throw error;
+        }
+
         // Only retry connection errors
         if (
+          error instanceof ConnectionFailedException ||
           error.message?.includes('Client is not connected') ||
           error.message?.includes('Failed to connect')
         ) {
           retries++;
-          this.logger.warn(`Retrying connection (${retries}/${this.maxRetries})`);
+          this.logger.warn(`Retrying connection (${retries}/${this.maxRetries}): ${error.message}`);
           await new Promise(resolve => setTimeout(resolve, this.retryDelay));
         } else {
-          // For other errors, break immediately
-          break;
+          // For other errors, wrap in a domain-specific exception and break
+          throw new SubnetMetagraphFetchException(
+            `Error fetching subnet metagraph: ${error.message}`,
+            { originalError: error, netuid },
+          );
         }
       }
     }
 
-    // After max retries or non-connection error
-    this.logger.error(`Failed to get subnet metagraph: ${lastError?.message}`);
-    throw new HttpException(
-      lastError?.message || 'Failed to get subnet metagraph',
-      HttpStatus.INTERNAL_SERVER_ERROR,
+    // After max retries, throw a more specific connection exception
+    this.logger.error(
+      `Failed to get subnet metagraph after ${this.maxRetries} retries: ${lastError?.message}`,
+    );
+    throw new SubnetMetagraphFetchException(
+      `Failed to get subnet metagraph after ${this.maxRetries} retries`,
+      { originalError: lastError, netuid, retries: this.maxRetries },
     );
   }
 }

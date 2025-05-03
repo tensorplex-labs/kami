@@ -24,9 +24,6 @@ export class CheckHotkeyService {
 
       if (block) {
         const getBlockHash: string | Error = await this.substrateClientService.getBlockHash(block);
-        if (getBlockHash instanceof Error) {
-          throw new Error(`Failed to get block hash: ${getBlockHash.message}`);
-        }
         const blockApi = await client.at(getBlockHash);
         response = await blockApi.query.subtensorModule.isNetworkMember(hotkey, netuid);
       } else {
