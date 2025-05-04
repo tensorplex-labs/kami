@@ -3,6 +3,14 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { SubstrateClientService } from './services/substrate-client.service';
 import { SubstrateConnectionService } from './services/substrate-connection.service';
+import {
+  WalletPathNotSetException,
+  WalletNameNotSetException,
+  WalletHotkeyNotSetException,
+  InvalidColdkeyFormatException,
+  InvalidHotkeyFormatException,
+  FileAccessException,
+} from './substrate-connection.exception';
 
 @Controller('substrate')
 @ApiTags('substrate')
@@ -44,6 +52,17 @@ export class SubstrateController {
       const result = await this.substrateConnectionService.getKeyringPairInfo();
       return result;
     } catch (error) {
+      if (
+        error instanceof WalletPathNotSetException ||
+        error instanceof WalletNameNotSetException ||
+        error instanceof WalletHotkeyNotSetException ||
+        error instanceof InvalidColdkeyFormatException ||
+        error instanceof InvalidHotkeyFormatException ||
+        error instanceof FileAccessException
+      ) {
+        throw error;
+      }
+
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }

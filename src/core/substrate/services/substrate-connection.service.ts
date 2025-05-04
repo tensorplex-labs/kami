@@ -50,9 +50,9 @@ export class SubstrateConnectionService implements OnModuleInit {
   ) {
     this.client = null;
     this.config = config;
-    this.walletPath = walletPath || path.join(process.env.HOME || '', '.bittensor/wallets');
-    this.walletName = walletName || 'default';
-    this.walletHotkey = walletHotkey || 'default';
+    this.walletPath = walletPath || process.env.BITTENSOR_DIR || path.join(process.env.HOME || '', '.bittensor/wallets');
+    this.walletName = walletName;
+    this.walletHotkey = walletHotkey;
     this.keyringPairInfo = null;
 
     // Initialize retry configuration with defaults that can be overridden by env or config
