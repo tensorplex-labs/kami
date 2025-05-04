@@ -1,4 +1,3 @@
-import { TransformInterceptor } from '@app/commons/common-response.dto';
 import { SubnetMetagraphDto } from 'src/features/subnet-metagraph/subnet-metagraph.dto';
 import { SubnetMetagraphMapper } from 'src/features/subnet-metagraph/subnet-metagraph.mapper';
 

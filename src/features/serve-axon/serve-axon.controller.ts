@@ -24,7 +24,6 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
-import { TransformInterceptor } from '../../commons/common-response.dto';
 import { AxonCallParams } from './serve-axon.call-params.interface';
 import { AxonCallParamsDto } from './serve-axon.dto';
 import { ServeAxonGenericException, ServeAxonParamsMissingException } from './serve-axon.exception';
@@ -32,7 +31,6 @@ import { ServeAxonService } from './serve-axon.service';
 
 @ApiTags('subnet')
 @Controller('chain')
-@UseInterceptors(TransformInterceptor)
 @UseInterceptors(ClassSerializerInterceptor)
 export class ServeAxonController {
   private readonly logger = new Logger(ServeAxonController.name);

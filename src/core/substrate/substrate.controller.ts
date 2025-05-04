@@ -1,5 +1,3 @@
-import { TransformInterceptor } from '@app/commons/common-response.dto';
-
 import { Controller, Get, HttpException, HttpStatus, UseInterceptors } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
@@ -8,7 +6,6 @@ import { SubstrateConnectionService } from './services/substrate-connection.serv
 
 @Controller('substrate')
 @ApiTags('substrate')
-@UseInterceptors(TransformInterceptor)
 export class SubstrateController {
   constructor(
     private readonly substrateClientService: SubstrateClientService,

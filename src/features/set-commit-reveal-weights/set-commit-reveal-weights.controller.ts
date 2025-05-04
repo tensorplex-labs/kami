@@ -13,7 +13,6 @@ import {
 } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { TransformInterceptor } from '../../commons/common-response.dto';
 import {
   SetCommitRevealWeightGenericException,
   SetCommitRevealWeightParamsMissingException,
@@ -24,7 +23,6 @@ import { SetCommitRevealWeightsService } from './set-commit-reveal-weights.servi
 
 @Controller('chain')
 @ApiTags('subnet')
-@UseInterceptors(TransformInterceptor)
 @UseInterceptors(ClassSerializerInterceptor)
 export class SetCommitRevealWeightsController {
   private readonly logger = new Logger(SetCommitRevealWeightsController.name);

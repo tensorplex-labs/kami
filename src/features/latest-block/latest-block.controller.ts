@@ -1,4 +1,3 @@
-import { TransformInterceptor } from '@app/commons/common-response.dto';
 import { SubtensorException } from 'src/core/substrate/substrate-client.exception';
 
 import {
@@ -19,7 +18,6 @@ import { LatestBlockService } from './latest-block.service';
 
 @Controller('chain')
 @ApiTags('substrate')
-@UseInterceptors(TransformInterceptor)
 export class LatestBlockController {
   private readonly logger = new Logger(LatestBlockController.name);
 

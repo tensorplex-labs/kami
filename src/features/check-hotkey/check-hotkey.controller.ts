@@ -1,4 +1,3 @@
-import { TransformInterceptor } from '@app/commons/common-response.dto';
 import { SubtensorException } from 'src/core/substrate/substrate-client.exception';
 
 import { Controller, Get, HttpStatus, Logger, Query, UseInterceptors } from '@nestjs/common';
@@ -13,7 +12,6 @@ import { CheckHotkeyService } from './check-hotkey.service';
 
 @Controller('chain')
 @ApiTags('subnet')
-@UseInterceptors(TransformInterceptor)
 export class CheckHotkeyController {
   private readonly logger = new Logger(CheckHotkeyController.name);
 

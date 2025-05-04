@@ -13,7 +13,6 @@ import {
 } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { TransformInterceptor } from '../../commons/common-response.dto';
 import { SetWeightsCallParams } from './set-weights.call-params.interface';
 import { SetWeightsParamsDto } from './set-weights.dto';
 import {
@@ -24,7 +23,6 @@ import { SetWeightsService } from './set-weights.service';
 
 @Controller('chain')
 @ApiTags('subnet')
-@UseInterceptors(TransformInterceptor)
 @UseInterceptors(ClassSerializerInterceptor)
 export class SetWeightsController {
   private readonly logger = new Logger(SetWeightsController.name);

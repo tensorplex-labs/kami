@@ -1,4 +1,3 @@
-import { TransformInterceptor } from '@app/commons/common-response.dto';
 import { SubtensorException } from 'src/core/substrate/substrate-client.exception';
 
 import {
@@ -22,7 +21,6 @@ import { SubnetHyperparameterService } from './subnet-hyperparameter.service';
 
 @Controller('chain')
 @ApiTags('subnet')
-@UseInterceptors(TransformInterceptor)
 export class SubnetHyperparameterController {
   private readonly logger = new Logger(SubnetHyperparameterController.name);
   private readonly maxRetries = 3;
