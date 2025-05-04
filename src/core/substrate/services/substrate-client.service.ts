@@ -139,16 +139,13 @@ export class SubstrateClientService {
     } catch (error) {
       this.logger.error(`Failed to sign and send transaction: ${error.message}`, error.stack);
 
-      if (error instanceof SubtensorException) {
-        throw error;
-      }
-
-      throw new TransactionFailedException(
-        `Failed to sign and send transaction: ${error.message}`,
-        {
-          originalError: error,
-        },
-      );
+      this.handleSubtensorError(error);
+      // throw new TransactionFailedException(
+      //   `Failed to sign and send transaction: ${error.message}`,
+      //   {
+      //     originalError: error,
+      //   },
+      // );
     }
   }
 
@@ -166,13 +163,15 @@ export class SubstrateClientService {
     } catch (error) {
       this.logger.error(`Failed to retrieve block hash: ${error.message}`, error.stack);
 
-      if (error instanceof SubtensorException || error instanceof BlockHashNotFoundException) {
+      if (error instanceof BlockHashNotFoundException) {
         throw error;
       }
 
-      throw new QueryFailedException(`Failed to retrieve block hash: ${error.message}`, {
-        originalError: error,
-      });
+
+      this.handleSubtensorError(error);
+      // throw new QueryFailedException(`Failed to retrieve block hash: ${error.message}`, {
+      //   originalError: error,
+      // });
     }
   }
 }
