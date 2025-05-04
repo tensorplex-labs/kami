@@ -1,4 +1,4 @@
-export interface ApiResponse<T = any> {
+export interface IApiResponse<T = any> {
   statusCode: number;
   success: boolean;
   data?: T | null;

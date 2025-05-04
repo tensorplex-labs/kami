@@ -1,15 +1,7 @@
 import { SubtensorException } from 'src/core/substrate/substrate-client.exception';
 
-import {
-  Controller,
-  Get,
-  HttpException,
-  HttpStatus,
-  Logger,
-  Param,
-  UseInterceptors,
-} from '@nestjs/common';
-import { ApiOkResponse, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Logger } from '@nestjs/common';
+import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { LatestBlockDto } from './latest-block.dto';
 import { LatestBlockGenericException } from './latest-block.exception';

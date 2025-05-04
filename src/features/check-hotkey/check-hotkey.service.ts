@@ -4,12 +4,7 @@ import { SubtensorException } from 'src/core/substrate/substrate-client.exceptio
 
 import { Injectable, Logger } from '@nestjs/common';
 
-import {
-  CheckHotkeyErrorCode,
-  CheckHotkeyException,
-  CheckHotkeyFetchException,
-  CheckHotkeyGenericException,
-} from './check-hotkey.exception';
+import { CheckHotkeyFetchException, CheckHotkeyGenericException } from './check-hotkey.exception';
 
 @Injectable()
 export class CheckHotkeyService {

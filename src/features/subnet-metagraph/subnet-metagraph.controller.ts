@@ -1,7 +1,7 @@
 import { SubnetMetagraphDto } from 'src/features/subnet-metagraph/subnet-metagraph.dto';
 import { SubnetMetagraphMapper } from 'src/features/subnet-metagraph/subnet-metagraph.mapper';
 
-import { Controller, Get, Logger, Param, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, Logger, Param } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { ConnectionFailedException } from '../../core/substrate/substrate-connection.exception';

@@ -9,7 +9,7 @@ import {
   Logger,
 } from '@nestjs/common';
 
-import { ApiResponse } from '../common-response.interface';
+import { IApiResponse } from '../common-response.interface';
 
 // Base exception class that aligns with the ApiResponse error structure
 export class BaseException extends HttpException {
@@ -41,7 +41,7 @@ export class BaseExceptionFilter implements ExceptionFilter {
     const now = Date.now();
 
     // Create a response that strictly follows ApiResponse interface
-    const errorResponse: ApiResponse = {
+    const errorResponse: IApiResponse = {
       statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
       success: false,
       data: null,

@@ -1,4 +1,4 @@
-import { Controller, Get, HttpException, HttpStatus, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, HttpException, HttpStatus } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { SubstrateClientService } from './services/substrate-client.service';

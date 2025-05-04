@@ -11,7 +11,7 @@ import {
   UseInterceptors,
   ValidationPipe,
 } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import {
   SetCommitRevealWeightGenericException,
@@ -36,6 +36,10 @@ export class SetCommitRevealWeightsController {
   })
   @ApiBody({
     type: SetCommitRevealWeightsParamsDto,
+  })
+  @ApiOkResponse({
+    description: 'Commit reveal weights set successfully',
+    example: '0xfd5e598f4640ced068e88ed8b1d3d367ea30bb7af00c93f99ff90e3020037973',
   })
   async setCommitRevealWeights(@Body(ValidationPipe) callParams: CommitRevealWeightsCallParams) {
     try {

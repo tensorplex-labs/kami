@@ -3,11 +3,11 @@ import { map } from 'rxjs/operators';
 
 import { CallHandler, ExecutionContext, Injectable, NestInterceptor } from '@nestjs/common';
 
-import { ApiResponse } from './common-response.interface';
+import { IApiResponse } from './common-response.interface';
 
 @Injectable()
-export class TransformInterceptor<T> implements NestInterceptor<T, ApiResponse<T>> {
-  intercept(context: ExecutionContext, next: CallHandler): Observable<ApiResponse<T>> {
+export class TransformInterceptor<T> implements NestInterceptor<T, IApiResponse<T>> {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<IApiResponse<T>> {
     const request = context.switchToHttp().getRequest();
     const now = Date.now();
 
@@ -32,7 +32,7 @@ export class TransformInterceptor<T> implements NestInterceptor<T, ApiResponse<T
             data.metadata.executionTime = Date.now() - now;
           }
 
-          return data as ApiResponse<T>;
+          return data as IApiResponse<T>;
         }
 
         // Standard success response

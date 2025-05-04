@@ -10,11 +10,9 @@ import {
 import {
   BlockHashNotFoundException,
   InvalidParameterException,
-  OperationTimeoutException,
   QueryFailedException,
   SubtensorErrorCode,
   SubtensorException,
-  TransactionFailedException,
 } from '../substrate-client.exception';
 import { ClientNotInitializedException } from '../substrate-connection.exception';
 import { SubstrateConnectionService } from './substrate-connection.service';
