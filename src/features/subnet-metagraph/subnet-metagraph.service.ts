@@ -4,6 +4,8 @@ import { SubnetMetagraph } from 'src/features/subnet-metagraph/subnet-metagraph.
 
 import { Injectable } from '@nestjs/common';
 
+import { SubnetMetagraphGenericException } from './subnet-metagraph.exception';
+
 @Injectable()
 export class SubnetMetagraphService {
   constructor(
@@ -12,7 +14,8 @@ export class SubnetMetagraphService {
   ) {}
 
   async getSubnetMetagraph(netuid: number): Promise<SubnetMetagraph> {
-    const client = await this.substrateConnectionService.getClient();
+    try {
+      const client = await this.substrateConnectionService.getClient();
 
     const runtimeApiName = 'SubnetInfoRuntimeApi';
     const methodName = 'get_metagraph';
@@ -24,7 +27,10 @@ export class SubnetMetagraphService {
       encodedParams,
     );
 
-    const subnetMetagraph: SubnetMetagraph = response.toJSON();
-    return subnetMetagraph;
+      const subnetMetagraph: SubnetMetagraph = response.toJSON();
+      return subnetMetagraph;
+    } catch (error) {
+      throw new SubnetMetagraphGenericException(error.message, { originalError: error });
+    }
   }
 }

@@ -16,6 +16,10 @@ import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { TransformInterceptor } from '../../commons/common-response.dto';
 import { SetWeightsCallParams } from './set-weights.call-params.interface';
 import { SetWeightsParamsDto } from './set-weights.dto';
+import {
+  SetWeightsGenericException,
+  SetWeightsParamsMissingException,
+} from './set-weights.exception';
 import { SetWeightsService } from './set-weights.service';
 
 @Controller('chain')
@@ -42,7 +46,7 @@ export class SetWeightsController {
   async setWeights(@Body(ValidationPipe) callParams: SetWeightsCallParams) {
     try {
       if (!callParams) {
-        throw new ChainException('SetWeightsCallParams is required', HttpStatus.BAD_REQUEST);
+        throw new SetWeightsParamsMissingException();
       }
 
       this.logger.log(`Setting weights with params: ${JSON.stringify(callParams)}`);
@@ -51,10 +55,10 @@ export class SetWeightsController {
       return result;
     } catch (error) {
       this.logger.error(`Error setting weights: ${error.message}`);
-      if (error instanceof ChainException) {
+      if (error instanceof SetWeightsParamsMissingException) {
         throw error;
       }
-      throw new ChainException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new SetWeightsGenericException(error.message, { originalError: error });
     }
   }
 }

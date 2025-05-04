@@ -12,6 +12,10 @@ import {
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { SubnetHyperparamsDto, SubnetHyperparamsResponseDto } from './subnet-hyperparameter.dto';
+import {
+  SubnetHyperparameterGenericException,
+  SubnetHyperparameterNotFoundException,
+} from './subnet-hyperparameter.exception';
 import { SubnetHyperparameterMapper } from './subnet-hyperparameter.mapper';
 import { SubnetHyperparameterService } from './subnet-hyperparameter.service';
 
@@ -58,13 +62,8 @@ export class SubnetHyperparameterController {
           params.netuid,
         );
 
-        // Check if the result is an Error
-        if (result instanceof Error) {
-          throw result;
-        }
-
         if (!result) {
-          throw new HttpException('Subnet hyperparameter not found', HttpStatus.NOT_FOUND);
+          throw new SubnetHyperparameterNotFoundException('Subnet hyperparameter not found');
         }
 
         const subnetHyperparameterDto = this.subnetHyperparameterMapper.toDto(result);
@@ -84,6 +83,9 @@ export class SubnetHyperparameterController {
           await new Promise(resolve => setTimeout(resolve, this.retryDelay));
         } else {
           // For other errors, break immediately
+          if (error instanceof SubnetHyperparameterNotFoundException) {
+            throw error;
+          }
           break;
         }
       }
@@ -91,9 +93,12 @@ export class SubnetHyperparameterController {
 
     // After max retries or non-connection error
     this.logger.error(`Failed to get subnet hyperparameter: ${lastError?.message}`);
-    throw new HttpException(
+    if (lastError instanceof SubnetHyperparameterNotFoundException) {
+      throw lastError;
+    }
+    throw new SubnetHyperparameterGenericException(
       lastError?.message || 'Failed to get subnet hyperparameter',
-      HttpStatus.INTERNAL_SERVER_ERROR,
+      { originalError: lastError },
     );
   }
 }

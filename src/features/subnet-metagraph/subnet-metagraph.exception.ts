@@ -5,6 +5,7 @@ import { HttpStatus } from '@nestjs/common';
 
 // Error code enum for this domain
 export enum SubnetMetagraphErrorCode {
+  GENERIC_ERROR = 'SUBNET_METAGRAPH.GENERIC_ERROR',
   NOT_FOUND = 'SUBNET_METAGRAPH.NOT_FOUND', // TODO: There is another error code on subtensor level, to discuss how to handle this
   INVALID_SUBNET_ID = 'SUBNET_METAGRAPH.INVALID_SUBNET_ID',
   FETCH_FAILED = 'SUBNET_METAGRAPH.FETCH_FAILED',
@@ -21,6 +22,17 @@ export class SubnetMetagraphException extends BaseException {
     details?: any,
   ) {
     super(errorCode, message, statusCode, details);
+  }
+}
+
+export class SubnetMetagraphGenericException extends SubnetMetagraphException {
+  constructor(reason: string, details?: any) {
+    super(
+      SubnetMetagraphErrorCode.GENERIC_ERROR,
+      `Subnet metagraph error: ${reason}`,
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      details,
+    );
   }
 }
 

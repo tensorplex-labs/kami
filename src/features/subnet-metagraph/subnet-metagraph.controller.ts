@@ -10,7 +10,7 @@ import {
   InvalidSubnetIdException,
   SubnetMetagraphFetchException,
   SubnetMetagraphNotFoundException,
-} from './subnet-metagraph.exceptions';
+} from './subnet-metagraph.exception';
 import { SubnetMetagraphService } from './subnet-metagraph.service';
 
 @Controller('chain')
@@ -86,10 +86,7 @@ export class SubnetMetagraphController {
           await new Promise(resolve => setTimeout(resolve, this.retryDelay));
         } else {
           // For other errors, wrap in a domain-specific exception and break
-          throw new SubnetMetagraphFetchException(
-            `Error fetching subnet metagraph: ${error.message}`,
-            { originalError: error, netuid },
-          );
+          throw new SubnetMetagraphFetchException(error.message, { originalError: error, netuid });
         }
       }
     }
@@ -98,6 +95,12 @@ export class SubnetMetagraphController {
     this.logger.error(
       `Failed to get subnet metagraph after ${this.maxRetries} retries: ${lastError?.message}`,
     );
+    if (
+      lastError instanceof SubnetMetagraphNotFoundException ||
+      lastError instanceof InvalidSubnetIdException
+    ) {
+      throw lastError;
+    }
     throw new SubnetMetagraphFetchException(
       `Failed to get subnet metagraph after ${this.maxRetries} retries`,
       { originalError: lastError, netuid, retries: this.maxRetries },

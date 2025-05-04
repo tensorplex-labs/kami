@@ -14,6 +14,10 @@ import {
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { TransformInterceptor } from '../../commons/common-response.dto';
+import {
+  SetCommitRevealWeightGenericException,
+  SetCommitRevealWeightParamsMissingException,
+} from './set-commit-reveal-weight.exception';
 import { CommitRevealWeightsCallParams } from './set-commit-reveal-weights.call-params.interface';
 import { SetCommitRevealWeightsParamsDto } from './set-commit-reveal-weights.dto';
 import { SetCommitRevealWeightsService } from './set-commit-reveal-weights.service';
@@ -38,20 +42,17 @@ export class SetCommitRevealWeightsController {
   async setCommitRevealWeights(@Body(ValidationPipe) callParams: CommitRevealWeightsCallParams) {
     try {
       if (!callParams) {
-        throw new ChainException(
-          'SetCommitRevealWeightsCallParams is required',
-          HttpStatus.BAD_REQUEST,
-        );
+        throw new SetCommitRevealWeightParamsMissingException();
       }
       this.logger.log(`Setting commit reveal weights with params: ${JSON.stringify(callParams)}`);
       const result = await this.setCommitRevealWeightsService.setCommitRevealWeights(callParams);
       return result;
     } catch (error) {
       this.logger.error(`Error setting commit reveal weights: ${error.message}`);
-      if (error instanceof ChainException) {
+      if (error instanceof SetCommitRevealWeightParamsMissingException) {
         throw error;
       }
-      throw new ChainException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new SetCommitRevealWeightGenericException(error.message, { originalError: error });
     }
   }
 }

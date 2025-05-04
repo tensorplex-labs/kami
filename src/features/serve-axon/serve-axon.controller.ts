@@ -1,5 +1,3 @@
-import { ChainException } from '@app/routes/chain/chain.exceptions';
-
 import {
   Body,
   ClassSerializerInterceptor,
@@ -27,6 +25,7 @@ import {
 import { TransformInterceptor } from '../../commons/common-response.dto';
 import { AxonCallParams } from './serve-axon.call-params.interface';
 import { AxonCallParamsDto } from './serve-axon.dto';
+import { ServeAxonGenericException, ServeAxonParamsMissingException } from './serve-axon.exception';
 import { ServeAxonService } from './serve-axon.service';
 
 @ApiTags('subnet')
@@ -49,7 +48,7 @@ export class ServeAxonController {
   async serveAxon(@Body(ValidationPipe) callParams: AxonCallParams) {
     try {
       if (!callParams) {
-        throw new ChainException('AxonCallParams is required', HttpStatus.BAD_REQUEST);
+        throw new ServeAxonParamsMissingException();
       }
 
       this.logger.log(`Serving axon with params: ${JSON.stringify(callParams)}`);
@@ -58,10 +57,10 @@ export class ServeAxonController {
       return result;
     } catch (error) {
       this.logger.error(`Error serving axon: ${error.message}`);
-      if (error instanceof ChainException) {
+      if (error instanceof ServeAxonParamsMissingException) {
         throw error;
       }
-      throw new ChainException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new ServeAxonGenericException(error.message, { originalError: error });
     }
   }
 }

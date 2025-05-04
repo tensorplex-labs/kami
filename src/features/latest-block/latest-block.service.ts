@@ -4,22 +4,18 @@ import { BlockInfo } from 'src/substrate/substrate.interface';
 
 import { Injectable, Logger } from '@nestjs/common';
 
+import { LatestBlockGenericException } from './latest-block.exception';
+
 @Injectable()
 export class LatestBlockService {
   private readonly logger = new Logger(LatestBlockService.name);
 
-  constructor(
-    private readonly substrateClientService: SubstrateClientService,
-    private readonly substrateConnectionService: SubstrateConnectionService,
-  ) {}
+  constructor(private readonly substrateConnectionService: SubstrateConnectionService) {}
 
-  async getLatestBlock(): Promise<BlockInfo | Error> {
+  async getLatestBlock(): Promise<BlockInfo> {
     try {
       const client = await this.substrateConnectionService.getClient();
 
-      if (client instanceof Error) {
-        throw client;
-      }
       // this.logger.debug(`Retrieving latest block`);
       const blockHead = await client.rpc.chain.getHeader();
       const result: BlockInfo = {
@@ -31,7 +27,7 @@ export class LatestBlockService {
       // this.logger.debug(`Latest block: ${JSON.stringify(result)}`);
       return result;
     } catch (error) {
-      throw new Error(`Failed to retrieve latest block: ${error.message}`);
+      throw new LatestBlockGenericException(error.message, { originalError: error });
     }
   }
 }

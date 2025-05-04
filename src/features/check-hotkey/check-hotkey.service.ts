@@ -3,6 +3,13 @@ import { SubstrateConnectionService } from 'src/core/substrate/services/substrat
 
 import { Injectable, Logger } from '@nestjs/common';
 
+import {
+  CheckHotkeyErrorCode,
+  CheckHotkeyException,
+  CheckHotkeyFetchException,
+  CheckHotkeyGenericException,
+} from './check-hotkey.exception';
+
 @Injectable()
 export class CheckHotkeyService {
   private readonly logger = new Logger(CheckHotkeyService.name);
@@ -12,18 +19,15 @@ export class CheckHotkeyService {
     private readonly substrateConnectionService: SubstrateConnectionService,
   ) {}
 
-  async checkHotkey(netuid: number, hotkey: string, block?: number): Promise<boolean | Error> {
+  async checkHotkey(netuid: number, hotkey: string, block?: number): Promise<boolean> {
     try {
       const client = await this.substrateConnectionService.getClient();
-
-      if (client instanceof Error) {
-        throw client;
-      }
 
       let response = null;
 
       if (block) {
-        const getBlockHash: string | Error = await this.substrateClientService.getBlockHash(block);
+        const getBlockHash: string = await this.substrateClientService.getBlockHash(block);
+
         const blockApi = await client.at(getBlockHash);
         response = await blockApi.query.subtensorModule.isNetworkMember(hotkey, netuid);
       } else {
@@ -31,14 +35,17 @@ export class CheckHotkeyService {
       }
 
       if (response == null) {
-        throw new Error('Failed to retrieve hotkey');
+        throw new CheckHotkeyFetchException('No response');
       }
 
       const isHotkey: boolean = response.toJSON() as boolean;
 
       return isHotkey;
     } catch (error) {
-      throw error;
+      if (error instanceof CheckHotkeyFetchException) {
+        throw error;
+      }
+      throw new CheckHotkeyGenericException(error.message, { originalError: error });
     }
   }
 }

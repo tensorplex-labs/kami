@@ -4,6 +4,8 @@ import { SubnetHyperparameters } from 'src/features/subnet-hyperparameter/subnet
 
 import { Injectable, Logger } from '@nestjs/common';
 
+import { SubnetHyperparameterGenericException } from './subnet-hyperparameter.exception';
+
 @Injectable()
 export class SubnetHyperparameterService {
   private readonly logger = new Logger(SubnetHyperparameterService.name);
@@ -13,13 +15,9 @@ export class SubnetHyperparameterService {
     private readonly substrateConnectionService: SubstrateConnectionService,
   ) {}
 
-  async getSubnetHyperparameters(netuid: number): Promise<SubnetHyperparameters | Error> {
+  async getSubnetHyperparameters(netuid: number): Promise<SubnetHyperparameters> {
     try {
       const client = await this.substrateConnectionService.getClient();
-
-      if (client instanceof Error) {
-        throw client;
-      }
 
       const runtimeApiName: string = 'SubnetInfoRuntimeApi';
       const methodName: string = 'get_subnet_hyperparams';
@@ -31,14 +29,10 @@ export class SubnetHyperparameterService {
         encodedParams,
       );
 
-      if (response instanceof Error) {
-        throw response;
-      }
-
       const subnetHyperparameters: SubnetHyperparameters = response.toJSON();
       return subnetHyperparameters;
     } catch (error) {
-      throw error;
+      throw new SubnetHyperparameterGenericException(error.message, { originalError: error });
     }
   }
 }

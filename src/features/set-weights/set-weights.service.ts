@@ -4,6 +4,7 @@ import { SubstrateConnectionService } from 'src/core/substrate/services/substrat
 import { Injectable, Logger } from '@nestjs/common';
 
 import { SetWeightsCallParams } from './set-weights.call-params.interface';
+import { SetWeightsGenericException } from './set-weights.exception';
 
 @Injectable()
 export class SetWeightsService {
@@ -14,12 +15,9 @@ export class SetWeightsService {
     private readonly substrateConnectionService: SubstrateConnectionService,
   ) {}
 
-  async setWeights(CallParams: SetWeightsCallParams): Promise<any | Error> {
+  async setWeights(CallParams: SetWeightsCallParams): Promise<any> {
     try {
       const client = await this.substrateConnectionService.getClient();
-      if (client instanceof Error) {
-        throw client;
-      }
       const setWeightsTx = client.tx.subtensorModule.setWeights(
         CallParams.netuid,
         CallParams.dests,
@@ -31,7 +29,7 @@ export class SetWeightsService {
 
       return result;
     } catch (error) {
-      throw error;
+      throw new SetWeightsGenericException(error.message, { originalError: error });
     }
   }
 }

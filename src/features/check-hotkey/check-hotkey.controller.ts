@@ -1,9 +1,13 @@
 import { TransformInterceptor } from '@app/commons/common-response.dto';
-import { ChainException } from '@app/routes/chain/chain.exceptions';
 
 import { Controller, Get, HttpStatus, Logger, Query, UseInterceptors } from '@nestjs/common';
 import { ApiQuery, ApiTags } from '@nestjs/swagger';
 
+import {
+  CheckHotkeyException,
+  CheckHotkeyGenericException,
+  CheckHotkeyNetuidHotkeyMissingException,
+} from './check-hotkey.exception';
 import { CheckHotkeyMapper } from './check-hotkey.mapper';
 import { CheckHotkeyService } from './check-hotkey.service';
 
@@ -46,34 +50,28 @@ export class CheckHotkeyController {
   ) {
     try {
       if (!netuid || !hotkey) {
-        throw new ChainException('netuid and hotkey are required', HttpStatus.BAD_REQUEST);
+        throw new CheckHotkeyNetuidHotkeyMissingException();
       }
       this.logger.log(`Checking hotkey for netuid: ${netuid}, hotkey: ${hotkey}`);
 
-      let isHotkeyValid: boolean | Error = false;
+      let isHotkeyValid: boolean = false;
       if (block) {
         isHotkeyValid = await this.checkHotkeyService.checkHotkey(netuid, hotkey, block);
-        if (isHotkeyValid instanceof Error) {
-          throw isHotkeyValid;
-        }
+
         this.logger.log(`Hotkey ${hotkey} is valid: ${isHotkeyValid}`);
-        this.logger.log(`response: ${JSON.stringify(this.checkHotkeyMapper.toDto(isHotkeyValid))}`);
         return this.checkHotkeyMapper.toDto(isHotkeyValid);
       } else {
         isHotkeyValid = await this.checkHotkeyService.checkHotkey(netuid, hotkey);
-        if (isHotkeyValid instanceof Error) {
-          throw isHotkeyValid;
-        }
+
         this.logger.log(`Hotkey ${hotkey} is valid: ${isHotkeyValid}`);
-        this.logger.log(`response: ${JSON.stringify(this.checkHotkeyMapper.toDto(isHotkeyValid))}`);
         return this.checkHotkeyMapper.toDto(isHotkeyValid);
       }
     } catch (error) {
       this.logger.error(`Error checking hotkey: ${error.message}`);
-      if (error instanceof ChainException) {
+      if (error instanceof CheckHotkeyNetuidHotkeyMissingException) {
         throw error;
       }
-      throw new ChainException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new CheckHotkeyGenericException(error.message, { originalError: error });
     }
   }
 }
