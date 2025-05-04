@@ -160,100 +160,82 @@ export class SubstrateConnectionService implements OnModuleInit {
   }
 
   async connect(): Promise<ConnectionStatus> {
-    // Apply retry strategy with backoff
-    let lastError: Error | null = null;
-    let provider: WsProvider | null = null;
+    try {
+      this.logger.log(`Connecting to ${this.config.nodeUrl}...`);
 
-    for (let attempt = 0; attempt < this.maxRetries; attempt++) {
-      try {
-        if (attempt > 0) {
-          this.logger.log(
-            `Retrying connection to ${this.config.nodeUrl} (attempt ${attempt + 1}/${this.maxRetries})...`,
-          );
-          await this.delay(attempt);
-        } else {
-          this.logger.log(`Connecting to ${this.config.nodeUrl}...`);
-        }
+      // Create a provider with auto-reconnect enabled
+      // The second parameter is the reconnect delay in milliseconds
+      const provider = new WsProvider(
+        this.config.nodeUrl, // URL
+        this.initialRetryDelay, // Auto reconnect delay in ms
+        {}, // Headers
+        this.config.timeout || 10000, // Timeout
+      );
 
-        // Create a new provider for each attempt
-        provider = new WsProvider(this.config.nodeUrl);
+      // Setup event listeners
+      provider.on('connected', () => {
+        this.logger.log(`Connected to ${this.config.nodeUrl}`);
+        this.connectionStatus.isConnected = true;
+      });
 
-        // Wait for the provider to connect
-        await new Promise<void>((resolve, reject) => {
-          const timeout = setTimeout(() => {
-            reject(new Error('Connection timeout'));
-          }, 10000); // 10 second timeout
+      provider.on('disconnected', () => {
+        this.logger.warn(`WebSocket disconnected from ${this.config.nodeUrl}`);
+        this.connectionStatus.isConnected = false;
+      });
 
-          if (provider) {
-            provider.on('connected', () => {
-              clearTimeout(timeout);
-              resolve();
-            });
+      provider.on('error', error => {
+        this.logger.error(`WebSocket error: ${JSON.stringify(error) ?? 'Unknown error'}`);
+      });
 
-            provider.on('error', err => {
-              clearTimeout(timeout);
-              reject(err);
-            });
-          }
-        });
+      // Create API with this provider
+      this.client = new ApiPromise({ provider });
 
-        // Create API promise with the connected provider
-        this.client = new ApiPromise({ provider });
+      // Handle API events as well
+      this.client.on('connected', () => {
+        this.logger.log('Substrate client established');
+      });
 
-        // Set up monitoring before waiting for isReady
-        this.setupConnectionMonitoring();
+      this.client.on('disconnected', () => {
+        this.logger.warn('Substrate client disconnected');
+      });
 
-        await this.client.isReady;
-        this.logger.log('Connected to Substrate node!');
+      this.client.on('error', error => {
+        this.logger.error(`Substrate client error: ${error?.message ?? 'Unknown error'}`);
+      });
 
-        this.connectionStatus = {
-          isConnected: true,
-          lastConnected: new Date(),
-          chainId: (await this.client.rpc.system.chain()).toString(),
-        };
+      this.client.on('ready', () => {
+        this.logger.log('Substrate client is ready');
+      });
 
-        return this.connectionStatus;
-      } catch (error) {
-        lastError = error;
-        this.logger.warn(`Connection attempt ${attempt + 1} failed: ${error.message}`);
+      // Wait for API to be ready
+      await this.client.isReady;
 
-        // Cleanup if needed
-        if (provider) {
-          try {
-            provider.disconnect();
-          } catch (disconnectError) {
-            this.logger.debug(`Error while disconnecting provider: ${disconnectError.message}`);
-          }
-          provider = null;
-        }
+      // Set connection status
+      this.connectionStatus = {
+        isConnected: true,
+        lastConnected: new Date(),
+        chainId: (await this.client.rpc.system.chain()).toString(),
+      };
 
-        if (this.client) {
-          try {
-            this.client.disconnect();
-          } catch (disconnectError) {
-            this.logger.debug(`Error while disconnecting client: ${disconnectError.message}`);
-          }
-          this.client = null;
-        }
-      }
+      this.logger.log(`Connected to Substrate node for ${this.connectionStatus.chainId}!`);
+
+      return this.connectionStatus;
+    } catch (error) {
+      this.connectionStatus = { isConnected: false };
+      this.logger.error(`Failed to connect: ${error?.message ?? 'Unknown error'}`);
+
+      throw new ConnectionFailedException(error?.message ?? 'Connection failed', {
+        nodeUrl: this.config.nodeUrl,
+        originalError: error,
+      });
     }
-
-    // All retries failed
-    this.connectionStatus = { isConnected: false };
-    this.logger.error(`Failed to connect after ${this.maxRetries} attempts`);
-
-    throw new ConnectionFailedException(lastError?.message || 'Max retries exceeded', {
-      nodeUrl: this.config.nodeUrl,
-      originalError: lastError,
-      attempts: this.maxRetries,
-    });
   }
 
   async reconnect(): Promise<ConnectionStatus> {
     // Prevent multiple concurrent reconnection attempts
     if (this.isReconnecting) {
       this.logger.debug('Reconnection already in progress, waiting...');
-      return new Promise((resolve) => {
+      return new Promise(resolve => {
         // Poll until reconnection is complete or timeout
         const interval = setInterval(() => {
           if (!this.isReconnecting && this.connectionStatus.isConnected) {
@@ -261,7 +243,7 @@ export class SubstrateConnectionService implements OnModuleInit {
             resolve(this.connectionStatus);
           }
         }, 100);
-        
+
         // Set a timeout in case reconnection stalls
         setTimeout(() => {
           clearInterval(interval);
@@ -271,29 +253,41 @@ export class SubstrateConnectionService implements OnModuleInit {
         }, 30000);
       });
     }
-    
+
     try {
       this.isReconnecting = true;
+
+      // Check if API exists and is still usable
       if (this.client) {
-        this.logger.debug('Disconnecting current client before reconnecting');
         try {
-          this.client.disconnect();
-        } catch (disconnectError) {
-          this.logger.debug(`Error while disconnecting: ${disconnectError.message}`);
+          // Try to use existing connection if possible
+          await this.client.isReady;
+
+          // If we get here, connection is already established
+          this.connectionStatus.isConnected = true;
+          return this.connectionStatus;
+        } catch (error) {
+          this.logger.debug(`Existing client is not usable: ${error?.message}`);
+
+          // Disconnect client if it exists but is not usable
+          try {
+            await this.client.disconnect();
+          } catch (disconnectError) {
+            this.logger.debug(`Error disconnecting client: ${disconnectError?.message}`);
+          }
+
+          this.client = null;
         }
-        this.client = null;
       }
 
-      this.connectionStatus.isConnected = false;
-      this.logger.debug(`Starting reconnection with maxRetries=${this.maxRetries}`);
-      return this.connect();
+      // Create a new connection if needed
+      this.logger.debug('Creating new connection');
+      return await this.connect();
     } catch (error) {
-      this.logger.error(`Failed to reconnect: ${error.message}`);
-
-      throw new ReconnectionFailedException(error.message, {
+      this.logger.error(`Failed to reconnect: ${error?.message ?? 'Unknown error'}`);
+      throw new ReconnectionFailedException(error?.message ?? 'Reconnection failed', {
         nodeUrl: this.config.nodeUrl,
         originalError: error,
-        maxRetries: this.maxRetries,
       });
     } finally {
       this.isReconnecting = false;
@@ -465,19 +459,19 @@ export class SubstrateConnectionService implements OnModuleInit {
 
   private setupConnectionMonitoring(): void {
     if (!this.client) return;
-    
+
     let reconnectTimer: NodeJS.Timeout | null = null;
-    
+
     // Listen for disconnection events with debouncing
     this.client.on('disconnected', () => {
       this.logger.warn(`Disconnected from ${this.config.nodeUrl}`);
       this.connectionStatus.isConnected = false;
-      
+
       // Clear any pending reconnect timer
       if (reconnectTimer) {
         clearTimeout(reconnectTimer);
       }
-      
+
       // Set new debounced reconnect timer
       reconnectTimer = setTimeout(() => {
         if (!this.connectionStatus.isConnected) {
