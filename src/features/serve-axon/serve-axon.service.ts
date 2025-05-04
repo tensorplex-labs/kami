@@ -1,5 +1,6 @@
 import { SubstrateClientService } from 'src/core/substrate/services/substrate-client.service';
 import { SubstrateConnectionService } from 'src/core/substrate/services/substrate-connection.service';
+import { SubtensorException } from 'src/core/substrate/substrate-client.exception';
 
 import { Injectable, Logger } from '@nestjs/common';
 
@@ -35,6 +36,10 @@ export class ServeAxonService {
       return await this.substrateClientService.signAndSendTransaction(axonTx);
     } catch (error) {
       this.logger.error(`Error serving axon: ${error.message}`);
+      if (error instanceof SubtensorException) {
+        throw error;
+      }
+
       throw new ServeAxonGenericException(error.message, { originalError: error });
     }
   }

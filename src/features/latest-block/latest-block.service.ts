@@ -1,10 +1,11 @@
 import { SubstrateClientService } from 'src/core/substrate/services/substrate-client.service';
 import { SubstrateConnectionService } from 'src/core/substrate/services/substrate-connection.service';
-import { BlockInfo } from './latest-block.interface';
+import { SubtensorException } from 'src/core/substrate/substrate-client.exception';
 
 import { Injectable, Logger } from '@nestjs/common';
 
 import { LatestBlockGenericException } from './latest-block.exception';
+import { BlockInfo } from './latest-block.interface';
 
 @Injectable()
 export class LatestBlockService {
@@ -27,6 +28,9 @@ export class LatestBlockService {
       // this.logger.debug(`Latest block: ${JSON.stringify(result)}`);
       return result;
     } catch (error) {
+      if (error instanceof SubtensorException) {
+        throw error;
+      }
       throw new LatestBlockGenericException(error.message, { originalError: error });
     }
   }

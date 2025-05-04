@@ -1,5 +1,6 @@
 import { SubstrateClientService } from 'src/core/substrate/services/substrate-client.service';
 import { SubstrateConnectionService } from 'src/core/substrate/services/substrate-connection.service';
+import { SubtensorException } from 'src/core/substrate/substrate-client.exception';
 
 import { Injectable, Logger } from '@nestjs/common';
 
@@ -29,6 +30,9 @@ export class SetWeightsService {
 
       return result;
     } catch (error) {
+      if (error instanceof SubtensorException) {
+        throw error;
+      }
       throw new SetWeightsGenericException(error.message, { originalError: error });
     }
   }

@@ -1,4 +1,5 @@
 import { TransformInterceptor } from '@app/commons/common-response.dto';
+import { SubtensorException } from 'src/core/substrate/substrate-client.exception';
 
 import {
   Controller,
@@ -86,6 +87,9 @@ export class SubnetHyperparameterController {
           if (error instanceof SubnetHyperparameterNotFoundException) {
             throw error;
           }
+          if (error instanceof SubtensorException) {
+            throw error;
+          }
           break;
         }
       }
@@ -94,6 +98,9 @@ export class SubnetHyperparameterController {
     // After max retries or non-connection error
     this.logger.error(`Failed to get subnet hyperparameter: ${lastError?.message}`);
     if (lastError instanceof SubnetHyperparameterNotFoundException) {
+      throw lastError;
+    }
+    if (lastError instanceof SubtensorException) {
       throw lastError;
     }
     throw new SubnetHyperparameterGenericException(

@@ -1,3 +1,5 @@
+import { SubtensorException } from 'src/core/substrate/substrate-client.exception';
+
 import {
   Body,
   ClassSerializerInterceptor,
@@ -48,6 +50,9 @@ export class SetCommitRevealWeightsController {
     } catch (error) {
       this.logger.error(`Error setting commit reveal weights: ${error.message}`);
       if (error instanceof SetCommitRevealWeightParamsMissingException) {
+        throw error;
+      }
+      if (error instanceof SubtensorException) {
         throw error;
       }
       throw new SetCommitRevealWeightGenericException(error.message, { originalError: error });

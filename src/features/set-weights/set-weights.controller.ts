@@ -1,3 +1,5 @@
+import { SubtensorException } from 'src/core/substrate/substrate-client.exception';
+
 import {
   Body,
   ClassSerializerInterceptor,
@@ -54,6 +56,9 @@ export class SetWeightsController {
     } catch (error) {
       this.logger.error(`Error setting weights: ${error.message}`);
       if (error instanceof SetWeightsParamsMissingException) {
+        throw error;
+      }
+      if (error instanceof SubtensorException) {
         throw error;
       }
       throw new SetWeightsGenericException(error.message, { originalError: error });

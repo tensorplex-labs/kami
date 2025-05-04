@@ -167,7 +167,6 @@ export class SubstrateClientService {
         throw error;
       }
 
-
       this.handleSubtensorError(error);
       // throw new QueryFailedException(`Failed to retrieve block hash: ${error.message}`, {
       //   originalError: error,

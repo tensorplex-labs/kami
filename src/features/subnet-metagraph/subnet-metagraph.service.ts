@@ -17,15 +17,15 @@ export class SubnetMetagraphService {
     try {
       const client = await this.substrateConnectionService.getClient();
 
-    const runtimeApiName = 'SubnetInfoRuntimeApi';
-    const methodName = 'get_metagraph';
-    const encodedParams = client.registry.createType('u16', netuid).toU8a();
+      const runtimeApiName = 'SubnetInfoRuntimeApi';
+      const methodName = 'get_metagraph';
+      const encodedParams = client.registry.createType('u16', netuid).toU8a();
 
-    const response = await this.substrateClientService.queryRuntimeApi(
-      runtimeApiName,
-      methodName,
-      encodedParams,
-    );
+      const response = await this.substrateClientService.queryRuntimeApi(
+        runtimeApiName,
+        methodName,
+        encodedParams,
+      );
 
       const subnetMetagraph: SubnetMetagraph = response.toJSON();
       return subnetMetagraph;

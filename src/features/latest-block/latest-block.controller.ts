@@ -1,4 +1,5 @@
 import { TransformInterceptor } from '@app/commons/common-response.dto';
+import { SubtensorException } from 'src/core/substrate/substrate-client.exception';
 
 import {
   Controller,
@@ -44,6 +45,9 @@ export class LatestBlockController {
       return this.latestBlockMapper.toDto(block);
     } catch (error) {
       this.logger.error(`Error fetching latest block: ${error.message}`);
+      if (error instanceof SubtensorException) {
+        throw error;
+      }
 
       throw new LatestBlockGenericException(error.message, { originalError: error });
     }

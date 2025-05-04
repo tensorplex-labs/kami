@@ -1,5 +1,6 @@
 import { SubstrateClientService } from 'src/core/substrate/services/substrate-client.service';
 import { SubstrateConnectionService } from 'src/core/substrate/services/substrate-connection.service';
+import { SubtensorException } from 'src/core/substrate/substrate-client.exception';
 
 import { Injectable, Logger } from '@nestjs/common';
 
@@ -43,6 +44,9 @@ export class CheckHotkeyService {
       return isHotkey;
     } catch (error) {
       if (error instanceof CheckHotkeyFetchException) {
+        throw error;
+      }
+      if (error instanceof SubtensorException) {
         throw error;
       }
       throw new CheckHotkeyGenericException(error.message, { originalError: error });

@@ -1,10 +1,10 @@
 import { TransformInterceptor } from '@app/commons/common-response.dto';
+import { SubtensorException } from 'src/core/substrate/substrate-client.exception';
 
 import { Controller, Get, HttpStatus, Logger, Query, UseInterceptors } from '@nestjs/common';
 import { ApiQuery, ApiTags } from '@nestjs/swagger';
 
 import {
-  CheckHotkeyException,
   CheckHotkeyGenericException,
   CheckHotkeyNetuidHotkeyMissingException,
 } from './check-hotkey.exception';
@@ -69,6 +69,9 @@ export class CheckHotkeyController {
     } catch (error) {
       this.logger.error(`Error checking hotkey: ${error.message}`);
       if (error instanceof CheckHotkeyNetuidHotkeyMissingException) {
+        throw error;
+      }
+      if (error instanceof SubtensorException) {
         throw error;
       }
       throw new CheckHotkeyGenericException(error.message, { originalError: error });

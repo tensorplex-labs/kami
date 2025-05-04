@@ -1,3 +1,5 @@
+import { SubtensorException } from 'src/core/substrate/substrate-client.exception';
+
 import {
   Body,
   ClassSerializerInterceptor,
@@ -60,6 +62,11 @@ export class ServeAxonController {
       if (error instanceof ServeAxonParamsMissingException) {
         throw error;
       }
+
+      if (error instanceof SubtensorException) {
+        throw error;
+      }
+
       throw new ServeAxonGenericException(error.message, { originalError: error });
     }
   }
