@@ -4,12 +4,12 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { SubstrateClientService } from './services/substrate-client.service';
 import { SubstrateConnectionService } from './services/substrate-connection.service';
 import {
-  WalletPathNotSetException,
-  WalletNameNotSetException,
-  WalletHotkeyNotSetException,
+  FileAccessException,
   InvalidColdkeyFormatException,
   InvalidHotkeyFormatException,
-  FileAccessException,
+  WalletHotkeyNotSetException,
+  WalletNameNotSetException,
+  WalletPathNotSetException,
 } from './substrate-connection.exception';
 
 @Controller('substrate')
