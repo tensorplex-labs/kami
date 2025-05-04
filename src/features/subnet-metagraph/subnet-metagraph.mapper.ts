@@ -3,7 +3,7 @@ import { plainToClass } from 'class-transformer';
 import { Injectable } from '@nestjs/common';
 
 import { AxonInfoDto, IdentitiesInfoDto, SubnetIdentityDto } from '../../commons/dto';
-import { SubnetMetagraph } from '../../substrate/substrate.interface';
+import { SubnetMetagraph } from './subnet-metagraph.interface';
 import { SubnetMetagraphDto } from './subnet-metagraph.dto';
 
 @Injectable()

@@ -1,6 +1,6 @@
 import { SubstrateClientService } from 'src/core/substrate/services/substrate-client.service';
 import { SubstrateConnectionService } from 'src/core/substrate/services/substrate-connection.service';
-import { BlockInfo } from 'src/substrate/substrate.interface';
+import { BlockInfo } from './latest-block.interface';
 
 import { Injectable, Logger } from '@nestjs/common';
 

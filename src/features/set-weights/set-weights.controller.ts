@@ -1,5 +1,3 @@
-import { ChainException } from '@app/routes/chain/chain.exceptions';
-
 import {
   Body,
   ClassSerializerInterceptor,
