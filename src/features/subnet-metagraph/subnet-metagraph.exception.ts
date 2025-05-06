@@ -3,20 +3,11 @@ import { BaseException } from '@app/commons/exceptions/base.exception';
 
 import { HttpStatus } from '@nestjs/common';
 
-// Error code enum for this domain
-export enum SubnetMetagraphErrorCode {
-  NOT_FOUND = 1,
-  INVALID_SUBNET_ID = 2,
-  FETCH_FAILED = 3,
-  VALIDATION_ERROR = 4,
-  PERMISSION_DENIED = 5,
-}
-
 // Base exception for this domain
 export class SubnetMetagraphException extends BaseException {
   constructor(statusCode: HttpStatus, type: string, message: string, stackTrace?: string) {
     const errorCategory = 'SUBNET_METAGRAPH';
-    super(statusCode, type, `${errorCategory}.${message}`, stackTrace);
+    super(statusCode, `${errorCategory}.${type}`, message, stackTrace);
   }
 }
 
@@ -29,8 +20,8 @@ export class SubnetMetagraphNotFoundException extends SubnetMetagraphException {
 
     super(
       HttpStatus.NOT_FOUND,
-      String(SubnetMetagraphErrorCode.NOT_FOUND),
-      `NOT_FOUND: ${message}`,
+      'NOT_FOUND',
+      message,
       stackTrace,
     );
   }
@@ -41,20 +32,19 @@ export class InvalidSubnetIdException extends SubnetMetagraphException {
     const message = `Invalid subnet ID: ${subnetId}`;
     super(
       HttpStatus.BAD_REQUEST,
-      String(SubnetMetagraphErrorCode.INVALID_SUBNET_ID),
-      `INVALID_SUBNET_ID: ${message}`,
+      'INVALID_SUBNET_ID',
+      message,
       stackTrace,
     );
   }
 }
 
 export class SubnetMetagraphFetchException extends SubnetMetagraphException {
-  constructor(reason: string, stackTrace?: string) {
-    const message = `Failed to fetch subnet metagraph: ${reason}`;
+  constructor(message: string, stackTrace?: string) {
     super(
       HttpStatus.INTERNAL_SERVER_ERROR,
-      String(SubnetMetagraphErrorCode.FETCH_FAILED),
-      `FETCH_FAILED: ${message}`,
+      'FETCH_FAILED',
+      message,
       stackTrace,
     );
   }
@@ -65,8 +55,8 @@ export class SubnetMetagraphValidationException extends SubnetMetagraphException
     const message = `Subnet metagraph validation error: ${reason}`;
     super(
       HttpStatus.BAD_REQUEST,
-      String(SubnetMetagraphErrorCode.VALIDATION_ERROR),
-      `VALIDATION_ERROR: ${message}`,
+      'VALIDATION_ERROR',
+      message,
       stackTrace,
     );
   }
@@ -77,8 +67,8 @@ export class SubnetMetagraphPermissionException extends SubnetMetagraphException
     const message = `Permission denied for subnet metagraph action: ${action}`;
     super(
       HttpStatus.FORBIDDEN,
-      String(SubnetMetagraphErrorCode.PERMISSION_DENIED),
-      `PERMISSION_DENIED: ${message}`,
+      'PERMISSION_DENIED',
+      message,
       stackTrace,
     );
   }

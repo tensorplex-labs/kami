@@ -22,15 +22,6 @@ export enum SubtensorErrorCode {
   BAD_REQUEST = 255,
 }
 
-// Client operation specific error codes (can be extended)
-export enum SubstrateClientErrorCode {
-  TRANSACTION_FAILED = 1,
-  QUERY_FAILED = 2,
-  INVALID_PARAMETER = 3,
-  OPERATION_TIMEOUT = 4,
-  BLOCK_HASH_NOT_FOUND = 5,
-}
-
 // Base exception for substrate client operations
 export class SubstrateClientException extends BaseException {
   constructor(statusCode: HttpStatus, type: string, message: string, stackTrace?: string) {
@@ -160,13 +151,13 @@ function getSubtensorErrorDetails(type: SubtensorErrorCode): SubtensorErrorDetai
 export class SubtensorException extends SubstrateClientException {
   constructor(error: SubtensorErrorCode, customMessage?: string, stackTrace?: string) {
     const subTensorErrorDetails = getSubtensorErrorDetails(error);
-    const message = subTensorErrorDetails.description || customMessage;
+    const message = subTensorErrorDetails.description || customMessage || '';
     const errorCategory = 'SUBTENSOR';
 
     super(
       HttpStatus.INTERNAL_SERVER_ERROR,
-      String(SubtensorErrorCode),
-      `${errorCategory}.${subTensorErrorDetails.name}: ${message}`,
+      `${errorCategory}.${subTensorErrorDetails.name}`,
+      message,
       stackTrace,
     );
   }
@@ -178,8 +169,8 @@ export class TransactionFailedException extends SubstrateClientException {
     const errorCategory = 'SUBSTRATE_CLIENT';
     super(
       HttpStatus.INTERNAL_SERVER_ERROR,
-      String(SubstrateClientErrorCode.TRANSACTION_FAILED),
-      `${errorCategory}.TRANSACTION_FAILED: ${message}`,
+      `${errorCategory}.TRANSACTION_FAILED`,
+      `${message}`,
       stackTrace,
     );
   }
@@ -190,8 +181,8 @@ export class QueryFailedException extends SubstrateClientException {
     const errorCategory = 'SUBSTRATE_CLIENT';
     super(
       HttpStatus.BAD_REQUEST,
-      String(SubstrateClientErrorCode.QUERY_FAILED),
-      `${errorCategory}.QUERY_FAILED: ${message}`,
+      `${errorCategory}.QUERY_FAILED`,
+      `${message}`,
       stackTrace,
     );
   }
@@ -202,8 +193,8 @@ export class InvalidParameterException extends SubstrateClientException {
     const errorCategory = 'SUBSTRATE_CLIENT';
     super(
       HttpStatus.BAD_REQUEST,
-      String(SubstrateClientErrorCode.INVALID_PARAMETER),
-      `${errorCategory}.INVALID_PARAMETER: ${message}`,
+      `${errorCategory}.INVALID_PARAMETER`,
+      `${message}`,
       stackTrace,
     );
   }
@@ -214,8 +205,8 @@ export class OperationTimeoutException extends SubstrateClientException {
     const errorCategory = 'SUBSTRATE_CLIENT';
     super(
       HttpStatus.REQUEST_TIMEOUT,
-      String(SubstrateClientErrorCode.OPERATION_TIMEOUT),
-      `${errorCategory}.OPERATION_TIMEOUT: ${message}`,
+      `${errorCategory}.OPERATION_TIMEOUT`,
+      `${message}`,
       stackTrace,
     );
   }
@@ -226,8 +217,8 @@ export class BlockHashNotFoundException extends SubstrateClientException {
     const errorCategory = 'SUBSTRATE_CLIENT';
     super(
       HttpStatus.BAD_REQUEST,
-      String(SubstrateClientErrorCode.BLOCK_HASH_NOT_FOUND),
-      `${errorCategory}.BLOCK_HASH_NOT_FOUND: ${message}`,
+      `${errorCategory}.BLOCK_HASH_NOT_FOUND`,
+      `${message}`,
       stackTrace,
     );
   }

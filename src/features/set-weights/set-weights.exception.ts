@@ -3,16 +3,11 @@ import { BaseException } from '@app/commons/exceptions/base.exception';
 
 import { HttpStatus } from '@nestjs/common';
 
-// Error code enum for this domain
-export enum SetWeightsErrorCode {
-  PARAMS_MISSING = '1',
-}
-
 // Base exception for this domain
 export class SetWeightsException extends BaseException {
   constructor(statusCode: HttpStatus, type: string, message: string, stackTrace?: string) {
     const errorCategory = 'SET_WEIGHTS';
-    super(statusCode, type, `${errorCategory}.${message}`, stackTrace);
+    super(statusCode, `${errorCategory}.${type}`, message, stackTrace);
   }
 }
 
@@ -21,8 +16,8 @@ export class SetWeightsParamsMissingException extends SetWeightsException {
   constructor(stackTrace?: any) {
     super(
       HttpStatus.BAD_REQUEST,
-      String(SetWeightsErrorCode.PARAMS_MISSING),
-      `PARAMS_MISSING: Set weights params missing`,
+      'PARAMS_MISSING',
+      'Set weights params missing',
       stackTrace,
     );
   }

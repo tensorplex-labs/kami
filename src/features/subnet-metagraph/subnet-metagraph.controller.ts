@@ -9,6 +9,7 @@ import { ConnectionFailedException } from '../../core/substrate/substrate-connec
 import {
   InvalidSubnetIdException,
   SubnetMetagraphException,
+  SubnetMetagraphFetchException,
   SubnetMetagraphNotFoundException,
 } from './subnet-metagraph.exception';
 import { SubnetMetagraphService } from './subnet-metagraph.service';
