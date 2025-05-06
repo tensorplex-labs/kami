@@ -2,9 +2,9 @@ import { SubstrateClientService } from 'src/core/substrate/services/substrate-cl
 import { SubstrateConnectionService } from 'src/core/substrate/services/substrate-connection.service';
 import { SubtensorException } from 'src/core/substrate/substrate-client.exception';
 
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 
-import { LatestBlockGenericException } from './latest-block.exception';
+import { LatestBlockException } from './latest-block.exception';
 import { BlockInfo } from './latest-block.interface';
 
 @Injectable()
@@ -31,7 +31,12 @@ export class LatestBlockService {
       if (error instanceof SubtensorException) {
         throw error;
       }
-      throw new LatestBlockGenericException(error.message, { originalError: error });
+      throw new LatestBlockException(
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        'UNKNOWN',
+        error.message,
+        error.stack,
+      );
     }
   }
 }

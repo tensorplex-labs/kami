@@ -1,10 +1,9 @@
 import { SubstrateClientService } from 'src/core/substrate/services/substrate-client.service';
 import { SubstrateConnectionService } from 'src/core/substrate/services/substrate-connection.service';
+import { SubnetMetagraphException } from 'src/features/subnet-metagraph/subnet-metagraph.exception';
 import { SubnetMetagraph } from 'src/features/subnet-metagraph/subnet-metagraph.interface';
 
-import { Injectable } from '@nestjs/common';
-
-import { SubnetMetagraphGenericException } from './subnet-metagraph.exception';
+import { HttpStatus, Injectable } from '@nestjs/common';
 
 @Injectable()
 export class SubnetMetagraphService {
@@ -30,7 +29,12 @@ export class SubnetMetagraphService {
       const subnetMetagraph: SubnetMetagraph = response.toJSON();
       return subnetMetagraph;
     } catch (error) {
-      throw new SubnetMetagraphGenericException(error.message, { originalError: error });
+      throw new SubnetMetagraphException(
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        'UNKNOWN',
+        error.message,
+        error.stack,
+      );
     }
   }
 }

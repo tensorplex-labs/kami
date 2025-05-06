@@ -24,22 +24,17 @@ export enum SubtensorErrorCode {
 
 // Client operation specific error codes (can be extended)
 export enum SubstrateClientErrorCode {
-  TRANSACTION_FAILED = 'SUBSTRATE_CLIENT.TRANSACTION_FAILED',
-  QUERY_FAILED = 'SUBSTRATE_CLIENT.QUERY_FAILED',
-  INVALID_PARAMETER = 'SUBSTRATE_CLIENT.INVALID_PARAMETER',
-  OPERATION_TIMEOUT = 'SUBSTRATE_CLIENT.OPERATION_TIMEOUT',
-  BLOCK_HASH_NOT_FOUND = 'SUBSTRATE_CLIENT.BLOCK_HASH_NOT_FOUND',
+  TRANSACTION_FAILED = 1,
+  QUERY_FAILED = 2,
+  INVALID_PARAMETER = 3,
+  OPERATION_TIMEOUT = 4,
+  BLOCK_HASH_NOT_FOUND = 5,
 }
 
 // Base exception for substrate client operations
 export class SubstrateClientException extends BaseException {
-  constructor(
-    errorCode: string,
-    errorMessage: string,
-    statusCode: HttpStatus = HttpStatus.BAD_REQUEST,
-    details?: any,
-  ) {
-    super(errorCode, errorMessage, statusCode, details);
+  constructor(statusCode: HttpStatus, type: string, message: string, stackTrace?: string) {
+    super(statusCode, type, message, stackTrace);
   }
 }
 
@@ -51,103 +46,103 @@ interface SubtensorErrorDetails {
 }
 
 // Get error details helper function
-function getSubtensorErrorDetails(errorCode: SubtensorErrorCode): SubtensorErrorDetails {
-  switch (errorCode) {
+function getSubtensorErrorDetails(type: SubtensorErrorCode): SubtensorErrorDetails {
+  switch (type) {
     case SubtensorErrorCode.COLD_KEY_IN_SWAP_SCHEDULE:
       return {
-        code: errorCode,
+        code: type,
         name: 'ColdKeyInSwapSchedule',
         description: 'Your coldkey is set to be swapped. No transfer operations are possible.',
       };
     case SubtensorErrorCode.STAKE_AMOUNT_TOO_LOW:
       return {
-        code: errorCode,
+        code: type,
         name: 'StakeAmountTooLow',
         description:
           'The amount you are staking/unstaking/moving is below the minimum TAO equivalent (0.0005 TAO).',
       };
     case SubtensorErrorCode.BALANCE_TOO_LOW:
       return {
-        code: errorCode,
+        code: type,
         name: 'BalanceTooLow',
         description: 'The amount of stake you have is less than you have requested.',
       };
     case SubtensorErrorCode.SUBNET_DOESNT_EXIST:
       return {
-        code: errorCode,
+        code: type,
         name: 'SubnetDoesntExist',
         description: 'This subnet does not exist.',
       };
     case SubtensorErrorCode.HOTKEY_ACCOUNT_DOESNT_EXIST:
       return {
-        code: errorCode,
+        code: type,
         name: 'HotkeyAccountDoesntExist',
         description: 'Hotkey is not registered on Bittensor network.',
       };
     case SubtensorErrorCode.NOT_ENOUGH_STAKE_TO_WITHDRAW:
       return {
-        code: errorCode,
+        code: type,
         name: 'NotEnoughStakeToWithdraw',
         description:
           'You do not have enough TAO equivalent stake to remove/move/transfer, including the unstake fee.',
       };
     case SubtensorErrorCode.RATE_LIMIT_EXCEEDED:
       return {
-        code: errorCode,
+        code: type,
         name: 'RateLimitExceeded',
         description: 'Too many transactions submitted (other than Axon serve/publish extrinsic).',
       };
     case SubtensorErrorCode.INSUFFICIENT_LIQUIDITY:
       return {
-        code: errorCode,
+        code: type,
         name: 'InsufficientLiquidity',
         description: "The subnet's pool does not have sufficient liquidity for this transaction.",
       };
     case SubtensorErrorCode.SLIPPAGE_TOO_HIGH:
       return {
-        code: errorCode,
+        code: type,
         name: 'SlippageTooHigh',
         description: 'The slippage exceeds your limit. Try reducing the transaction amount.',
       };
     case SubtensorErrorCode.TRANSFER_DISALLOWED:
       return {
-        code: errorCode,
+        code: type,
         name: 'TransferDisallowed',
         description: 'This subnet does not allow stake transfer.',
       };
     case SubtensorErrorCode.HOTKEY_NOT_REGISTERED_IN_NETWORK:
       return {
-        code: errorCode,
+        code: type,
         name: 'HotKeyNotRegisteredInNetwork',
         description: 'The hotkey is not registered in the selected subnet.',
       };
     case SubtensorErrorCode.INVALID_IP_ADDRESS:
       return {
-        code: errorCode,
+        code: type,
         name: 'InvalidIpAddress',
         description: 'Axon connection info cannot be parsed into a valid IP address.',
       };
     case SubtensorErrorCode.SERVING_RATE_LIMIT_EXCEEDED:
       return {
-        code: errorCode,
+        code: type,
         name: 'ServingRateLimitExceeded',
         description: 'Rate limit exceeded for axon serve/publish extrinsic.',
       };
     case SubtensorErrorCode.INVALID_PORT:
       return {
-        code: errorCode,
+        code: type,
         name: 'InvalidPort',
         description: 'Axon connection info cannot be parsed into a valid port.',
       };
     case SubtensorErrorCode.BAD_REQUEST:
       return {
-        code: errorCode,
+        code: type,
         name: 'BadRequest',
         description: 'Unclassified error.',
       };
     case SubtensorErrorCode.TRANSACTION_PRIORITY_TOO_LOW:
       return {
-        code: errorCode,
+        code: type,
         name: 'TransactionPriorityTooLow',
         description:
           'The transaction priority has too low priority to replace another transaction already in the pool. Please try again later.',
@@ -156,78 +151,84 @@ function getSubtensorErrorDetails(errorCode: SubtensorErrorCode): SubtensorError
       return {
         code: SubtensorErrorCode.BAD_REQUEST,
         name: 'UnknownError',
-        description: `Unknown Subtensor error code: ${errorCode}`,
+        description: `Unknown Subtensor error code: ${type}`,
       };
   }
 }
 
 // Subtensor-specific exception handling
 export class SubtensorException extends SubstrateClientException {
-  constructor(error: SubtensorErrorCode, customMessage?: string, details?: any) {
-    const errorDetails = getSubtensorErrorDetails(error);
-    const errorMessage = customMessage || errorDetails.description;
+  constructor(error: SubtensorErrorCode, customMessage?: string, stackTrace?: string) {
+    const subTensorErrorDetails = getSubtensorErrorDetails(error);
+    const message = subTensorErrorDetails.description || customMessage;
+    const errorCategory = 'SUBTENSOR';
 
-    const formattedErrorCode = `SUBTENSOR.${errorDetails.name.toUpperCase()}`;
-
-    super(formattedErrorCode, errorMessage, HttpStatus.BAD_REQUEST, {
-      ...details,
-      originalCode: error,
-    });
+    super(
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      String(SubtensorErrorCode),
+      `${errorCategory}.${subTensorErrorDetails.name}: ${message}`,
+      stackTrace,
+    );
   }
 }
 
 // Additional client operation exceptions
 export class TransactionFailedException extends SubstrateClientException {
-  constructor(reason: string, details?: any) {
+  constructor(message: string, stackTrace?: string) {
+    const errorCategory = 'SUBSTRATE_CLIENT';
     super(
-      SubstrateClientErrorCode.TRANSACTION_FAILED,
-      `Transaction failed: ${reason}`,
-      HttpStatus.BAD_REQUEST,
-      details,
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      String(SubstrateClientErrorCode.TRANSACTION_FAILED),
+      `${errorCategory}.TRANSACTION_FAILED: ${message}`,
+      stackTrace,
     );
   }
 }
 
 export class QueryFailedException extends SubstrateClientException {
-  constructor(reason: string, details?: any) {
+  constructor(message: string, stackTrace?: string) {
+    const errorCategory = 'SUBSTRATE_CLIENT';
     super(
-      SubstrateClientErrorCode.QUERY_FAILED,
-      `Query failed: ${reason}`,
       HttpStatus.BAD_REQUEST,
-      details,
+      String(SubstrateClientErrorCode.QUERY_FAILED),
+      `${errorCategory}.QUERY_FAILED: ${message}`,
+      stackTrace,
     );
   }
 }
 
 export class InvalidParameterException extends SubstrateClientException {
-  constructor(parameter: string, details?: any) {
+  constructor(message: string, stackTrace?: string) {
+    const errorCategory = 'SUBSTRATE_CLIENT';
     super(
-      SubstrateClientErrorCode.INVALID_PARAMETER,
-      `Invalid parameter: ${parameter}`,
       HttpStatus.BAD_REQUEST,
-      details,
+      String(SubstrateClientErrorCode.INVALID_PARAMETER),
+      `${errorCategory}.INVALID_PARAMETER: ${message}`,
+      stackTrace,
     );
   }
 }
 
 export class OperationTimeoutException extends SubstrateClientException {
-  constructor(operation: string, details?: any) {
+  constructor(message: string, stackTrace?: string) {
+    const errorCategory = 'SUBSTRATE_CLIENT';
     super(
-      SubstrateClientErrorCode.OPERATION_TIMEOUT,
-      `Operation timed out: ${operation}`,
       HttpStatus.REQUEST_TIMEOUT,
-      details,
+      String(SubstrateClientErrorCode.OPERATION_TIMEOUT),
+      `${errorCategory}.OPERATION_TIMEOUT: ${message}`,
+      stackTrace,
     );
   }
 }
 
 export class BlockHashNotFoundException extends SubstrateClientException {
-  constructor(blockNumber: number, details?: any) {
+  constructor(message: string, stackTrace?: string) {
+    const errorCategory = 'SUBSTRATE_CLIENT';
     super(
-      SubstrateClientErrorCode.BLOCK_HASH_NOT_FOUND,
-      `Block hash not found for block number ${blockNumber}`,
       HttpStatus.BAD_REQUEST,
-      details,
+      String(SubstrateClientErrorCode.BLOCK_HASH_NOT_FOUND),
+      `${errorCategory}.BLOCK_HASH_NOT_FOUND: ${message}`,
+      stackTrace,
     );
   }
 }

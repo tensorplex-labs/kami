@@ -14,16 +14,16 @@ import { IApiResponse } from '../common-response.interface';
 // Base exception class that aligns with the ApiResponse error structure
 export class BaseException extends HttpException {
   constructor(
-    public readonly errorCode: string,
-    public readonly errorMessage: string,
-    statusCode: HttpStatus = HttpStatus.BAD_REQUEST,
-    public readonly details?: any,
+    statusCode: HttpStatus,
+    public readonly type: string,
+    public readonly message: string,
+    public readonly stackTrace?: string,
   ) {
     super(
       {
-        errorCode,
-        errorMessage,
-        details,
+        type,
+        message,
+        stackTrace,
       },
       statusCode,
     );
@@ -40,36 +40,28 @@ export class BaseExceptionFilter implements ExceptionFilter {
     const request = ctx.getRequest<Request>();
     const now = Date.now();
 
-    // Create a response that strictly follows ApiResponse interface
     const errorResponse: IApiResponse = {
       statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
       success: false,
       data: null,
       error: {
-        code: 'INTERNAL_SERVER_ERROR',
-        errorMessage: 'Internal server error',
-      },
-      metadata: {
-        timestamp: new Date().toISOString(),
-        path: request?.url,
-        executionTime: Date.now() - now,
+        type: 'INTERNAL_SERVER_ERROR',
+        message: 'Internal server error',
       },
     };
 
-    // Custom handling based on exception type
     if (exception instanceof BaseException) {
-      // Our custom base exception
       const exceptionResponse = exception.getResponse() as any;
 
       errorResponse.statusCode = exception.getStatus();
       errorResponse.error = {
-        code: exceptionResponse.errorCode,
-        errorMessage: exceptionResponse.errorMessage,
-        details: exceptionResponse.details,
+        type: exceptionResponse.type,
+        message: exceptionResponse.message,
+        stackTrace: exceptionResponse.stackTrace,
       };
 
       this.logger.warn(
-        `Domain Exception for route: [${request?.url}] [${exceptionResponse.errorCode}] ${exceptionResponse.errorMessage}`,
+        `Domain Exception for route: [${request?.url}] [${exceptionResponse.type}] ${exceptionResponse.message}`,
         exception.stack,
       );
     } else if (exception instanceof HttpException) {
@@ -79,28 +71,28 @@ export class BaseExceptionFilter implements ExceptionFilter {
 
       errorResponse.statusCode = status;
       errorResponse.error = {
-        code: `HTTP_${status}`,
-        errorMessage:
+        type: `HTTP_${status}`,
+        message:
           typeof exceptionResponse === 'string'
             ? exceptionResponse
-            : exceptionResponse.errorMessage || 'HTTP exception occurred',
-        details:
+            : exceptionResponse.message || 'HTTP exception occurred',
+        stackTrace:
           typeof exceptionResponse === 'object' && exceptionResponse !== null
-            ? exceptionResponse.errorMessage
-              ? { ...exceptionResponse, errorMessage: undefined }
+            ? exceptionResponse.message
+              ? { ...exceptionResponse, message: undefined }
               : exceptionResponse
             : undefined,
       };
 
       this.logger.warn(
-        `HTTP Exception for route: [${request?.url}] ${errorResponse.error?.errorMessage}`,
+        `HTTP Exception for route: [${request?.url}] ${errorResponse.error?.message}`,
         exception.stack,
       );
     } else if (exception instanceof Error) {
       // Standard JS errors
       errorResponse.error = {
-        code: 'INTERNAL_ERROR',
-        errorMessage: exception.message || 'An unexpected error occurred',
+        type: 'INTERNAL_ERROR',
+        message: exception.message || 'An unexpected error occurred',
       };
 
       this.logger.error(

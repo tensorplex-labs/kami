@@ -1,10 +1,10 @@
 import { SubtensorException } from 'src/core/substrate/substrate-client.exception';
 
-import { Controller, Get, Logger, Query } from '@nestjs/common';
+import { Controller, Get, HttpStatus, Logger, Query } from '@nestjs/common';
 import { ApiQuery, ApiTags } from '@nestjs/swagger';
 
 import {
-  CheckHotkeyGenericException,
+  CheckHotkeyException,
   CheckHotkeyNetuidHotkeyMissingException,
 } from './check-hotkey.exception';
 import { CheckHotkeyMapper } from './check-hotkey.mapper';
@@ -72,7 +72,7 @@ export class CheckHotkeyController {
       if (error instanceof SubtensorException) {
         throw error;
       }
-      throw new CheckHotkeyGenericException(error.message, { originalError: error });
+      throw new CheckHotkeyException(HttpStatus.BAD_REQUEST, 'UNKNOWN', error.message, error.stack);
     }
   }
 }

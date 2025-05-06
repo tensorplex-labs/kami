@@ -3,9 +3,9 @@ import { SubstrateConnectionService } from 'src/core/substrate/services/substrat
 import { SubtensorException } from 'src/core/substrate/substrate-client.exception';
 import { SubnetHyperparameters } from 'src/features/subnet-hyperparameter/subnet-hyperparameter.interface';
 
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 
-import { SubnetHyperparameterGenericException } from './subnet-hyperparameter.exception';
+import { SubnetHyperparameterException } from './subnet-hyperparameter.exception';
 
 @Injectable()
 export class SubnetHyperparameterService {
@@ -37,7 +37,12 @@ export class SubnetHyperparameterService {
         this.logger.error(`Subtensor error: ${error.message}`);
         throw error;
       }
-      throw new SubnetHyperparameterGenericException(error.message, { originalError: error });
+      throw new SubnetHyperparameterException(
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        'UNKNOWN',
+        error.message,
+        error.stack,
+      );
     }
   }
 }

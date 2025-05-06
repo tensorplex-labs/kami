@@ -15,7 +15,7 @@ import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { AxonCallParams } from './serve-axon.call-params.interface';
 import { AxonCallParamsDto } from './serve-axon.dto';
-import { ServeAxonGenericException, ServeAxonParamsMissingException } from './serve-axon.exception';
+import { ServeAxonException, ServeAxonParamsMissingException } from './serve-axon.exception';
 import { ServeAxonService } from './serve-axon.service';
 
 @ApiTags('subnet')
@@ -54,7 +54,12 @@ export class ServeAxonController {
         throw error;
       }
 
-      throw new ServeAxonGenericException(error.message, { originalError: error });
+      throw new ServeAxonException(
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        'UNKNOWN',
+        error.message,
+        error.stack,
+      );
     }
   }
 }

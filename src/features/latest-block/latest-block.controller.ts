@@ -1,10 +1,10 @@
 import { SubtensorException } from 'src/core/substrate/substrate-client.exception';
 
-import { Controller, Get, Logger } from '@nestjs/common';
+import { Controller, Get, HttpStatus, Logger } from '@nestjs/common';
 import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import { LatestBlockDto } from './latest-block.dto';
-import { LatestBlockGenericException } from './latest-block.exception';
+import { LatestBlockException } from './latest-block.exception';
 import { LatestBlockMapper } from './latest-block.mapper';
 import { LatestBlockService } from './latest-block.service';
 
@@ -39,7 +39,12 @@ export class LatestBlockController {
         throw error;
       }
 
-      throw new LatestBlockGenericException(error.message, { originalError: error });
+      throw new LatestBlockException(
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        'UNKNOWN',
+        error.message,
+        error.stack,
+      );
     }
   }
 }

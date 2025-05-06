@@ -14,7 +14,7 @@ import {
 import { ApiBody, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 
 import {
-  SetCommitRevealWeightGenericException,
+  SetCommitRevealWeightException,
   SetCommitRevealWeightParamsMissingException,
 } from './set-commit-reveal-weight.exception';
 import { CommitRevealWeightsCallParams } from './set-commit-reveal-weights.call-params.interface';
@@ -57,7 +57,12 @@ export class SetCommitRevealWeightsController {
       if (error instanceof SubtensorException) {
         throw error;
       }
-      throw new SetCommitRevealWeightGenericException(error.message, { originalError: error });
+      throw new SetCommitRevealWeightException(
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        'UNKNOWN',
+        error.message,
+        error.stack,
+      );
     }
   }
 }

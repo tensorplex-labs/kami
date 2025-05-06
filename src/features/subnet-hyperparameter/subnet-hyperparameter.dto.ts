@@ -127,7 +127,7 @@ export class SubnetHyperparamsResponseDto {
   @ApiProperty({
     description: 'AdjustmentAlpha is the rate at which difficulty and burn are adjusted up or down',
   })
-  adjustmentAlpha: number;
+  adjustmentAlpha: string;
 
   @ApiProperty({
     description:

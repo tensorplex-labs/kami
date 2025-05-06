@@ -1,13 +1,14 @@
+import { SubtensorException } from 'src/core/substrate/substrate-client.exception';
 import { SubnetMetagraphDto } from 'src/features/subnet-metagraph/subnet-metagraph.dto';
 import { SubnetMetagraphMapper } from 'src/features/subnet-metagraph/subnet-metagraph.mapper';
 
-import { Controller, Get, Logger, Param } from '@nestjs/common';
+import { Controller, Get, HttpStatus, Logger, Param } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { ConnectionFailedException } from '../../core/substrate/substrate-connection.exception';
 import {
   InvalidSubnetIdException,
-  SubnetMetagraphFetchException,
+  SubnetMetagraphException,
   SubnetMetagraphNotFoundException,
 } from './subnet-metagraph.exception';
 import { SubnetMetagraphService } from './subnet-metagraph.service';
@@ -69,7 +70,8 @@ export class SubnetMetagraphController {
         // If it's already one of our domain-specific exceptions, no need to retry
         if (
           error instanceof SubnetMetagraphNotFoundException ||
-          error instanceof InvalidSubnetIdException
+          error instanceof InvalidSubnetIdException ||
+          error instanceof SubtensorException
         ) {
           throw error;
         }
@@ -85,7 +87,12 @@ export class SubnetMetagraphController {
           await new Promise(resolve => setTimeout(resolve, this.retryDelay));
         } else {
           // For other errors, wrap in a domain-specific exception and break
-          throw new SubnetMetagraphFetchException(error.message, { originalError: error, netuid });
+          throw new SubnetMetagraphException(
+            HttpStatus.INTERNAL_SERVER_ERROR,
+            'UNKNOWN',
+            error.message,
+            error.stack,
+          );
         }
       }
     }
@@ -96,13 +103,16 @@ export class SubnetMetagraphController {
     );
     if (
       lastError instanceof SubnetMetagraphNotFoundException ||
-      lastError instanceof InvalidSubnetIdException
+      lastError instanceof InvalidSubnetIdException ||
+      lastError instanceof SubtensorException
     ) {
       throw lastError;
     }
-    throw new SubnetMetagraphFetchException(
-      `Failed to get subnet metagraph after ${this.maxRetries} retries`,
-      { originalError: lastError, netuid, retries: this.maxRetries },
+    throw new SubnetMetagraphException(
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      'UNKNOWN',
+      lastError?.message || 'Failed to get subnet metagraph',
+      lastError?.stack,
     );
   }
 }

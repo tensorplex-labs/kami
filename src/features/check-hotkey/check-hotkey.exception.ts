@@ -5,53 +5,37 @@ import { HttpStatus } from '@nestjs/common';
 
 // Error code enum for this domain
 export enum CheckHotkeyErrorCode {
-  GENERIC_ERROR = 'CHECK_HOTKEY.GENERIC_ERROR',
-  FETCH_FAILED = 'CHECK_HOTKEY.FETCH_FAILED',
-  NETUID_HOTKEY_MISSING = 'CHECK_HOTKEY.NETUID_HOTKEY_MISSING',
+  FETCH_FAILED = 1,
+  NETUID_HOTKEY_MISSING = 2,
 }
 
 // Base exception for this domain
 export class CheckHotkeyException extends BaseException {
-  constructor(
-    errorCode: string,
-    message: string,
-    statusCode: HttpStatus = HttpStatus.BAD_REQUEST,
-    details?: any,
-  ) {
-    super(errorCode, message, statusCode, details);
-  }
-}
-
-export class CheckHotkeyGenericException extends CheckHotkeyException {
-  constructor(reason: string, details?: any) {
-    super(
-      CheckHotkeyErrorCode.GENERIC_ERROR,
-      `Error fetching hotkey status: ${reason}`,
-      HttpStatus.INTERNAL_SERVER_ERROR,
-      details,
-    );
+  constructor(statusCode: HttpStatus, type: string, message: string, stackTrace?: string) {
+    const errorCategory = 'CHECK_HOTKEY';
+    super(statusCode, type, `${errorCategory}.${message}`, stackTrace);
   }
 }
 
 // Specific exception types
 export class CheckHotkeyFetchException extends CheckHotkeyException {
-  constructor(reason: string, details?: any) {
+  constructor(message: string, stackTrace?: string) {
     super(
-      CheckHotkeyErrorCode.FETCH_FAILED,
-      `Error fetching hotkey status: ${reason}`,
       HttpStatus.INTERNAL_SERVER_ERROR,
-      details,
+      String(CheckHotkeyErrorCode.FETCH_FAILED),
+      `FETCH_FAILED: Error fetching hotkey status: ${message}`,
+      stackTrace,
     );
   }
 }
 
 export class CheckHotkeyNetuidHotkeyMissingException extends CheckHotkeyException {
-  constructor(details?: any) {
+  constructor(stackTrace?: string) {
     super(
-      CheckHotkeyErrorCode.NETUID_HOTKEY_MISSING,
-      'Netuid and hotkey are required',
       HttpStatus.BAD_REQUEST,
-      details,
+      String(CheckHotkeyErrorCode.NETUID_HOTKEY_MISSING),
+      `NETUID_HOTKEY_MISSING: Netuid and hotkey are required`,
+      stackTrace,
     );
   }
 }

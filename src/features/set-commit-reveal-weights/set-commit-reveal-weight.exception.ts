@@ -5,41 +5,25 @@ import { HttpStatus } from '@nestjs/common';
 
 // Error code enum for this domain
 export enum SetCommitRevealWeightErrorCode {
-  GENERIC_ERROR = 'SET_COMMIT_REVEAL_WEIGHT.GENERIC_ERROR',
-  PARAMS_MISSING = 'SET_COMMIT_REVEAL_WEIGHT.PARAMS_MISSING',
+  PARAMS_MISSING = '1',
 }
 
 // Base exception for this domain
 export class SetCommitRevealWeightException extends BaseException {
-  constructor(
-    errorCode: string,
-    message: string,
-    statusCode: HttpStatus = HttpStatus.BAD_REQUEST,
-    details?: any,
-  ) {
-    super(errorCode, message, statusCode, details);
-  }
-}
-
-export class SetCommitRevealWeightGenericException extends SetCommitRevealWeightException {
-  constructor(reason: string, details?: any) {
-    super(
-      SetCommitRevealWeightErrorCode.GENERIC_ERROR,
-      `Set commit reveal weight error: ${reason}`,
-      HttpStatus.INTERNAL_SERVER_ERROR,
-      details,
-    );
+  constructor(statusCode: HttpStatus, type: string, message: string, stackTrace?: string) {
+    const errorCategory = 'SET_COMMIT_REVEAL_WEIGHT';
+    super(statusCode, type, `${errorCategory}.${message}`, stackTrace);
   }
 }
 
 // Specific exception types
 export class SetCommitRevealWeightParamsMissingException extends SetCommitRevealWeightException {
-  constructor(details?: any) {
+  constructor(stackTrace?: any) {
     super(
-      SetCommitRevealWeightErrorCode.PARAMS_MISSING,
-      `Set commit reveal weight params missing`,
       HttpStatus.BAD_REQUEST,
-      details,
+      String(SetCommitRevealWeightErrorCode.PARAMS_MISSING),
+      `PARAMS_MISSING: Set commit reveal weight params missing`,
+      stackTrace,
     );
   }
 }

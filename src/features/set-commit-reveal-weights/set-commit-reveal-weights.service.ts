@@ -2,9 +2,9 @@ import { SubstrateClientService } from 'src/core/substrate/services/substrate-cl
 import { SubstrateConnectionService } from 'src/core/substrate/services/substrate-connection.service';
 import { SubtensorException } from 'src/core/substrate/substrate-client.exception';
 
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 
-import { SetCommitRevealWeightGenericException } from './set-commit-reveal-weight.exception';
+import { SetCommitRevealWeightException } from './set-commit-reveal-weight.exception';
 import { CommitRevealWeightsCallParams } from './set-commit-reveal-weights.call-params.interface';
 
 @Injectable()
@@ -34,7 +34,12 @@ export class SetCommitRevealWeightsService {
       if (error instanceof SubtensorException) {
         throw error;
       }
-      throw new SetCommitRevealWeightGenericException(error.message, { originalError: error });
+      throw new SetCommitRevealWeightException(
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        'UNKNOWN',
+        error.message,
+        error.stack,
+      );
     }
   }
 }

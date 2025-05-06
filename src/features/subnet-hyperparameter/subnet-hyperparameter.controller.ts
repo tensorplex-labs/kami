@@ -1,11 +1,11 @@
 import { SubtensorException } from 'src/core/substrate/substrate-client.exception';
 
-import { Controller, Get, Logger, Param } from '@nestjs/common';
+import { Controller, Get, HttpStatus, Logger, Param } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { SubnetHyperparamsDto, SubnetHyperparamsResponseDto } from './subnet-hyperparameter.dto';
 import {
-  SubnetHyperparameterGenericException,
+  SubnetHyperparameterException,
   SubnetHyperparameterNotFoundException,
 } from './subnet-hyperparameter.exception';
 import { SubnetHyperparameterMapper } from './subnet-hyperparameter.mapper';
@@ -23,7 +23,7 @@ export class SubnetHyperparameterController {
     private readonly subnetHyperparameterMapper: SubnetHyperparameterMapper,
   ) {}
 
-  @Get('subnet-hyperparameter/:netuid')
+  @Get('subnet-hyperparameters/:netuid')
   @ApiOperation({
     summary: 'Get subnet hyperparameter',
     description: 'Retrieves all subnet hyperparameter information by netuid',
@@ -93,9 +93,11 @@ export class SubnetHyperparameterController {
     if (lastError instanceof SubtensorException) {
       throw lastError;
     }
-    throw new SubnetHyperparameterGenericException(
+    throw new SubnetHyperparameterException(
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      'UNKNOWN',
       lastError?.message || 'Failed to get subnet hyperparameter',
-      { originalError: lastError },
+      lastError?.stack,
     );
   }
 }

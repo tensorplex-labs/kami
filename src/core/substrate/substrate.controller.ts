@@ -1,4 +1,4 @@
-import { Controller, Get, HttpException, HttpStatus } from '@nestjs/common';
+import { Controller, Get, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
 import { SubstrateClientService } from './services/substrate-client.service';
@@ -15,6 +15,8 @@ import {
 @Controller('substrate')
 @ApiTags('substrate')
 export class SubstrateController {
+  private readonly logger = new Logger(SubstrateController.name);
+
   constructor(
     private readonly substrateClientService: SubstrateClientService,
     private readonly substrateConnectionService: SubstrateConnectionService,
@@ -50,6 +52,7 @@ export class SubstrateController {
   async getKeyringPairInfo() {
     try {
       const result = await this.substrateConnectionService.getKeyringPairInfo();
+      this.logger.log(`Keyring pair info retrieved successfully: ${JSON.stringify(result)}`);
       return result;
     } catch (error) {
       if (

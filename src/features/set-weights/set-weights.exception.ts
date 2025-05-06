@@ -5,41 +5,25 @@ import { HttpStatus } from '@nestjs/common';
 
 // Error code enum for this domain
 export enum SetWeightsErrorCode {
-  GENERIC_ERROR = 'SET_WEIGHTS.GENERIC_ERROR',
-  PARAMS_MISSING = 'SET_WEIGHTS.PARAMS_MISSING',
+  PARAMS_MISSING = '1',
 }
 
 // Base exception for this domain
 export class SetWeightsException extends BaseException {
-  constructor(
-    errorCode: string,
-    message: string,
-    statusCode: HttpStatus = HttpStatus.BAD_REQUEST,
-    details?: any,
-  ) {
-    super(errorCode, message, statusCode, details);
-  }
-}
-
-export class SetWeightsGenericException extends SetWeightsException {
-  constructor(reason: string, details?: any) {
-    super(
-      SetWeightsErrorCode.GENERIC_ERROR,
-      `Set weights error: ${reason}`,
-      HttpStatus.INTERNAL_SERVER_ERROR,
-      details,
-    );
+  constructor(statusCode: HttpStatus, type: string, message: string, stackTrace?: string) {
+    const errorCategory = 'SET_WEIGHTS';
+    super(statusCode, type, `${errorCategory}.${message}`, stackTrace);
   }
 }
 
 // Specific exception types
 export class SetWeightsParamsMissingException extends SetWeightsException {
-  constructor(details?: any) {
+  constructor(stackTrace?: any) {
     super(
-      SetWeightsErrorCode.PARAMS_MISSING,
-      `Set weights params missing`,
       HttpStatus.BAD_REQUEST,
-      details,
+      String(SetWeightsErrorCode.PARAMS_MISSING),
+      `PARAMS_MISSING: Set weights params missing`,
+      stackTrace,
     );
   }
 }

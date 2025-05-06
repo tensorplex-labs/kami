@@ -36,14 +36,18 @@ export class SubstrateClientService {
     }
     if (error?.message && typeof error.message == 'string') {
       if (error.message.includes(`Priority is too low`)) {
-        throw new SubtensorException(SubtensorErrorCode.TRANSACTION_PRIORITY_TOO_LOW);
+        throw new SubtensorException(
+          SubtensorErrorCode.TRANSACTION_PRIORITY_TOO_LOW,
+          error.message,
+          error.stack,
+        );
       }
     }
     // If we couldn't parse a specific error, throw a generic exception with original error details
     throw new SubtensorException(
       SubtensorErrorCode.BAD_REQUEST,
       error.message || 'Unknown substrate error',
-      { originalError: error },
+      error.stack,
     );
   }
 
@@ -86,9 +90,7 @@ export class SubstrateClientService {
         const result: any = client.createType(typeDef, resultBytes);
         return result;
       } catch (error) {
-        throw new QueryFailedException(`Failed to decode result: ${error.message}`, {
-          originalError: error,
-        });
+        throw new QueryFailedException(error.message, error.stack);
       }
     } catch (error) {
       this.logger.error(`Failed to query runtime API: ${error.message}`, error.stack);
@@ -119,9 +121,7 @@ export class SubstrateClientService {
 
       throw new QueryFailedException(
         `Failed to retrieve available runtime APIs: ${error.message}`,
-        {
-          originalError: error,
-        },
+        error.stack,
       );
     }
   }
@@ -138,12 +138,6 @@ export class SubstrateClientService {
       this.logger.error(`Failed to sign and send transaction: ${error.message}`, error.stack);
 
       this.handleSubtensorError(error);
-      // throw new TransactionFailedException(
-      //   `Failed to sign and send transaction: ${error.message}`,
-      //   {
-      //     originalError: error,
-      //   },
-      // );
     }
   }
 
@@ -153,7 +147,7 @@ export class SubstrateClientService {
       const blockHash = await client.query.system.blockHash(block);
 
       if (!blockHash) {
-        throw new BlockHashNotFoundException(block);
+        throw new BlockHashNotFoundException(`Block hash: ${block}`);
       }
 
       const blockHashHex = blockHash.toHex();
@@ -166,9 +160,6 @@ export class SubstrateClientService {
       }
 
       this.handleSubtensorError(error);
-      // throw new QueryFailedException(`Failed to retrieve block hash: ${error.message}`, {
-      //   originalError: error,
-      // });
     }
   }
 }

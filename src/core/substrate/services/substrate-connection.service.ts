@@ -1,10 +1,11 @@
+import { BaseException } from '@app/commons/exceptions/base.exception';
 import { ConnectionStatus } from '@app/commons/interface/connection-status.interface';
 import { KeyringPairInfo } from '@app/commons/interface/keyringpair-info.interface';
 import { WalletInfo } from '@app/commons/interface/wallet-info.interface';
 import * as fs from 'fs';
 import path from 'path';
 
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 
 import { ApiPromise, Keyring, WsProvider } from '@polkadot/api';
 import { KeyringPair } from '@polkadot/keyring/types';
@@ -131,9 +132,12 @@ export class SubstrateConnectionService implements OnModuleInit {
       }
 
       // Generic exception
-      throw new ConnectionFailedException(`Failed to set keyring pair: ${error.message}`, {
-        originalError: error,
-      });
+      throw new BaseException(
+        HttpStatus.BAD_REQUEST,
+        'SUBSTRATE_CONNECTION',
+        `Failed to set keyring pair: ${error.message}`,
+        error.stack,
+      );
     }
   }
 
@@ -156,9 +160,10 @@ export class SubstrateConnectionService implements OnModuleInit {
         throw error;
       }
 
-      throw new ConnectionFailedException(`Failed to get wallet info: ${error.message}`, {
-        originalError: error,
-      });
+      throw new ConnectionFailedException(
+        `Failed to get wallet info: ${error.message}`,
+        error.stack,
+      );
     }
   }
 
@@ -227,10 +232,7 @@ export class SubstrateConnectionService implements OnModuleInit {
       this.connectionStatus = { isConnected: false };
       this.logger.error(`Failed to connect: ${error?.message ?? 'Unknown error'}`);
 
-      throw new ConnectionFailedException(error?.message ?? 'Connection failed', {
-        nodeUrl: this.config.nodeUrl,
-        originalError: error,
-      });
+      throw new ConnectionFailedException(error?.message ?? 'Connection failed', error.stack);
     }
   }
 
@@ -288,10 +290,7 @@ export class SubstrateConnectionService implements OnModuleInit {
       return await this.connect();
     } catch (error) {
       this.logger.error(`Failed to reconnect: ${error?.message ?? 'Unknown error'}`);
-      throw new ReconnectionFailedException(error?.message ?? 'Reconnection failed', {
-        nodeUrl: this.config.nodeUrl,
-        originalError: error,
-      });
+      throw new ReconnectionFailedException(error?.message ?? 'Reconnection failed', error.stack);
     } finally {
       this.isReconnecting = false;
     }
@@ -311,8 +310,7 @@ export class SubstrateConnectionService implements OnModuleInit {
 
     if (!this.client) {
       throw new ConnectionFailedException(
-        'Client could not be initialized after reconnection attempt',
-        { maxRetries: this.maxRetries },
+        `Client could not be initialized after ${this.maxRetries} reconnection attempt(s)`,
       );
     }
 
@@ -344,9 +342,7 @@ export class SubstrateConnectionService implements OnModuleInit {
         await fs.promises.access(coldkeyPath, fs.constants.R_OK);
         await fs.promises.access(hotkeyPath, fs.constants.R_OK);
       } catch (error) {
-        throw new FileAccessException(error.path || 'wallet files', {
-          originalError: error,
-        });
+        throw new FileAccessException(error.path || 'wallet files');
       }
 
       let coldkeyContent, hotkeyFileContent;
@@ -354,9 +350,7 @@ export class SubstrateConnectionService implements OnModuleInit {
         coldkeyContent = await fs.promises.readFile(coldkeyPath, 'utf-8');
         hotkeyFileContent = await fs.promises.readFile(hotkeyPath, 'utf-8');
       } catch (error) {
-        throw new FileAccessException(error.path || 'wallet files', {
-          originalError: error,
-        });
+        throw new FileAccessException(error.path || 'wallet files');
       }
 
       let coldkeyJsonContent, hotkeyJsonContent;
@@ -365,29 +359,23 @@ export class SubstrateConnectionService implements OnModuleInit {
       try {
         coldkeyJsonContent = JSON.parse(coldkeyContent);
       } catch (error) {
-        throw new InvalidColdkeyFormatException({
-          originalError: error,
-          message: 'Invalid JSON format in coldkey file',
-        });
+        throw new InvalidColdkeyFormatException('Invalid JSON format in coldkey file');
       }
 
       // Parse hotkey JSON
       try {
         hotkeyJsonContent = JSON.parse(hotkeyFileContent);
       } catch (error) {
-        throw new InvalidHotkeyFormatException({
-          originalError: error,
-          message: 'Invalid JSON format in hotkey file',
-        });
+        throw new InvalidHotkeyFormatException('Invalid JSON format in hotkey file');
       }
 
       if (!coldkeyJsonContent.ss58Address) {
-        throw new InvalidColdkeyFormatException();
+        throw new InvalidColdkeyFormatException('Missing ss58Address in coldkey file');
       }
       const coldkey = coldkeyJsonContent.ss58Address;
 
       if (!hotkeyJsonContent.secretPhrase) {
-        throw new InvalidHotkeyFormatException();
+        throw new InvalidHotkeyFormatException('Missing secretPhrase in hotkey file');
       }
 
       const keyring: Keyring = new Keyring({ type: 'sr25519' });
@@ -413,9 +401,10 @@ export class SubstrateConnectionService implements OnModuleInit {
       }
 
       // Otherwise wrap in a more generic exception
-      throw new ConnectionFailedException(`Failed to get keyring pair: ${error.message}`, {
-        originalError: error,
-      });
+      throw new ConnectionFailedException(
+        `Failed to get keyring pair: ${error.message}`,
+        error.stack,
+      );
     }
   }
 
