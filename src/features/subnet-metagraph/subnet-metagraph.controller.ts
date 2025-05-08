@@ -1,11 +1,11 @@
-import { SubtensorException } from 'src/core/substrate/substrate-client.exception';
+import { SubtensorException } from 'src/core/substrate/exceptions/substrate-client.exception';
 import { SubnetMetagraphDto } from 'src/features/subnet-metagraph/subnet-metagraph.dto';
 import { SubnetMetagraphMapper } from 'src/features/subnet-metagraph/subnet-metagraph.mapper';
 
 import { Controller, Get, HttpStatus, Logger, Param } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { ConnectionFailedException } from '../../core/substrate/substrate-connection.exception';
+import { ConnectionFailedException } from '../../core/substrate/exceptions/substrate-connection.exception';
 import {
   InvalidSubnetIdException,
   SubnetMetagraphException,

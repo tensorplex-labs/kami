@@ -10,7 +10,7 @@ import {
   WalletHotkeyNotSetException,
   WalletNameNotSetException,
   WalletPathNotSetException,
-} from './substrate-connection.exception';
+} from './exceptions/substrate-connection.exception';
 
 @Controller('substrate')
 @ApiTags('substrate')

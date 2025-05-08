@@ -1,6 +1,6 @@
 import { SubstrateClientService } from 'src/core/substrate/services/substrate-client.service';
 import { SubstrateConnectionService } from 'src/core/substrate/services/substrate-connection.service';
-import { SubtensorException } from 'src/core/substrate/substrate-client.exception';
+import { SubtensorException } from 'src/core/substrate/exceptions/substrate-client.exception';
 
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 
@@ -16,7 +16,7 @@ export class ServeAxonService {
     private readonly substrateConnectionService: SubstrateConnectionService,
   ) {}
 
-  async serveAxon(params: AxonCallParams): Promise<any> {
+  async serveAxon(params: AxonCallParams): Promise<string> {
     try {
       const client = await this.substrateConnectionService.getClient();
 

@@ -4,7 +4,7 @@ import { SubnetMetagraphException, SubnetMetagraphFetchException } from 'src/fea
 import { SubnetMetagraph } from 'src/features/subnet-metagraph/subnet-metagraph.interface';
 
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { SubstrateConnectionException } from 'src/core/substrate/substrate-connection.exception';
+import { SubstrateConnectionException } from 'src/core/substrate/exceptions/substrate-connection.exception';
 
 @Injectable()
 export class SubnetMetagraphService {

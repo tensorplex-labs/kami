@@ -1,6 +1,6 @@
 import { SubstrateClientService } from 'src/core/substrate/services/substrate-client.service';
 import { SubstrateConnectionService } from 'src/core/substrate/services/substrate-connection.service';
-import { SubtensorException } from 'src/core/substrate/substrate-client.exception';
+import { SubtensorException } from 'src/core/substrate/exceptions/substrate-client.exception';
 
 import { Injectable, Logger } from '@nestjs/common';
 import { HttpStatus } from '@nestjs/common';
@@ -9,8 +9,6 @@ import { CheckHotkeyException, CheckHotkeyFetchException } from './check-hotkey.
 
 @Injectable()
 export class CheckHotkeyService {
-  private readonly logger = new Logger(CheckHotkeyService.name);
-
   constructor(
     private readonly substrateClientService: SubstrateClientService,
     private readonly substrateConnectionService: SubstrateConnectionService,

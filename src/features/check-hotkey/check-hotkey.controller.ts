@@ -1,4 +1,4 @@
-import { SubtensorException } from 'src/core/substrate/substrate-client.exception';
+import { SubtensorException } from 'src/core/substrate/exceptions/substrate-client.exception';
 
 import { Controller, Get, HttpStatus, Logger, Query } from '@nestjs/common';
 import { ApiQuery, ApiTags } from '@nestjs/swagger';

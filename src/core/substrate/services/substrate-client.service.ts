@@ -13,8 +13,8 @@ import {
   QueryFailedException,
   SubtensorErrorCode,
   SubtensorException,
-} from '../substrate-client.exception';
-import { ClientNotInitializedException } from '../substrate-connection.exception';
+} from '../exceptions/substrate-client.exception';
+import { ClientNotInitializedException } from '../exceptions/substrate-connection.exception';
 import { SubstrateConnectionService } from './substrate-connection.service';
 
 @Injectable()

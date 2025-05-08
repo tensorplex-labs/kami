@@ -22,7 +22,7 @@ import {
   WalletHotkeyNotSetException,
   WalletNameNotSetException,
   WalletPathNotSetException,
-} from '../substrate-connection.exception';
+} from '../exceptions/substrate-connection.exception';
 
 @Injectable()
 export class SubstrateConnectionService implements OnModuleInit {

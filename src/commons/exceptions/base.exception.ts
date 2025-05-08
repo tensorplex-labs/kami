@@ -38,7 +38,6 @@ export class BaseExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
-    const now = Date.now();
 
     const errorResponse: IApiResponse = {
       statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
