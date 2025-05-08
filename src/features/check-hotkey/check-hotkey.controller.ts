@@ -1,15 +1,17 @@
-import { TransformInterceptor } from '@app/commons/common-response.dto';
-import { ChainException } from '@app/routes/chain/chain.exceptions';
+import { SubtensorException } from 'src/core/substrate/exceptions/substrate-client.exception';
 
-import { Controller, Get, HttpStatus, Logger, Query, UseInterceptors } from '@nestjs/common';
+import { Controller, Get, HttpStatus, Logger, Query } from '@nestjs/common';
 import { ApiQuery, ApiTags } from '@nestjs/swagger';
 
+import {
+  CheckHotkeyException,
+  CheckHotkeyNetuidHotkeyMissingException,
+} from './check-hotkey.exception';
 import { CheckHotkeyMapper } from './check-hotkey.mapper';
 import { CheckHotkeyService } from './check-hotkey.service';
 
 @Controller('chain')
 @ApiTags('subnet')
-@UseInterceptors(TransformInterceptor)
 export class CheckHotkeyController {
   private readonly logger = new Logger(CheckHotkeyController.name);
 
@@ -46,34 +48,31 @@ export class CheckHotkeyController {
   ) {
     try {
       if (!netuid || !hotkey) {
-        throw new ChainException('netuid and hotkey are required', HttpStatus.BAD_REQUEST);
+        throw new CheckHotkeyNetuidHotkeyMissingException();
       }
       this.logger.log(`Checking hotkey for netuid: ${netuid}, hotkey: ${hotkey}`);
 
-      let isHotkeyValid: boolean | Error = false;
+      let isHotkeyValid: boolean = false;
       if (block) {
         isHotkeyValid = await this.checkHotkeyService.checkHotkey(netuid, hotkey, block);
-        if (isHotkeyValid instanceof Error) {
-          throw isHotkeyValid;
-        }
+
         this.logger.log(`Hotkey ${hotkey} is valid: ${isHotkeyValid}`);
-        this.logger.log(`response: ${JSON.stringify(this.checkHotkeyMapper.toDto(isHotkeyValid))}`);
         return this.checkHotkeyMapper.toDto(isHotkeyValid);
       } else {
         isHotkeyValid = await this.checkHotkeyService.checkHotkey(netuid, hotkey);
-        if (isHotkeyValid instanceof Error) {
-          throw isHotkeyValid;
-        }
+
         this.logger.log(`Hotkey ${hotkey} is valid: ${isHotkeyValid}`);
-        this.logger.log(`response: ${JSON.stringify(this.checkHotkeyMapper.toDto(isHotkeyValid))}`);
         return this.checkHotkeyMapper.toDto(isHotkeyValid);
       }
     } catch (error) {
       this.logger.error(`Error checking hotkey: ${error.message}`);
-      if (error instanceof ChainException) {
+      if (error instanceof CheckHotkeyNetuidHotkeyMissingException) {
         throw error;
       }
-      throw new ChainException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      if (error instanceof SubtensorException) {
+        throw error;
+      }
+      throw new CheckHotkeyException(HttpStatus.BAD_REQUEST, 'UNKNOWN', error.message, error.stack);
     }
   }
 }

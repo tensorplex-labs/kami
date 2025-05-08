@@ -1,25 +1,22 @@
+import { SubtensorException } from 'src/core/substrate/exceptions/substrate-client.exception';
 import { SubstrateClientService } from 'src/core/substrate/services/substrate-client.service';
 import { SubstrateConnectionService } from 'src/core/substrate/services/substrate-connection.service';
-import { BlockInfo } from 'src/substrate/substrate.interface';
 
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
+
+import { LatestBlockException } from './latest-block.exception';
+import { BlockInfo } from './latest-block.interface';
 
 @Injectable()
 export class LatestBlockService {
   private readonly logger = new Logger(LatestBlockService.name);
 
-  constructor(
-    private readonly substrateClientService: SubstrateClientService,
-    private readonly substrateConnectionService: SubstrateConnectionService,
-  ) {}
+  constructor(private readonly substrateConnectionService: SubstrateConnectionService) {}
 
-  async getLatestBlock(): Promise<BlockInfo | Error> {
+  async getLatestBlock(): Promise<BlockInfo> {
     try {
       const client = await this.substrateConnectionService.getClient();
 
-      if (client instanceof Error) {
-        throw client;
-      }
       // this.logger.debug(`Retrieving latest block`);
       const blockHead = await client.rpc.chain.getHeader();
       const result: BlockInfo = {
@@ -31,7 +28,15 @@ export class LatestBlockService {
       // this.logger.debug(`Latest block: ${JSON.stringify(result)}`);
       return result;
     } catch (error) {
-      throw new Error(`Failed to retrieve latest block: ${error.message}`);
+      if (error instanceof SubtensorException) {
+        throw error;
+      }
+      throw new LatestBlockException(
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        'UNKNOWN',
+        error.message,
+        error.stack,
+      );
     }
   }
 }

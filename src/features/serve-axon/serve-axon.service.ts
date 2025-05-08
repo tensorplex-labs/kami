@@ -1,9 +1,11 @@
+import { SubtensorException } from 'src/core/substrate/exceptions/substrate-client.exception';
 import { SubstrateClientService } from 'src/core/substrate/services/substrate-client.service';
 import { SubstrateConnectionService } from 'src/core/substrate/services/substrate-connection.service';
 
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 
 import { AxonCallParams } from './serve-axon.call-params.interface';
+import { ServeAxonException } from './serve-axon.exception';
 
 @Injectable()
 export class ServeAxonService {
@@ -14,12 +16,9 @@ export class ServeAxonService {
     private readonly substrateConnectionService: SubstrateConnectionService,
   ) {}
 
-  async serveAxon(params: AxonCallParams): Promise<any | Error> {
+  async serveAxon(params: AxonCallParams): Promise<string> {
     try {
       const client = await this.substrateConnectionService.getClient();
-      if (client instanceof Error) {
-        throw client;
-      }
 
       // Create the transaction using the client
       const axonTx = client.tx.subtensorModule.serveAxon(
@@ -37,7 +36,16 @@ export class ServeAxonService {
       return await this.substrateClientService.signAndSendTransaction(axonTx);
     } catch (error) {
       this.logger.error(`Error serving axon: ${error.message}`);
-      throw error;
+      if (error instanceof SubtensorException) {
+        throw error;
+      }
+
+      throw new ServeAxonException(
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        'UNKNOWN',
+        error.message,
+        error.stack,
+      );
     }
   }
 }

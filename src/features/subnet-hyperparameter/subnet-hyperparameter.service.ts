@@ -1,8 +1,11 @@
+import { SubtensorException } from 'src/core/substrate/exceptions/substrate-client.exception';
 import { SubstrateClientService } from 'src/core/substrate/services/substrate-client.service';
 import { SubstrateConnectionService } from 'src/core/substrate/services/substrate-connection.service';
 import { SubnetHyperparameters } from 'src/features/subnet-hyperparameter/subnet-hyperparameter.interface';
 
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
+
+import { SubnetHyperparameterException } from './subnet-hyperparameter.exception';
 
 @Injectable()
 export class SubnetHyperparameterService {
@@ -13,13 +16,9 @@ export class SubnetHyperparameterService {
     private readonly substrateConnectionService: SubstrateConnectionService,
   ) {}
 
-  async getSubnetHyperparameters(netuid: number): Promise<SubnetHyperparameters | Error> {
+  async getSubnetHyperparameters(netuid: number): Promise<SubnetHyperparameters> {
     try {
       const client = await this.substrateConnectionService.getClient();
-
-      if (client instanceof Error) {
-        throw client;
-      }
 
       const runtimeApiName: string = 'SubnetInfoRuntimeApi';
       const methodName: string = 'get_subnet_hyperparams';
@@ -31,14 +30,19 @@ export class SubnetHyperparameterService {
         encodedParams,
       );
 
-      if (response instanceof Error) {
-        throw response;
-      }
-
       const subnetHyperparameters: SubnetHyperparameters = response.toJSON();
       return subnetHyperparameters;
     } catch (error) {
-      throw error;
+      if (error instanceof SubtensorException) {
+        this.logger.error(`Subtensor error: ${error.message}`);
+        throw error;
+      }
+      throw new SubnetHyperparameterException(
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        'UNKNOWN',
+        error.message,
+        error.stack,
+      );
     }
   }
 }

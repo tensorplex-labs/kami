@@ -1,4 +1,4 @@
-import { ChainException } from '@app/routes/chain/chain.exceptions';
+import { SubtensorException } from 'src/core/substrate/exceptions/substrate-client.exception';
 
 import {
   Body,
@@ -11,16 +11,18 @@ import {
   UseInterceptors,
   ValidationPipe,
 } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBody, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 
-import { TransformInterceptor } from '../../commons/common-response.dto';
+import {
+  SetCommitRevealWeightException,
+  SetCommitRevealWeightParamsMissingException,
+} from './set-commit-reveal-weight.exception';
 import { CommitRevealWeightsCallParams } from './set-commit-reveal-weights.call-params.interface';
 import { SetCommitRevealWeightsParamsDto } from './set-commit-reveal-weights.dto';
 import { SetCommitRevealWeightsService } from './set-commit-reveal-weights.service';
 
 @Controller('chain')
 @ApiTags('subnet')
-@UseInterceptors(TransformInterceptor)
 @UseInterceptors(ClassSerializerInterceptor)
 export class SetCommitRevealWeightsController {
   private readonly logger = new Logger(SetCommitRevealWeightsController.name);
@@ -35,23 +37,32 @@ export class SetCommitRevealWeightsController {
   @ApiBody({
     type: SetCommitRevealWeightsParamsDto,
   })
+  @ApiOkResponse({
+    description: 'Commit reveal weights set successfully',
+    example: '0xfd5e598f4640ced068e88ed8b1d3d367ea30bb7af00c93f99ff90e3020037973',
+  })
   async setCommitRevealWeights(@Body(ValidationPipe) callParams: CommitRevealWeightsCallParams) {
     try {
       if (!callParams) {
-        throw new ChainException(
-          'SetCommitRevealWeightsCallParams is required',
-          HttpStatus.BAD_REQUEST,
-        );
+        throw new SetCommitRevealWeightParamsMissingException();
       }
       this.logger.log(`Setting commit reveal weights with params: ${JSON.stringify(callParams)}`);
       const result = await this.setCommitRevealWeightsService.setCommitRevealWeights(callParams);
       return result;
     } catch (error) {
       this.logger.error(`Error setting commit reveal weights: ${error.message}`);
-      if (error instanceof ChainException) {
+      if (error instanceof SetCommitRevealWeightParamsMissingException) {
         throw error;
       }
-      throw new ChainException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      if (error instanceof SubtensorException) {
+        throw error;
+      }
+      throw new SetCommitRevealWeightException(
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        'UNKNOWN',
+        error.message,
+        error.stack,
+      );
     }
   }
 }

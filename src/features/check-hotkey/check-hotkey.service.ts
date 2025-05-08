@@ -1,32 +1,28 @@
+import { SubtensorException } from 'src/core/substrate/exceptions/substrate-client.exception';
 import { SubstrateClientService } from 'src/core/substrate/services/substrate-client.service';
 import { SubstrateConnectionService } from 'src/core/substrate/services/substrate-connection.service';
 
 import { Injectable, Logger } from '@nestjs/common';
+import { HttpStatus } from '@nestjs/common';
+
+import { CheckHotkeyException, CheckHotkeyFetchException } from './check-hotkey.exception';
 
 @Injectable()
 export class CheckHotkeyService {
-  private readonly logger = new Logger(CheckHotkeyService.name);
-
   constructor(
     private readonly substrateClientService: SubstrateClientService,
     private readonly substrateConnectionService: SubstrateConnectionService,
   ) {}
 
-  async checkHotkey(netuid: number, hotkey: string, block?: number): Promise<boolean | Error> {
+  async checkHotkey(netuid: number, hotkey: string, block?: number): Promise<boolean> {
     try {
       const client = await this.substrateConnectionService.getClient();
-
-      if (client instanceof Error) {
-        throw client;
-      }
 
       let response = null;
 
       if (block) {
-        const getBlockHash: string | Error = await this.substrateClientService.getBlockHash(block);
-        if (getBlockHash instanceof Error) {
-          throw new Error(`Failed to get block hash: ${getBlockHash.message}`);
-        }
+        const getBlockHash: string = await this.substrateClientService.getBlockHash(block);
+
         const blockApi = await client.at(getBlockHash);
         response = await blockApi.query.subtensorModule.isNetworkMember(hotkey, netuid);
       } else {
@@ -34,14 +30,20 @@ export class CheckHotkeyService {
       }
 
       if (response == null) {
-        throw new Error('Failed to retrieve hotkey');
+        throw new CheckHotkeyFetchException('No response');
       }
 
       const isHotkey: boolean = response.toJSON() as boolean;
 
       return isHotkey;
     } catch (error) {
-      throw error;
+      if (error instanceof CheckHotkeyFetchException) {
+        throw error;
+      }
+      if (error instanceof SubtensorException) {
+        throw error;
+      }
+      throw new CheckHotkeyException(HttpStatus.BAD_REQUEST, 'UNKNOWN', error.message, error.stack);
     }
   }
 }

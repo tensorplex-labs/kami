@@ -1,4 +1,4 @@
-import { ChainException } from '@app/routes/chain/chain.exceptions';
+import { SubtensorException } from 'src/core/substrate/exceptions/substrate-client.exception';
 
 import {
   Body,
@@ -13,14 +13,13 @@ import {
 } from '@nestjs/common';
 import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { TransformInterceptor } from '../../commons/common-response.dto';
 import { SetWeightsCallParams } from './set-weights.call-params.interface';
 import { SetWeightsParamsDto } from './set-weights.dto';
+import { SetWeightsException, SetWeightsParamsMissingException } from './set-weights.exception';
 import { SetWeightsService } from './set-weights.service';
 
 @Controller('chain')
 @ApiTags('subnet')
-@UseInterceptors(TransformInterceptor)
 @UseInterceptors(ClassSerializerInterceptor)
 export class SetWeightsController {
   private readonly logger = new Logger(SetWeightsController.name);
@@ -42,7 +41,7 @@ export class SetWeightsController {
   async setWeights(@Body(ValidationPipe) callParams: SetWeightsCallParams) {
     try {
       if (!callParams) {
-        throw new ChainException('SetWeightsCallParams is required', HttpStatus.BAD_REQUEST);
+        throw new SetWeightsParamsMissingException();
       }
 
       this.logger.log(`Setting weights with params: ${JSON.stringify(callParams)}`);
@@ -51,10 +50,18 @@ export class SetWeightsController {
       return result;
     } catch (error) {
       this.logger.error(`Error setting weights: ${error.message}`);
-      if (error instanceof ChainException) {
+      if (error instanceof SetWeightsParamsMissingException) {
         throw error;
       }
-      throw new ChainException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      if (error instanceof SubtensorException) {
+        throw error;
+      }
+      throw new SetWeightsException(
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        'UNKNOWN',
+        error.message,
+        error.stack,
+      );
     }
   }
 }

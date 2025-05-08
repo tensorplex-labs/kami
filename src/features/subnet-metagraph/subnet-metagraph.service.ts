@@ -1,25 +1,24 @@
+import { SubstrateConnectionException } from 'src/core/substrate/exceptions/substrate-connection.exception';
 import { SubstrateClientService } from 'src/core/substrate/services/substrate-client.service';
 import { SubstrateConnectionService } from 'src/core/substrate/services/substrate-connection.service';
+import {
+  SubnetMetagraphException,
+  SubnetMetagraphFetchException,
+} from 'src/features/subnet-metagraph/subnet-metagraph.exception';
 import { SubnetMetagraph } from 'src/features/subnet-metagraph/subnet-metagraph.interface';
 
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 
 @Injectable()
 export class SubnetMetagraphService {
-  private readonly logger = new Logger(SubnetMetagraphService.name);
-
   constructor(
     private readonly substrateClientService: SubstrateClientService,
     private readonly substrateConnectionService: SubstrateConnectionService,
   ) {}
 
-  async getSubnetMetagraph(netuid: number): Promise<SubnetMetagraph | Error> {
+  async getSubnetMetagraph(netuid: number): Promise<SubnetMetagraph> {
     try {
       const client = await this.substrateConnectionService.getClient();
-
-      if (client instanceof Error) {
-        throw client;
-      }
 
       const runtimeApiName = 'SubnetInfoRuntimeApi';
       const methodName = 'get_metagraph';
@@ -31,14 +30,19 @@ export class SubnetMetagraphService {
         encodedParams,
       );
 
-      if (response instanceof Error) {
-        throw response;
-      }
-
       const subnetMetagraph: SubnetMetagraph = response.toJSON();
       return subnetMetagraph;
     } catch (error) {
-      throw error;
+      if (error instanceof SubstrateConnectionException) {
+        throw error;
+      }
+
+      throw new SubnetMetagraphException(
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        'UNKNOWN',
+        error.message,
+        error.stack,
+      );
     }
   }
 }

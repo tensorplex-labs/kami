@@ -1,4 +1,4 @@
-import { ChainException } from '@app/routes/chain/chain.exceptions';
+import { SubtensorException } from 'src/core/substrate/exceptions/substrate-client.exception';
 
 import {
   Body,
@@ -11,27 +11,15 @@ import {
   UseInterceptors,
   ValidationPipe,
 } from '@nestjs/common';
-import {
-  ApiBadRequestResponse,
-  ApiBody,
-  ApiInternalServerErrorResponse,
-  ApiNotFoundResponse,
-  ApiOkResponse,
-  ApiOperation,
-  ApiParam,
-  ApiQuery,
-  ApiResponse,
-  ApiTags,
-} from '@nestjs/swagger';
+import { ApiBody, ApiOperation, ApiTags } from '@nestjs/swagger';
 
-import { TransformInterceptor } from '../../commons/common-response.dto';
 import { AxonCallParams } from './serve-axon.call-params.interface';
 import { AxonCallParamsDto } from './serve-axon.dto';
+import { ServeAxonException, ServeAxonParamsMissingException } from './serve-axon.exception';
 import { ServeAxonService } from './serve-axon.service';
 
 @ApiTags('subnet')
 @Controller('chain')
-@UseInterceptors(TransformInterceptor)
 @UseInterceptors(ClassSerializerInterceptor)
 export class ServeAxonController {
   private readonly logger = new Logger(ServeAxonController.name);
@@ -49,7 +37,7 @@ export class ServeAxonController {
   async serveAxon(@Body(ValidationPipe) callParams: AxonCallParams) {
     try {
       if (!callParams) {
-        throw new ChainException('AxonCallParams is required', HttpStatus.BAD_REQUEST);
+        throw new ServeAxonParamsMissingException();
       }
 
       this.logger.log(`Serving axon with params: ${JSON.stringify(callParams)}`);
@@ -58,10 +46,20 @@ export class ServeAxonController {
       return result;
     } catch (error) {
       this.logger.error(`Error serving axon: ${error.message}`);
-      if (error instanceof ChainException) {
+      if (error instanceof ServeAxonParamsMissingException) {
         throw error;
       }
-      throw new ChainException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+
+      if (error instanceof SubtensorException) {
+        throw error;
+      }
+
+      throw new ServeAxonException(
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        'UNKNOWN',
+        error.message,
+        error.stack,
+      );
     }
   }
 }

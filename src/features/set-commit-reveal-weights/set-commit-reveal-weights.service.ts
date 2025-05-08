@@ -1,8 +1,10 @@
+import { SubtensorException } from 'src/core/substrate/exceptions/substrate-client.exception';
 import { SubstrateClientService } from 'src/core/substrate/services/substrate-client.service';
 import { SubstrateConnectionService } from 'src/core/substrate/services/substrate-connection.service';
 
-import { Injectable, Logger } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 
+import { SetCommitRevealWeightException } from './set-commit-reveal-weight.exception';
 import { CommitRevealWeightsCallParams } from './set-commit-reveal-weights.call-params.interface';
 
 @Injectable()
@@ -14,12 +16,10 @@ export class SetCommitRevealWeightsService {
     private readonly substrateConnectionService: SubstrateConnectionService,
   ) {}
 
-  async setCommitRevealWeights(CallParams: CommitRevealWeightsCallParams): Promise<any | Error> {
+  async setCommitRevealWeights(CallParams: CommitRevealWeightsCallParams): Promise<string> {
     try {
       const client = await this.substrateConnectionService.getClient();
-      if (client instanceof Error) {
-        throw client;
-      }
+
       const setCommitRevealWeightsTx = client.tx.subtensorModule.commitCrv3Weights(
         CallParams.netuid,
         CallParams.commit,
@@ -31,7 +31,15 @@ export class SetCommitRevealWeightsService {
 
       return result;
     } catch (error) {
-      throw error;
+      if (error instanceof SubtensorException) {
+        throw error;
+      }
+      throw new SetCommitRevealWeightException(
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        'UNKNOWN',
+        error.message,
+        error.stack,
+      );
     }
   }
 }

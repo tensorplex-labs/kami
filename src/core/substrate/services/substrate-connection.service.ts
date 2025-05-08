@@ -1,16 +1,27 @@
+import { BaseException } from '@app/commons/exceptions/base.exception';
 import { ConnectionStatus } from '@app/commons/interface/connection-status.interface';
 import { KeyringPairInfo } from '@app/commons/interface/keyringpair-info.interface';
 import { WalletInfo } from '@app/commons/interface/wallet-info.interface';
 import * as fs from 'fs';
 import path from 'path';
-import { SubtensorErrorCode } from 'src/core/substrate/substrate.exceptions';
-import { SubtensorException } from 'src/core/substrate/substrate.exceptions';
 
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 
 import { ApiPromise, Keyring, WsProvider } from '@polkadot/api';
 import { KeyringPair } from '@polkadot/keyring/types';
 
+// Import the new exception classes
+import {
+  ConnectionFailedException,
+  FileAccessException,
+  InvalidColdkeyFormatException,
+  InvalidHotkeyFormatException,
+  KeyringPairNotSetException,
+  ReconnectionFailedException,
+  WalletHotkeyNotSetException,
+  WalletNameNotSetException,
+  WalletPathNotSetException,
+} from '../exceptions/substrate-connection.exception';
 import { SubstrateConfig } from '../substrate-config.interface';
 
 @Injectable()
@@ -23,7 +34,14 @@ export class SubstrateConnectionService implements OnModuleInit {
   protected walletHotkey: string | undefined;
   protected walletPath: string | undefined;
 
+  protected maxRetries: number;
+  protected initialRetryDelay: number;
+  protected backoffFactor: number;
+  protected maxRetryDelay: number;
+
   public client: ApiPromise | null;
+
+  private isReconnecting = false;
 
   constructor(
     config: SubstrateConfig,
@@ -33,28 +51,21 @@ export class SubstrateConnectionService implements OnModuleInit {
   ) {
     this.client = null;
     this.config = config;
-    this.walletPath = walletPath || path.join(process.env.HOME || '', '.bittensor/wallets');
-    this.walletName = walletName || 'default';
-    this.walletHotkey = walletHotkey || 'default';
+    this.walletPath =
+      walletPath ||
+      process.env.BITTENSOR_DIR ||
+      path.join(process.env.HOME || '', '.bittensor/wallets');
+    this.walletName = walletName;
+    this.walletHotkey = walletHotkey;
     this.keyringPairInfo = null;
 
-    this.initializeKeyringIfPossible();
-  }
+    // Initialize retry configuration with defaults that can be overridden by env or config
+    this.maxRetries = 5;
+    this.initialRetryDelay = 5000; // 5 seconds
+    this.backoffFactor = 1.5;
+    this.maxRetryDelay = 30000; // 30 seconds
 
-  private handleSubtensorError(error: any): Error {
-    if (error?.data && typeof error.data == 'string') {
-      const match = error.data.match(/Custom error: (\d+)/);
-      if (match && match[1]) {
-      }
-      const errorCode = parseInt(match[1], 10);
-      throw new SubtensorException(errorCode as SubtensorErrorCode);
-    }
-    if (error?.message && typeof error.message == 'string') {
-      if (error.message.includes(`Priority is too low`)) {
-        throw new SubtensorException(SubtensorErrorCode.TRANSACTION_PRIORITY_TOO_LOW);
-      }
-    }
-    throw error;
+    this.initializeKeyringIfPossible();
   }
 
   async onModuleInit() {
@@ -86,17 +97,19 @@ export class SubstrateConnectionService implements OnModuleInit {
   async setKeyringPair() {
     try {
       this.logger.log(`Setting keyring pair for wallet: ${this.walletName}`);
+
       if (!this.walletPath) {
-        throw new Error('Wallet path is not set! Please set the BITTENSOR_DIR in your .env file.');
+        throw new WalletPathNotSetException();
       }
+
       if (!this.walletName) {
-        throw new Error('Wallet name is not set! Please set the WALLET_COLDKEY in your .env file.');
+        throw new WalletNameNotSetException();
       }
+
       if (!this.walletHotkey) {
-        throw new Error(
-          'Wallet hotkey is not set! Please set the WALLET_HOTKEY in your .env file.',
-        );
+        throw new WalletHotkeyNotSetException();
       }
+
       const correctedWalletPath = this.walletPath.replace('$HOME', process.env.HOME || '');
       this.keyringPairInfo = await this.getKeyringPair(
         correctedWalletPath,
@@ -105,61 +118,181 @@ export class SubstrateConnectionService implements OnModuleInit {
       );
     } catch (error) {
       this.logger.error(`Failed to set keyring pair: ${error.message}`);
-      throw new Error(`Failed to set keyring pair: ${error.message}`);
+
+      // Re-throw the exception if it's already one of our defined exceptions
+      if (
+        error instanceof WalletPathNotSetException ||
+        error instanceof WalletNameNotSetException ||
+        error instanceof WalletHotkeyNotSetException ||
+        error instanceof InvalidColdkeyFormatException ||
+        error instanceof InvalidHotkeyFormatException ||
+        error instanceof FileAccessException
+      ) {
+        throw error;
+      }
+
+      // Generic exception
+      throw new BaseException(
+        HttpStatus.BAD_REQUEST,
+        'SUBSTRATE_CONNECTION',
+        `Failed to set keyring pair: ${error.message}`,
+        error.stack,
+      );
     }
   }
 
-  async getCurrentWalletInfo(): Promise<WalletInfo | Error> {
+  async getCurrentWalletInfo(): Promise<WalletInfo> {
     try {
       if (!this.keyringPairInfo) {
-        throw new Error('Keyring pair is not set, please call setKeyringPair() first');
+        throw new KeyringPairNotSetException();
       }
+
       const walletInfo: WalletInfo = {
         coldkey: this.keyringPairInfo.walletColdkey,
         hotkey: this.keyringPairInfo.keyringPair.address,
       };
+
       return walletInfo;
     } catch (error) {
       this.logger.error(`Failed to get current wallet info: ${error.message}`);
-      throw new Error(`Failed to get current wallet info: ${error.message}`);
+
+      if (error instanceof KeyringPairNotSetException) {
+        throw error;
+      }
+
+      throw new ConnectionFailedException(
+        `Failed to get wallet info: ${error.message}`,
+        error.stack,
+      );
     }
   }
 
-  async connect(): Promise<ConnectionStatus | Error> {
+  async connect(): Promise<ConnectionStatus> {
     try {
       this.logger.log(`Connecting to ${this.config.nodeUrl}...`);
 
-      await new Promise(resolve => setTimeout(resolve, 500));
-      this.client = new ApiPromise({
-        provider: new WsProvider(this.config.nodeUrl),
+      // Create a provider with auto-reconnect enabled
+      // The second parameter is the reconnect delay in milliseconds
+      const provider = new WsProvider(
+        this.config.nodeUrl, // URL
+        this.initialRetryDelay, // Auto reconnect delay in ms
+        {}, // Headers
+        this.config.timeout || 10000, // Timeout
+      );
+
+      // Setup event listeners
+      provider.on('connected', () => {
+        this.logger.log(`Connected to ${this.config.nodeUrl}`);
+        this.connectionStatus.isConnected = true;
       });
 
-      await this.client.isReady;
-      this.logger.log('Connected to Substrate node!');
+      provider.on('disconnected', () => {
+        this.logger.warn(`WebSocket disconnected from ${this.config.nodeUrl}`);
+        this.connectionStatus.isConnected = false;
+      });
 
+      provider.on('error', error => {
+        this.logger.error(`WebSocket error: ${JSON.stringify(error) ?? 'Unknown error'}`);
+      });
+
+      // Create API with this provider
+      this.client = new ApiPromise({ provider });
+
+      // Handle API events as well
+      this.client.on('connected', () => {
+        this.logger.log('Substrate client established');
+      });
+
+      this.client.on('disconnected', () => {
+        this.logger.warn('Substrate client disconnected');
+      });
+
+      this.client.on('error', error => {
+        this.logger.error(`Substrate client error: ${error?.message ?? 'Unknown error'}`);
+      });
+
+      this.client.on('ready', () => {
+        this.logger.log('Substrate client is ready');
+      });
+
+      // Wait for API to be ready
+      await this.client.isReady;
+
+      // Set connection status
       this.connectionStatus = {
         isConnected: true,
         lastConnected: new Date(),
         chainId: (await this.client.rpc.system.chain()).toString(),
       };
+
+      this.logger.log(`Connected to Substrate node for ${this.connectionStatus.chainId}!`);
+
       return this.connectionStatus;
     } catch (error) {
-      this.logger.error(`Failed to connect: ${error.message}`);
       this.connectionStatus = { isConnected: false };
-      throw error;
+      this.logger.error(`Failed to connect: ${error?.message ?? 'Unknown error'}`);
+
+      throw new ConnectionFailedException(error?.message ?? 'Connection failed', error.stack);
     }
   }
 
-  async reconnect() {
+  async reconnect(): Promise<ConnectionStatus> {
+    // Prevent multiple concurrent reconnection attempts
+    if (this.isReconnecting) {
+      this.logger.debug('Reconnection already in progress, waiting...');
+      return new Promise(resolve => {
+        // Poll until reconnection is complete or timeout
+        const interval = setInterval(() => {
+          if (!this.isReconnecting && this.connectionStatus.isConnected) {
+            clearInterval(interval);
+            resolve(this.connectionStatus);
+          }
+        }, 100);
+
+        // Set a timeout in case reconnection stalls
+        setTimeout(() => {
+          clearInterval(interval);
+          if (!this.connectionStatus.isConnected) {
+            resolve({ isConnected: false });
+          }
+        }, 30000);
+      });
+    }
+
     try {
+      this.isReconnecting = true;
+
+      // Check if API exists and is still usable
       if (this.client) {
-        this.client.disconnect();
+        try {
+          // Try to use existing connection if possible
+          await this.client.isReady;
+
+          // If we get here, connection is already established
+          this.connectionStatus.isConnected = true;
+          return this.connectionStatus;
+        } catch (error) {
+          this.logger.debug(`Existing client is not usable: ${error?.message}`);
+
+          // Disconnect client if it exists but is not usable
+          try {
+            await this.client.disconnect();
+          } catch (disconnectError) {
+            this.logger.debug(`Error disconnecting client: ${disconnectError?.message}`);
+          }
+
+          this.client = null;
+        }
       }
-      this.connectionStatus.isConnected = false;
-      return this.connect();
+
+      // Create a new connection if needed
+      this.logger.debug('Creating new connection');
+      return await this.connect();
     } catch (error) {
-      this.logger.error(`Failed to reconnect: ${error.message}`);
-      throw error;
+      this.logger.error(`Failed to reconnect: ${error?.message ?? 'Unknown error'}`);
+      throw new ReconnectionFailedException(error?.message ?? 'Reconnection failed', error.stack);
+    } finally {
+      this.isReconnecting = false;
     }
   }
 
@@ -170,13 +303,15 @@ export class SubstrateConnectionService implements OnModuleInit {
   }
 
   // Public method to get client - will establish connection if needed
-  async getClient(): Promise<ApiPromise | Error> {
+  async getClient(): Promise<ApiPromise> {
     if (!this.client || !this.connectionStatus.isConnected) {
       await this.reconnect();
     }
 
     if (!this.client) {
-      return new Error('Failed to connect to Substrate node');
+      throw new ConnectionFailedException(
+        `Client could not be initialized after ${this.maxRetries} reconnection attempt(s)`,
+      );
     }
 
     return this.client;
@@ -188,25 +323,59 @@ export class SubstrateConnectionService implements OnModuleInit {
     walletHotkey: string | undefined,
   ): Promise<KeyringPairInfo> {
     try {
+      if (!walletPath) {
+        throw new WalletPathNotSetException();
+      }
+
+      if (!walletName) {
+        throw new WalletNameNotSetException();
+      }
+
+      if (!walletHotkey) {
+        throw new WalletHotkeyNotSetException();
+      }
+
       const coldkeyPath = `${walletPath}/wallets/${walletName}/coldkeypub.txt`;
       const hotkeyPath = `${walletPath}/wallets/${walletName}/hotkeys/${walletHotkey}`;
 
-      await fs.promises.access(coldkeyPath, fs.constants.R_OK);
-      await fs.promises.access(hotkeyPath, fs.constants.R_OK);
+      try {
+        await fs.promises.access(coldkeyPath, fs.constants.R_OK);
+        await fs.promises.access(hotkeyPath, fs.constants.R_OK);
+      } catch (error) {
+        throw new FileAccessException(error.path || 'wallet files');
+      }
 
-      const coldkeyContent = await fs.promises.readFile(coldkeyPath, 'utf-8');
-      const coldkeyJsonContent = JSON.parse(coldkeyContent);
+      let coldkeyContent, hotkeyFileContent;
+      try {
+        coldkeyContent = await fs.promises.readFile(coldkeyPath, 'utf-8');
+        hotkeyFileContent = await fs.promises.readFile(hotkeyPath, 'utf-8');
+      } catch (error) {
+        throw new FileAccessException(error.path || 'wallet files');
+      }
+
+      let coldkeyJsonContent, hotkeyJsonContent;
+
+      // Parse coldkey JSON
+      try {
+        coldkeyJsonContent = JSON.parse(coldkeyContent);
+      } catch (error) {
+        throw new InvalidColdkeyFormatException('Invalid JSON format in coldkey file');
+      }
+
+      // Parse hotkey JSON
+      try {
+        hotkeyJsonContent = JSON.parse(hotkeyFileContent);
+      } catch (error) {
+        throw new InvalidHotkeyFormatException('Invalid JSON format in hotkey file');
+      }
 
       if (!coldkeyJsonContent.ss58Address) {
-        throw new Error('Invalid coldkey format: missing ss58Address');
+        throw new InvalidColdkeyFormatException('Missing ss58Address in coldkey file');
       }
       const coldkey = coldkeyJsonContent.ss58Address;
 
-      const hotkeyFileContent = await fs.promises.readFile(hotkeyPath, 'utf-8');
-      const hotkeyJsonContent = JSON.parse(hotkeyFileContent);
-
       if (!hotkeyJsonContent.secretPhrase) {
-        throw new Error('Invalid hotkey format: missing secretPhrase');
+        throw new InvalidHotkeyFormatException('Missing secretPhrase in hotkey file');
       }
 
       const keyring: Keyring = new Keyring({ type: 'sr25519' });
@@ -217,10 +386,25 @@ export class SubstrateConnectionService implements OnModuleInit {
         walletColdkey: coldkey,
       };
     } catch (error) {
-      if (error instanceof Error) {
-        Logger.error(`Failed to get keyring pair: ${error.message}`);
+      this.logger.error(`Failed to get keyring pair: ${error.message}`);
+
+      // Re-throw specific exceptions
+      if (
+        error instanceof WalletPathNotSetException ||
+        error instanceof WalletNameNotSetException ||
+        error instanceof WalletHotkeyNotSetException ||
+        error instanceof InvalidColdkeyFormatException ||
+        error instanceof InvalidHotkeyFormatException ||
+        error instanceof FileAccessException
+      ) {
+        throw error;
       }
-      throw error;
+
+      // Otherwise wrap in a more generic exception
+      throw new ConnectionFailedException(
+        `Failed to get keyring pair: ${error.message}`,
+        error.stack,
+      );
     }
   }
 
@@ -228,10 +412,15 @@ export class SubstrateConnectionService implements OnModuleInit {
    * Returns the current keyring pair information
    * @returns The keyring pair information or null if not initialized
    */
-  async getKeyringPairInfo(): Promise<KeyringPairInfo | null> {
+  async getKeyringPairInfo(): Promise<KeyringPairInfo> {
     if (!this.keyringPairInfo) {
       await this.setKeyringPair();
     }
+
+    if (!this.keyringPairInfo) {
+      throw new KeyringPairNotSetException();
+    }
+
     return this.keyringPairInfo;
   }
 
