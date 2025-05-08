@@ -3,7 +3,6 @@ import { BaseException } from '@app/commons/exceptions/base.exception';
 
 import { HttpStatus } from '@nestjs/common';
 
-
 // Base exception for this domain
 export class SetCommitRevealWeightException extends BaseException {
   constructor(statusCode: HttpStatus, type: string, message: string, stackTrace?: string) {

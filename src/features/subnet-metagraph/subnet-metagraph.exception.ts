@@ -18,58 +18,33 @@ export class SubnetMetagraphNotFoundException extends SubnetMetagraphException {
       ? `Subnet metagraph with ID ${subnetId} not found`
       : 'Subnet metagraph not found';
 
-    super(
-      HttpStatus.NOT_FOUND,
-      'NOT_FOUND',
-      message,
-      stackTrace,
-    );
+    super(HttpStatus.NOT_FOUND, 'NOT_FOUND', message, stackTrace);
   }
 }
 
 export class InvalidSubnetIdException extends SubnetMetagraphException {
   constructor(subnetId: string | number, stackTrace?: string) {
     const message = `Invalid subnet ID: ${subnetId}`;
-    super(
-      HttpStatus.BAD_REQUEST,
-      'INVALID_SUBNET_ID',
-      message,
-      stackTrace,
-    );
+    super(HttpStatus.BAD_REQUEST, 'INVALID_SUBNET_ID', message, stackTrace);
   }
 }
 
 export class SubnetMetagraphFetchException extends SubnetMetagraphException {
   constructor(message: string, stackTrace?: string) {
-    super(
-      HttpStatus.INTERNAL_SERVER_ERROR,
-      'FETCH_FAILED',
-      message,
-      stackTrace,
-    );
+    super(HttpStatus.INTERNAL_SERVER_ERROR, 'FETCH_FAILED', message, stackTrace);
   }
 }
 
 export class SubnetMetagraphValidationException extends SubnetMetagraphException {
   constructor(reason: string, stackTrace?: string) {
     const message = `Subnet metagraph validation error: ${reason}`;
-    super(
-      HttpStatus.BAD_REQUEST,
-      'VALIDATION_ERROR',
-      message,
-      stackTrace,
-    );
+    super(HttpStatus.BAD_REQUEST, 'VALIDATION_ERROR', message, stackTrace);
   }
 }
 
 export class SubnetMetagraphPermissionException extends SubnetMetagraphException {
   constructor(action: string, stackTrace?: string) {
     const message = `Permission denied for subnet metagraph action: ${action}`;
-    super(
-      HttpStatus.FORBIDDEN,
-      'PERMISSION_DENIED',
-      message,
-      stackTrace,
-    );
+    super(HttpStatus.FORBIDDEN, 'PERMISSION_DENIED', message, stackTrace);
   }
 }

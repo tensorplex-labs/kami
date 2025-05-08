@@ -14,12 +14,7 @@ export class LatestBlockException extends BaseException {
 // Specific exception types
 export class LatestBlockNotFoundException extends LatestBlockException {
   constructor(message: string, stackTrace?: string) {
-    super(
-      HttpStatus.NOT_FOUND,
-      'NOT_FOUND',
-      `Latest block not found: ${message}`,
-      stackTrace,
-    );
+    super(HttpStatus.NOT_FOUND, 'NOT_FOUND', `Latest block not found: ${message}`, stackTrace);
   }
 }
 

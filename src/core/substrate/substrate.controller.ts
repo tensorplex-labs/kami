@@ -1,8 +1,6 @@
 import { Controller, Get, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
-import { SubstrateClientService } from './services/substrate-client.service';
-import { SubstrateConnectionService } from './services/substrate-connection.service';
 import {
   FileAccessException,
   InvalidColdkeyFormatException,
@@ -11,6 +9,8 @@ import {
   WalletNameNotSetException,
   WalletPathNotSetException,
 } from './exceptions/substrate-connection.exception';
+import { SubstrateClientService } from './services/substrate-client.service';
+import { SubstrateConnectionService } from './services/substrate-connection.service';
 
 @Controller('substrate')
 @ApiTags('substrate')

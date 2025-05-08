@@ -179,24 +179,14 @@ export class TransactionFailedException extends SubstrateClientException {
 export class QueryFailedException extends SubstrateClientException {
   constructor(message: string, stackTrace?: string) {
     const errorCategory = 'SUBSTRATE_CLIENT';
-    super(
-      HttpStatus.BAD_REQUEST,
-      `${errorCategory}.QUERY_FAILED`,
-      `${message}`,
-      stackTrace,
-    );
+    super(HttpStatus.BAD_REQUEST, `${errorCategory}.QUERY_FAILED`, `${message}`, stackTrace);
   }
 }
 
 export class InvalidParameterException extends SubstrateClientException {
   constructor(message: string, stackTrace?: string) {
     const errorCategory = 'SUBSTRATE_CLIENT';
-    super(
-      HttpStatus.BAD_REQUEST,
-      `${errorCategory}.INVALID_PARAMETER`,
-      `${message}`,
-      stackTrace,
-    );
+    super(HttpStatus.BAD_REQUEST, `${errorCategory}.INVALID_PARAMETER`, `${message}`, stackTrace);
   }
 }
 

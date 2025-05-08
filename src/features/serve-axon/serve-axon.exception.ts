@@ -14,11 +14,6 @@ export class ServeAxonException extends BaseException {
 // Specific exception types
 export class ServeAxonParamsMissingException extends ServeAxonException {
   constructor(stackTrace?: any) {
-    super(
-      HttpStatus.BAD_REQUEST,
-      'PARAMS_MISSING',
-      'Serve axon params missing',
-      stackTrace,
-    );
+    super(HttpStatus.BAD_REQUEST, 'PARAMS_MISSING', 'Serve axon params missing', stackTrace);
   }
 }

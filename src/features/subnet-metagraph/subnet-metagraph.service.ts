@@ -1,10 +1,13 @@
+import { SubstrateConnectionException } from 'src/core/substrate/exceptions/substrate-connection.exception';
 import { SubstrateClientService } from 'src/core/substrate/services/substrate-client.service';
 import { SubstrateConnectionService } from 'src/core/substrate/services/substrate-connection.service';
-import { SubnetMetagraphException, SubnetMetagraphFetchException } from 'src/features/subnet-metagraph/subnet-metagraph.exception';
+import {
+  SubnetMetagraphException,
+  SubnetMetagraphFetchException,
+} from 'src/features/subnet-metagraph/subnet-metagraph.exception';
 import { SubnetMetagraph } from 'src/features/subnet-metagraph/subnet-metagraph.interface';
 
 import { HttpStatus, Injectable } from '@nestjs/common';
-import { SubstrateConnectionException } from 'src/core/substrate/exceptions/substrate-connection.exception';
 
 @Injectable()
 export class SubnetMetagraphService {
@@ -30,7 +33,6 @@ export class SubnetMetagraphService {
       const subnetMetagraph: SubnetMetagraph = response.toJSON();
       return subnetMetagraph;
     } catch (error) {
-
       if (error instanceof SubstrateConnectionException) {
         throw error;
       }

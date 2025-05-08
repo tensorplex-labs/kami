@@ -1,6 +1,6 @@
+import { SubtensorException } from 'src/core/substrate/exceptions/substrate-client.exception';
 import { SubstrateClientService } from 'src/core/substrate/services/substrate-client.service';
 import { SubstrateConnectionService } from 'src/core/substrate/services/substrate-connection.service';
-import { SubtensorException } from 'src/core/substrate/exceptions/substrate-client.exception';
 
 import { Injectable, Logger } from '@nestjs/common';
 import { HttpStatus } from '@nestjs/common';

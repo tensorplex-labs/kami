@@ -13,34 +13,19 @@ export class SubstrateConnectionException extends BaseException {
 // Specific connection exceptions
 export class ConnectionFailedException extends SubstrateConnectionException {
   constructor(message: string, stackTrace?: string) {
-    super(
-      HttpStatus.SERVICE_UNAVAILABLE,
-      'CONNECTION_FAILED',
-      message,
-      stackTrace,
-    );
+    super(HttpStatus.SERVICE_UNAVAILABLE, 'CONNECTION_FAILED', message, stackTrace);
   }
 }
 
 export class ReconnectionFailedException extends SubstrateConnectionException {
   constructor(message: string, stackTrace?: string) {
-    super(
-      HttpStatus.SERVICE_UNAVAILABLE,
-      'RECONNECTION_FAILED',
-      message,
-      stackTrace,
-    );
+    super(HttpStatus.SERVICE_UNAVAILABLE, 'RECONNECTION_FAILED', message, stackTrace);
   }
 }
 
 export class ClientNotInitializedException extends SubstrateConnectionException {
   constructor(message: string, stackTrace?: string) {
-    super(
-      HttpStatus.INTERNAL_SERVER_ERROR,
-      'CLIENT_NOT_INITIALIZED',
-      message,
-      stackTrace,
-    );
+    super(HttpStatus.INTERNAL_SERVER_ERROR, 'CLIENT_NOT_INITIALIZED', message, stackTrace);
   }
 }
 
@@ -86,23 +71,13 @@ export class KeyringPairNotSetException extends SubstrateConnectionException {
 
 export class InvalidColdkeyFormatException extends SubstrateConnectionException {
   constructor(message: string, stackTrace?: string) {
-    super(
-      HttpStatus.BAD_REQUEST,
-      'INVALID_COLDKEY_FORMAT',
-      message,
-      stackTrace,
-    );
+    super(HttpStatus.BAD_REQUEST, 'INVALID_COLDKEY_FORMAT', message, stackTrace);
   }
 }
 
 export class InvalidHotkeyFormatException extends SubstrateConnectionException {
   constructor(message: string, stackTrace?: string) {
-    super(
-      HttpStatus.BAD_REQUEST,
-      'INVALID_HOTKEY_FORMAT',
-      message,
-      stackTrace,
-    );
+    super(HttpStatus.BAD_REQUEST, 'INVALID_HOTKEY_FORMAT', message, stackTrace);
   }
 }
 

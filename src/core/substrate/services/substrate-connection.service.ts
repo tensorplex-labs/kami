@@ -10,7 +10,6 @@ import { HttpStatus, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { ApiPromise, Keyring, WsProvider } from '@polkadot/api';
 import { KeyringPair } from '@polkadot/keyring/types';
 
-import { SubstrateConfig } from '../substrate-config.interface';
 // Import the new exception classes
 import {
   ConnectionFailedException,
@@ -23,6 +22,7 @@ import {
   WalletNameNotSetException,
   WalletPathNotSetException,
 } from '../exceptions/substrate-connection.exception';
+import { SubstrateConfig } from '../substrate-config.interface';
 
 @Injectable()
 export class SubstrateConnectionService implements OnModuleInit {

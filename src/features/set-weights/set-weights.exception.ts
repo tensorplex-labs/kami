@@ -14,11 +14,6 @@ export class SetWeightsException extends BaseException {
 // Specific exception types
 export class SetWeightsParamsMissingException extends SetWeightsException {
   constructor(stackTrace?: any) {
-    super(
-      HttpStatus.BAD_REQUEST,
-      'PARAMS_MISSING',
-      'Set weights params missing',
-      stackTrace,
-    );
+    super(HttpStatus.BAD_REQUEST, 'PARAMS_MISSING', 'Set weights params missing', stackTrace);
   }
 }

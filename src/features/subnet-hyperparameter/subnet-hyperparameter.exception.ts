@@ -13,22 +13,12 @@ export class SubnetHyperparameterException extends BaseException {
 
 export class SubnetHyperparameterNotFoundException extends SubnetHyperparameterException {
   constructor(stackTrace?: string) {
-    super(
-      HttpStatus.NOT_FOUND,
-      'NOT_FOUND',
-      'Subnet hyperparameter not found',
-      stackTrace,
-    );
+    super(HttpStatus.NOT_FOUND, 'NOT_FOUND', 'Subnet hyperparameter not found', stackTrace);
   }
 }
 
 export class SubnetHyperparameterFetchException extends SubnetHyperparameterException {
   constructor(message: string, stackTrace?: string) {
-    super(
-      HttpStatus.INTERNAL_SERVER_ERROR,
-      'FETCH_FAILED',
-      message,
-      stackTrace,
-    );
+    super(HttpStatus.INTERNAL_SERVER_ERROR, 'FETCH_FAILED', message, stackTrace);
   }
 }
