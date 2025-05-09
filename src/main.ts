@@ -24,7 +24,7 @@ async function bootstrap() {
   fs.writeFileSync(outputPath, JSON.stringify(document));
   console.log(`Swagger JSON saved to ${outputPath}`);
 
-  SwaggerModule.setup('api', app, document);
+  SwaggerModule.setup('chain/docs', app, document);
 
   await app.listen(process.env.KAMI_PORT ?? 3000);
 }
