@@ -1,0 +1,29 @@
+export interface SubnetHyperparameters {
+  rho: number;
+  kappa: number;
+  immunityPeriod: number;
+  minAllowedWeights: number;
+  maxWeightsLimit: number;
+  tempo: number;
+  minDifficulty: number;
+  maxDifficulty: number;
+  weightsVersion: number;
+  weightsRateLimit: number;
+  adjustmentInterval: number;
+  activityCutoff: number;
+  registrationAllowed: boolean;
+  targetRegsPerInterval: number;
+  minBurn: number;
+  maxBurn: number;
+  bondsMovingAvg: number;
+  maxRegsPerBlock: number;
+  servingRateLimit: number;
+  maxValidators: number;
+  adjustmentAlpha: number;
+  difficulty: number;
+  commitRevealPeriod: number;
+  commitRevealWeightsEnabled: boolean;
+  alphaHigh: number;
+  alphaLow: number;
+  liquidAlphaEnabled: boolean;
+}
