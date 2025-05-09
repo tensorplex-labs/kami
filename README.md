@@ -46,7 +46,7 @@ $ npm run start:prod
 ```
 
 ## API Documentation
-Swagger Docs can be accessed once compiled: ```http://localhost:KAMI_PORT/api```
+Swagger Docs can be accessed once compiled: ```http://localhost:KAMI_PORT/chain/docs```
 
 ## Run tests
 
