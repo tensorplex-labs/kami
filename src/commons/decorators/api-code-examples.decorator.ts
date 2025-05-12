@@ -47,7 +47,7 @@ export function ApiCodeSamples(samples: CodeSampleFile[]) {
 
       if (codeSamples.length > 0) {
         extensions['x-code-samples'] = codeSamples;
-        extensions['x-codeSamples'] = 'codeSamples';
+        extensions['x-codeSamples'] = codeSamples;
         Reflect.defineMetadata(DECORATORS.API_EXTENSION, extensions, descriptor.value);
       }
     }
