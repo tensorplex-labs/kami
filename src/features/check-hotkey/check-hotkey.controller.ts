@@ -1,3 +1,4 @@
+import { ApiCodeSamples, pythonSample } from '@app/commons/decorators/api-code-examples.decorator';
 import { SubtensorException } from 'src/core/substrate/exceptions/substrate-client.exception';
 
 import { Controller, Get, HttpStatus, Logger, Query } from '@nestjs/common';
@@ -41,6 +42,7 @@ export class CheckHotkeyController {
     type: 'number',
     required: false,
   })
+  @ApiCodeSamples([pythonSample('docs/python-examples/check-hotkey.py')])
   async checkHotkey(
     @Query('netuid') netuid: number,
     @Query('hotkey') hotkey: string,
