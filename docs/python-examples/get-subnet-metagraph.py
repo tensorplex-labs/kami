@@ -3,9 +3,9 @@ from dotenv import load_dotenv
 async def main():
     load_dotenv()
     kami = Kami()
-    netuid = 1
+    netuid = 52
     metagraph = await kami.get_metagraph(netuid)
-    print(metagraph)
+    print(f"Number of registered Hotkeys: {len(metagraph.hotkeys)}")
 
 
 if __name__ == "__main__":
