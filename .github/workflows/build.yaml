@@ -9,118 +9,54 @@ on:
       - main
 
 jobs:
-  # build_ui:
-  #   name: Build UI
-  #   runs-on: self-hosted
-  #   permissions:
-  #     contents: write
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v4
+  build_npm:
+    name: Build Node Packages
+    runs-on: self-hosted
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-  #     - name: Setup Node
-  #       uses: actions/setup-node@v4
-  #       with:
-  #         node-version: '21.7.3'
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '21.7.3'
 
-  #     - name: Cache node modules
-  #       id: cache-npm
-  #       uses: actions/cache@v4.2.2
-  #       with:
-  #         path: |
-  #           node_modules
-  #           ~/.npm
-  #         key: dojo-chain-api-node-modules-${{ hashFiles('**/package-lock.json') }}
-  #         restore-keys: |
-  #           dojo-chain-api-node-modules-
+      - name: Cache node modules
+        id: cache-npm
+        uses: actions/cache@v4.2.2
+        with:
+          path: |
+            node_modules
+            ~/.npm
+          key: dojo-chain-api-node-modules-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            dojo-chain-api-node-modules-
 
-  #     - name: NPM Install
-  #       run: npm install --force
+      - name: NPM Install
+        run: npm install --force
 
-  #     - name: Run Build
-  #       run: npm run build
-
-  # build_docs:
-  #   name: Build Slate Documentation
-  #   runs-on: self-hosted
-  #   needs: 
-  #     - build_ui
-  #   permissions:
-  #     contents: read
-  #   outputs:
-  #     artifact_name: ${{ steps.artifact-info.outputs.name }}
-  #   steps:
-  #     - name: Checkout code
-  #       uses: actions/checkout@v4
-
-  #     - name: Setup Ruby
-  #       uses: ruby/setup-ruby@v1
-  #       with:
-  #         ruby-version: '3.2'
-  #         bundler-cache: true
-
-  #     - name: Setup Node
-  #       uses: actions/setup-node@v4
-  #       with:
-  #         node-version: '21.7.3'
-
-  #     - name: Restore node modules
-  #       uses: actions/cache@v4.2.2
-  #       with:
-  #         path: |
-  #           node_modules
-  #           ~/.npm
-  #         key: dojo-chain-api-node-modules-${{ hashFiles('**/package-lock.json') }}
-  #         restore-keys: |
-  #           dojo-chain-api-node-modules-
-
-  #     - name: Set environment variable
-  #       run: echo "CI=true" >> $GITHUB_ENV
-
-  #     - name: Verify Swagger JSON
-  #       run: |
-  #         if [ ! -f swagger-spec.json ]; then
-  #           echo "Error: swagger-spec.json not found!"
-  #           echo "Please ensure the application is run to generate the Swagger spec before pushing."
-  #           exit 1
-  #         fi
-  #         
-  #         # Validate JSON format
-  #         if ! jq empty swagger-spec.json 2>/dev/null; then
-  #           echo "Error: swagger-spec.json is not valid JSON!"
-  #           exit 1
-  #         fi
-
-  #     - name: Generate Slate documentation
-  #       id: build-docs
-  #       run: npx ts-node scripts/generate-docs.ts
-
-  #     - name: Set artifact info
-  #       id: artifact-info
-  #       run: echo "name=slate-documentation-$(date +'%Y%m%d%H%M%S')" >> $GITHUB_OUTPUT
-
-  #     - name: Archive documentation artifacts
-  #       uses: actions/upload-artifact@v4
-  #       with:
-  #         name: ${{ steps.artifact-info.outputs.name }}
-  #         path: docs/slate/build/
-  #         retention-days: 7
-  #         if-no-files-found: error
-  #         compression-level: 9
+      - name: Run Build
+        run: npm run build
 
   build_kami_image:
     name: Build Kami Image
-    runs-on: self-hosted
     uses: ./.github/workflows/docker_build.yaml
-    permissions:
-      contents: read
-      packages: write
+    with:
+      permissions:
+        contents: read
+        packages: write
+    needs:
+      - build_npm
 
   build_docs_image:
     name: Build Kami Docs Image
-    runs-on: self-hosted 
     uses: ./.github/workflows/docs_build.yaml
-    permissions:
-      contents: read
-      packages: write
+    with:
+      permissions:
+        contents: read
+        packages: write
+    needs:
+      - build_npm
     
