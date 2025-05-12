@@ -1,5 +1,5 @@
 {
-  "name": "dojo-chain-api",
+  "name": "kami",
   "version": "0.0.1",
   "description": "",
   "author": "",
@@ -18,14 +18,14 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "generate-docs": "ts-node scripts/generate-docs.ts",
-    "serve-docs": "cd docs/slate && bundle exec middleman server"
+    "generate-docs": "npx widdershins --search true --language_tabs \"python:Python\" \"typescript:TypeScript\" --theme darkula --maxDepth 10 swagger-spec.json -o docs/index.html.md"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
     "@nestjs/core": "^11.0.1",
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/swagger": "^11.1.3",
+    "axios": "^1.9.0",
     "ip-address": "^10.0.1",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1"

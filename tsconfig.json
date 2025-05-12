@@ -24,5 +24,6 @@
       "@app/routes/*": ["src/routes/*"],
       "@app/commons/*": ["src/commons/*"]
     }
-  }
+  },
+  "exclude": ["node_modules", "dist", "docs"]
 }

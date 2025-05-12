@@ -2,7 +2,6 @@
 /dist
 /node_modules
 /build
-/docs/slate
 
 # Logs
 logs
@@ -54,3 +53,28 @@ pids
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 local_scripts/
+
+
+# Docs
+docs/python-examples/kami/.venv
+
+# Distribution / packaging
+.Python
+develop-eggs/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+.python-version
+uv*
+__pycache__/
