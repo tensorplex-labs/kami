@@ -43,8 +43,7 @@ jobs:
   build_kami_image:
     name: Build Kami Image
     uses: ./.github/workflows/docker_build.yaml
-    with:
-      permissions:
+    permissions:
         contents: read
         packages: write
     needs:
@@ -53,8 +52,7 @@ jobs:
   build_docs_image:
     name: Build Kami Docs Image
     uses: ./.github/workflows/docs_build.yaml
-    with:
-      permissions:
+    permissions:
         contents: read
         packages: write
     needs:
