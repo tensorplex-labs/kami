@@ -10,6 +10,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
     "aiohttp>=3.11.18",
+    "bittensor>=9.4.0",
     "bittensor-commit-reveal>=0.4.0",
     "dotenv>=0.9.9",
     "loguru>=0.7.3",
