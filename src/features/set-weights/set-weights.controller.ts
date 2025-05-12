@@ -1,3 +1,4 @@
+import { ApiCodeSamples, pythonSample } from '@app/commons/decorators/api-code-examples.decorator';
 import { SubtensorException } from 'src/core/substrate/exceptions/substrate-client.exception';
 
 import {
@@ -38,6 +39,7 @@ export class SetWeightsController {
     description: 'Commit hash (To be used for Commit Reveal)',
     example: '0x8141db6ceb557923a25fe19255adb17e4576013942da669855ac2f831e582cce',
   })
+  @ApiCodeSamples([pythonSample('docs/python-examples/set_weights.py')])
   async setWeights(@Body(ValidationPipe) callParams: SetWeightsCallParams) {
     try {
       if (!callParams) {
