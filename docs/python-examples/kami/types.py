@@ -193,3 +193,15 @@ class SubnetMetagraph(BaseModel):
 
     class Config:
         arbitrary_types_allowed = False
+
+class KeyringPair(BaseModel):
+    address: str
+    addressRaw: dict[str, int]
+    isLocked: bool
+    meta: dict[str, Any]
+    publicKey: dict[str, int]
+    type: str
+
+class KeyringPairInfo(BaseModel):
+    keyringPair: KeyringPair
+    walletColdkey: str

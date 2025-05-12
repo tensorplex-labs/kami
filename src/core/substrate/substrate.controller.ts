@@ -1,3 +1,5 @@
+import { ApiCodeSamples, pythonSample } from '@app/commons/decorators/api-code-examples.decorator';
+
 import { Controller, Get, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 
@@ -49,6 +51,7 @@ export class SubstrateController {
     status: 200,
     description: 'Keyring pair info retrieved successfully',
   })
+  @ApiCodeSamples([pythonSample('docs/python-examples/get-keyring-pair-info.py')])
   async getKeyringPairInfo() {
     try {
       const result = await this.substrateConnectionService.getKeyringPairInfo();

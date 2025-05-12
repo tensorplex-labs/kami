@@ -1,3 +1,5 @@
+import { pythonSample } from '@app/commons/decorators/api-code-examples.decorator';
+import { ApiCodeSamples } from '@app/commons/decorators/api-code-examples.decorator';
 import { SubtensorException } from 'src/core/substrate/exceptions/substrate-client.exception';
 
 import {
@@ -34,6 +36,7 @@ export class ServeAxonController {
   @ApiBody({
     type: AxonCallParamsDto,
   })
+  @ApiCodeSamples([pythonSample('docs/python-examples/serve-axons.py')])
   async serveAxon(@Body(ValidationPipe) callParams: AxonCallParams) {
     try {
       if (!callParams) {

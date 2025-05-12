@@ -8,6 +8,7 @@ from .types import (
     SetWeightsPayload,
     SubnetIdentity,
     SubnetMetagraph,
+    KeyringPairInfo,
 )
 
 __all__ = [
@@ -20,4 +21,5 @@ __all__ = [
     "MovingPrice",
     "SubnetIdentity",
     "IdentitiesInfo",
+    "KeyringPairInfo",
 ]
