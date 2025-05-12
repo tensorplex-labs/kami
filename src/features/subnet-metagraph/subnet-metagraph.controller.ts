@@ -1,6 +1,5 @@
 import { ApiResponseDto, ErrorDto } from '@app/commons/common-response.dto';
 import { ApiCodeSamples, pythonSample } from '@app/commons/decorators/api-code-examples.decorator';
-import { createErrorResponseSchema } from '@app/commons/exceptions/base.exception';
 import { SubtensorException } from 'src/core/substrate/exceptions/substrate-client.exception';
 import { SubnetMetagraphDto } from 'src/features/subnet-metagraph/subnet-metagraph.dto';
 import { SubnetMetagraphMapper } from 'src/features/subnet-metagraph/subnet-metagraph.mapper';
