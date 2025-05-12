@@ -1,9 +1,5 @@
-import { ApiResponseDto } from '@app/commons/common-response.dto';
-import {
-  ApiCodeSamples,
-  pythonSample,
-  typescriptSample,
-} from '@app/commons/decorators/api-code-examples.decorator';
+import { ApiResponseDto, ErrorDto } from '@app/commons/common-response.dto';
+import { ApiCodeSamples, pythonSample } from '@app/commons/decorators/api-code-examples.decorator';
 import { SubtensorException } from 'src/core/substrate/exceptions/substrate-client.exception';
 import { SubnetMetagraphDto } from 'src/features/subnet-metagraph/subnet-metagraph.dto';
 import { SubnetMetagraphMapper } from 'src/features/subnet-metagraph/subnet-metagraph.mapper';
@@ -11,6 +7,8 @@ import { SubnetMetagraphMapper } from 'src/features/subnet-metagraph/subnet-meta
 import { Controller, Get, HttpStatus, Logger, Param } from '@nestjs/common';
 import {
   ApiExtraModels,
+  ApiNotFoundResponse,
+  ApiOkResponse,
   ApiOperation,
   ApiParam,
   ApiResponse,
@@ -49,8 +47,7 @@ export class SubnetMetagraphController {
     type: Number,
     description: 'Network UID',
   })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Subnet metagraph retrieved successfully',
     schema: {
       allOf: [
@@ -63,10 +60,20 @@ export class SubnetMetagraphController {
       ],
     },
   })
-  @ApiCodeSamples([
-    pythonSample('docs/python-examples/get-subnet-metagraph.py'),
-    typescriptSample('docs/typescript-examples/get-subnet-metagraph.ts'),
-  ])
+  @ApiNotFoundResponse({
+    description: 'Subnet metagraph not found',
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(ApiResponseDto) },
+        {
+          properties: {
+            error: { $ref: getSchemaPath(ErrorDto) },
+          },
+        },
+      ],
+    },
+  })
+  @ApiCodeSamples([pythonSample('docs/python-examples/get_subnet_metagraph.py')])
   async getSubnetMetagraph(@Param('netuid') netuid: number) {
     // Validate the netuid parameter
     if (isNaN(netuid) || netuid < 0) {

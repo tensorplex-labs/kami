@@ -1,7 +1,16 @@
+import { ApiResponseDto } from '@app/commons/common-response.dto';
+import { ApiCodeSamples, pythonSample } from '@app/commons/decorators/api-code-examples.decorator';
 import { SubtensorException } from 'src/core/substrate/exceptions/substrate-client.exception';
 
 import { Controller, Get, HttpStatus, Logger, Param } from '@nestjs/common';
-import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiExtraModels,
+  ApiOkResponse,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+  getSchemaPath,
+} from '@nestjs/swagger';
 
 import { SubnetHyperparamsDto, SubnetHyperparamsResponseDto } from './subnet-hyperparameter.dto';
 import {
@@ -13,6 +22,7 @@ import { SubnetHyperparameterService } from './subnet-hyperparameter.service';
 
 @Controller('chain')
 @ApiTags('subnet')
+@ApiExtraModels(ApiResponseDto, SubnetHyperparamsResponseDto)
 export class SubnetHyperparameterController {
   private readonly logger = new Logger(SubnetHyperparameterController.name);
   private readonly maxRetries = 3;
@@ -33,14 +43,21 @@ export class SubnetHyperparameterController {
     type: Number,
     description: 'Network UID',
   })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Subnet hyperparameter retrieved successfully',
-    type: SubnetHyperparamsResponseDto,
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(ApiResponseDto) },
+        {
+          properties: {
+            data: { $ref: getSchemaPath(SubnetHyperparamsResponseDto) },
+          },
+        },
+      ],
+    },
   })
-  async getSubnetHyperparams(
-    @Param() params: SubnetHyperparamsDto,
-  ): Promise<SubnetHyperparamsResponseDto> {
+  @ApiCodeSamples([pythonSample('docs/python-examples/get_subnet_hyperparameters.py')])
+  async getSubnetHyperparams(@Param() params: SubnetHyperparamsDto) {
     let retries = 0;
     let lastError: Error | null = null;
 

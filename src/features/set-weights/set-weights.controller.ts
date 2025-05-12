@@ -1,3 +1,5 @@
+import { ApiResponseDto } from '@app/commons/common-response.dto';
+import { ApiCodeSamples, pythonSample } from '@app/commons/decorators/api-code-examples.decorator';
 import { SubtensorException } from 'src/core/substrate/exceptions/substrate-client.exception';
 
 import {
@@ -11,7 +13,14 @@ import {
   UseInterceptors,
   ValidationPipe,
 } from '@nestjs/common';
-import { ApiBody, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiExtraModels,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+  getSchemaPath,
+} from '@nestjs/swagger';
 
 import { SetWeightsCallParams } from './set-weights.call-params.interface';
 import { SetWeightsParamsDto } from './set-weights.dto';
@@ -21,6 +30,7 @@ import { SetWeightsService } from './set-weights.service';
 @Controller('chain')
 @ApiTags('subnet')
 @UseInterceptors(ClassSerializerInterceptor)
+@ApiExtraModels(ApiResponseDto)
 export class SetWeightsController {
   private readonly logger = new Logger(SetWeightsController.name);
   constructor(private readonly setWeightsService: SetWeightsService) {}
@@ -34,10 +44,24 @@ export class SetWeightsController {
   @ApiBody({
     type: SetWeightsParamsDto,
   })
-  @ApiResponse({
-    description: 'Commit hash (To be used for Commit Reveal)',
-    example: '0x8141db6ceb557923a25fe19255adb17e4576013942da669855ac2f831e582cce',
+  @ApiOkResponse({
+    description: 'Operation completed successfully',
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(ApiResponseDto) },
+        {
+          properties: {
+            data: {
+              type: 'string',
+              description: 'Extrinsic hash',
+              example: '0xce230ef4308b4073e448a4b92ea7ebf40385568ebe93598b6cde7cc3658dc499',
+            },
+          },
+        },
+      ],
+    },
   })
+  @ApiCodeSamples([pythonSample('docs/python-examples/set_weights.py')])
   async setWeights(@Body(ValidationPipe) callParams: SetWeightsCallParams) {
     try {
       if (!callParams) {

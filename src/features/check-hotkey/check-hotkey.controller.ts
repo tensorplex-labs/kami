@@ -1,8 +1,11 @@
+import { ApiResponseDto } from '@app/commons/common-response.dto';
+import { ApiCodeSamples, pythonSample } from '@app/commons/decorators/api-code-examples.decorator';
 import { SubtensorException } from 'src/core/substrate/exceptions/substrate-client.exception';
 
 import { Controller, Get, HttpStatus, Logger, Query } from '@nestjs/common';
-import { ApiQuery, ApiTags } from '@nestjs/swagger';
+import { ApiExtraModels, ApiOkResponse, ApiQuery, ApiTags, getSchemaPath } from '@nestjs/swagger';
 
+import { CheckHotkeyDto } from './check-hotkey.dto';
 import {
   CheckHotkeyException,
   CheckHotkeyNetuidHotkeyMissingException,
@@ -12,6 +15,7 @@ import { CheckHotkeyService } from './check-hotkey.service';
 
 @Controller('chain')
 @ApiTags('subnet')
+@ApiExtraModels(ApiResponseDto, CheckHotkeyDto)
 export class CheckHotkeyController {
   private readonly logger = new Logger(CheckHotkeyController.name);
 
@@ -41,6 +45,20 @@ export class CheckHotkeyController {
     type: 'number',
     required: false,
   })
+  @ApiOkResponse({
+    description: 'Successfully checked hotkey on metagraph',
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(ApiResponseDto) },
+        {
+          properties: {
+            data: { $ref: getSchemaPath(CheckHotkeyDto) },
+          },
+        },
+      ],
+    },
+  })
+  @ApiCodeSamples([pythonSample('docs/python-examples/check_hotkey.py')])
   async checkHotkey(
     @Query('netuid') netuid: number,
     @Query('hotkey') hotkey: string,

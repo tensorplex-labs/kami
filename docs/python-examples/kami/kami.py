@@ -4,6 +4,7 @@ from typing import Any, Dict
 
 import aiohttp
 from bittensor_commit_reveal import get_encrypted_commit  # type: ignore
+from bittensor.utils.networking import ip_to_int
 from loguru import logger
 
 from kami.types import (
@@ -12,6 +13,7 @@ from kami.types import (
     SetWeightsPayload,
     SubnetHyperparameters,
     SubnetMetagraph,
+    KeyringPairInfo,
 )
 
 
@@ -268,3 +270,42 @@ class Kami:
             return await self.post("chain/set-commit-reveal-weights", data=cr_payload)
 
         return await self.post("chain/set-weights", data=payload.model_dump())
+
+    async def get_keyring_pair_info(self) -> KeyringPairInfo:
+        """
+        Get the keyring pair info.
+        """
+        result = await self.get("substrate/keyring-pair-info")
+        keyring_pair_info = result.get("data", {})
+        return KeyringPairInfo.model_validate(keyring_pair_info)
+
+    async def check_if_axon_served(self, axon_payload: ServeAxonPayload) -> bool:
+        keyring_pair_info = await self.get_keyring_pair_info()
+        hotkey = keyring_pair_info.keyringPair.address
+        metagraph = await self.get_metagraph(axon_payload.netuid)
+        uid = metagraph.hotkeys.index(hotkey)
+        current_axon: AxonInfo = metagraph.axons[uid]
+        current_axon_ip: str = current_axon.ip
+        current_axon_port = current_axon.port
+
+        if not current_axon_ip:
+            logger.info(
+                f"Axon not served for hotkey {hotkey} on netuid {axon_payload.netuid}"
+            )
+            return False
+
+        if (
+            ip_to_int(current_axon_ip) == axon_payload.ip
+            and axon_payload.port == current_axon_port
+        ):
+            return True
+        return False
+
+    async def get_available_runtime_api(self) -> Any:
+        """
+        Get the available runtime API.
+        """
+        result = await self.get("substrate/available-runtime-apis")
+        return result.get("data", {})
+
+

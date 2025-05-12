@@ -19,7 +19,7 @@ RUN mkdir -p slate-docs/source
 
 # Run widdershins CLI directly
 RUN widdershins --search true \
-    --language_tabs "python:Python" "typescript:TypeScript" \
+    --language_tabs "python:Python" \
     --theme darkula \
     --maxDepth 10 \
     swagger-spec.json \

@@ -13,9 +13,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const config = new DocumentBuilder()
     .setTitle('Tensorplex Kami')
-    .setDescription(
-      'Lightweight, developer-friendly Typescript library built as an alternative way to interact with the Bittensor chain!',
-    )
+    .setDescription('Ultra-light typescript library for interacting with the Bittensor chain.')
     .setVersion('1.0')
     .addServer(`http://localhost:${process.env.KAMI_PORT}`, 'Development')
     .setContact('Tensorplex Labs', 'https://tensorplex.ai', '')

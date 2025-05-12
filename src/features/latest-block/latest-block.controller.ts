@@ -1,7 +1,15 @@
+import { ApiResponseDto } from '@app/commons/common-response.dto';
+import { ApiCodeSamples, pythonSample } from '@app/commons/decorators/api-code-examples.decorator';
 import { SubtensorException } from 'src/core/substrate/exceptions/substrate-client.exception';
 
 import { Controller, Get, HttpStatus, Logger } from '@nestjs/common';
-import { ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiExtraModels,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+  getSchemaPath,
+} from '@nestjs/swagger';
 
 import { LatestBlockDto } from './latest-block.dto';
 import { LatestBlockException } from './latest-block.exception';
@@ -10,6 +18,7 @@ import { LatestBlockService } from './latest-block.service';
 
 @Controller('chain')
 @ApiTags('substrate')
+@ApiExtraModels(ApiResponseDto, LatestBlockDto)
 export class LatestBlockController {
   private readonly logger = new Logger(LatestBlockController.name);
 
@@ -25,8 +34,18 @@ export class LatestBlockController {
   })
   @ApiOkResponse({
     description: 'Latest block retrieved successfully',
-    type: LatestBlockDto,
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(ApiResponseDto) },
+        {
+          properties: {
+            data: { $ref: getSchemaPath(LatestBlockDto) },
+          },
+        },
+      ],
+    },
   })
+  @ApiCodeSamples([pythonSample('docs/python-examples/get_latest_block.py')])
   async getLatestBlock() {
     try {
       // this.logger.debug('Fetching latest block');
