@@ -111,6 +111,7 @@ jobs:
 
   build_kami_image:
     name: Build Kami Image
+    runs-on: self-hosted
     uses: ./.github/workflows/docker_build.yaml
     permissions:
       contents: read
@@ -118,6 +119,7 @@ jobs:
 
   build_docs_image:
     name: Build Kami Docs Image
+    runs-on: self-hosted 
     uses: ./.github/workflows/docs_build.yaml
     permissions:
       contents: read
