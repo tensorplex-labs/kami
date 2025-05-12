@@ -1,3 +1,4 @@
+import { ApiCodeSamples, pythonSample } from '@app/commons/decorators/api-code-examples.decorator';
 import { SubtensorException } from 'src/core/substrate/exceptions/substrate-client.exception';
 
 import { Controller, Get, HttpStatus, Logger, Param } from '@nestjs/common';
@@ -38,6 +39,7 @@ export class SubnetHyperparameterController {
     description: 'Subnet hyperparameter retrieved successfully',
     type: SubnetHyperparamsResponseDto,
   })
+  @ApiCodeSamples([pythonSample('docs/python-examples/get_subnet_hyperparameters.py')])
   async getSubnetHyperparams(
     @Param() params: SubnetHyperparamsDto,
   ): Promise<SubnetHyperparamsResponseDto> {

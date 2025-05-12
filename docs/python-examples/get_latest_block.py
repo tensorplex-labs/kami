@@ -3,9 +3,9 @@ from dotenv import load_dotenv
 async def main():
     load_dotenv()
     kami = Kami()
-    netuid = 52
-    hyperparameters = await kami.get_subnet_hyperparameters(netuid)
-    print(f"Registration Allowed: {hyperparameters.registrationAllowed}")
+    
+    block = await kami.get_current_block()
+    print(f"Latest Block: {block}")
 
 
 if __name__ == "__main__":

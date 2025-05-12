@@ -36,7 +36,7 @@ export class ServeAxonController {
   @ApiBody({
     type: AxonCallParamsDto,
   })
-  @ApiCodeSamples([pythonSample('docs/python-examples/serve-axons.py')])
+  @ApiCodeSamples([pythonSample('docs/python-examples/serve_axons.py')])
   async serveAxon(@Body(ValidationPipe) callParams: AxonCallParams) {
     try {
       if (!callParams) {

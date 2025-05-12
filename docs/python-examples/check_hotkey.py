@@ -5,6 +5,7 @@ async def main():
     load_dotenv()
     kami = Kami()
     netuid = os.getenv("NETUID")
+    
     keyring_pair_info = await kami.get_keyring_pair_info()
     hotkey = keyring_pair_info.keyringPair.address
 

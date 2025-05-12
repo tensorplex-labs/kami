@@ -63,7 +63,7 @@ export class SubnetMetagraphController {
       ],
     },
   })
-  @ApiCodeSamples([pythonSample('docs/python-examples/get-subnet-metagraph.py')])
+  @ApiCodeSamples([pythonSample('docs/python-examples/get_subnet_metagraph.py')])
   async getSubnetMetagraph(@Param('netuid') netuid: number) {
     // Validate the netuid parameter
     if (isNaN(netuid) || netuid < 0) {

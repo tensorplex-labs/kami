@@ -52,7 +52,7 @@ export class SubstrateController {
     status: 200,
     description: 'Keyring pair info retrieved successfully',
   })
-  @ApiCodeSamples([pythonSample('docs/python-examples/get-keyring-pair-info.py')])
+  @ApiCodeSamples([pythonSample('docs/python-examples/get_keyring_pair_info.py')])
   async getKeyringPairInfo() {
     try {
       const result = await this.substrateConnectionService.getKeyringPairInfo();

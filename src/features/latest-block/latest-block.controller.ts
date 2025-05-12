@@ -1,3 +1,4 @@
+import { ApiCodeSamples, pythonSample } from '@app/commons/decorators/api-code-examples.decorator';
 import { SubtensorException } from 'src/core/substrate/exceptions/substrate-client.exception';
 
 import { Controller, Get, HttpStatus, Logger } from '@nestjs/common';
@@ -27,6 +28,7 @@ export class LatestBlockController {
     description: 'Latest block retrieved successfully',
     type: LatestBlockDto,
   })
+  @ApiCodeSamples([pythonSample('docs/python-examples/get_latest_block.py')])
   async getLatestBlock() {
     try {
       // this.logger.debug('Fetching latest block');

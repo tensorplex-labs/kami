@@ -42,7 +42,7 @@ export class CheckHotkeyController {
     type: 'number',
     required: false,
   })
-  @ApiCodeSamples([pythonSample('docs/python-examples/check-hotkey.py')])
+  @ApiCodeSamples([pythonSample('docs/python-examples/check_hotkey.py')])
   async checkHotkey(
     @Query('netuid') netuid: number,
     @Query('hotkey') hotkey: string,
