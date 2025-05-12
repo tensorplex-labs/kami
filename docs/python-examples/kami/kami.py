@@ -301,4 +301,11 @@ class Kami:
             return True
         return False
 
+    async def get_available_runtime_api(self) -> Any:
+        """
+        Get the available runtime API.
+        """
+        result = await self.get("substrate/available-runtime-apis")
+        return result.get("data", {})
+
 

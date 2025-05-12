@@ -33,6 +33,7 @@ export class SubstrateController {
     status: 200,
     description: 'Available runtime APIs retrieved successfully',
   })
+  @ApiCodeSamples([pythonSample('docs/python-examples/get_available_runtime_api.py')])
   async getAvailableRuntimeApis() {
     try {
       const result = await this.substrateClientService.availableRuntimeApis();
