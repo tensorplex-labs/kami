@@ -1,3 +1,4 @@
+import { ApiResponseDto } from '@app/commons/common-response.dto';
 import { ApiCodeSamples, pythonSample } from '@app/commons/decorators/api-code-examples.decorator';
 import { SubtensorException } from 'src/core/substrate/exceptions/substrate-client.exception';
 
@@ -12,7 +13,14 @@ import {
   UseInterceptors,
   ValidationPipe,
 } from '@nestjs/common';
-import { ApiBody, ApiOkResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBody,
+  ApiExtraModels,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+  getSchemaPath,
+} from '@nestjs/swagger';
 
 import {
   SetCommitRevealWeightException,
@@ -25,6 +33,7 @@ import { SetCommitRevealWeightsService } from './set-commit-reveal-weights.servi
 @Controller('chain')
 @ApiTags('subnet')
 @UseInterceptors(ClassSerializerInterceptor)
+@ApiExtraModels(ApiResponseDto)
 export class SetCommitRevealWeightsController {
   private readonly logger = new Logger(SetCommitRevealWeightsController.name);
   constructor(private readonly setCommitRevealWeightsService: SetCommitRevealWeightsService) {}
@@ -39,10 +48,23 @@ export class SetCommitRevealWeightsController {
     type: SetCommitRevealWeightsParamsDto,
   })
   @ApiOkResponse({
-    description: 'Commit reveal weights set successfully',
-    example: '0xfd5e598f4640ced068e88ed8b1d3d367ea30bb7af00c93f99ff90e3020037973',
+    description: 'Operation completed successfully',
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(ApiResponseDto) },
+        {
+          properties: {
+            data: {
+              type: 'string',
+              description: 'Extrinsic hash',
+              example: '0xce230ef4308b4073e448a4b92ea7ebf40385568ebe93598b6cde7cc3658dc499',
+            },
+          },
+        },
+      ],
+    },
   })
-  @ApiCodeSamples([pythonSample('docs/python-examples/set_commit_reveal_weights.py')])
+  @ApiCodeSamples([pythonSample('docs/python-examples/set_weights.py')])
   async setCommitRevealWeights(@Body(ValidationPipe) callParams: CommitRevealWeightsCallParams) {
     try {
       if (!callParams) {
