@@ -3,7 +3,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import { NestFactory } from '@nestjs/core';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { DocumentBuilder, SwaggerDocumentOptions, SwaggerModule } from '@nestjs/swagger';
 
 import { AppModule } from './app.module';
 
@@ -13,12 +13,18 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const config = new DocumentBuilder()
     .setTitle('Tensorplex Kami')
-    .setDescription('API for Tensorplex Kami')
+    .setDescription(
+      'Lightweight, developer-friendly Typescript library built as an alternative way to interact with the Bittensor chain!',
+    )
     .setVersion('1.0')
-    .addTag('substrate')
+    .addServer(`http://localhost:${process.env.KAMI_PORT}`, 'Development')
+    .setContact('Tensorplex Labs', 'https://tensorplex.ai', '')
     .build();
 
-  const document = SwaggerModule.createDocument(app, config);
+  const options: SwaggerDocumentOptions = {
+    operationIdFactory: (controllerKey: string, methodKey: string) => methodKey,
+  };
+  const document = SwaggerModule.createDocument(app, config, options);
 
   const outputPath = path.resolve(process.cwd(), 'swagger-spec.json');
   fs.writeFileSync(outputPath, JSON.stringify(document));

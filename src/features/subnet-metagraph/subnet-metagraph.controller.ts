@@ -1,21 +1,34 @@
+import { ApiResponseDto } from '@app/commons/common-response.dto';
+import {
+  ApiCodeSamples,
+  pythonSample,
+  typescriptSample,
+} from '@app/commons/decorators/api-code-examples.decorator';
 import { SubtensorException } from 'src/core/substrate/exceptions/substrate-client.exception';
 import { SubnetMetagraphDto } from 'src/features/subnet-metagraph/subnet-metagraph.dto';
 import { SubnetMetagraphMapper } from 'src/features/subnet-metagraph/subnet-metagraph.mapper';
 
 import { Controller, Get, HttpStatus, Logger, Param } from '@nestjs/common';
-import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiExtraModels,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+  getSchemaPath,
+} from '@nestjs/swagger';
 
 import { ConnectionFailedException } from '../../core/substrate/exceptions/substrate-connection.exception';
 import {
   InvalidSubnetIdException,
   SubnetMetagraphException,
-  SubnetMetagraphFetchException,
   SubnetMetagraphNotFoundException,
 } from './subnet-metagraph.exception';
 import { SubnetMetagraphService } from './subnet-metagraph.service';
 
 @Controller('chain')
 @ApiTags('subnet')
+@ApiExtraModels(ApiResponseDto, SubnetMetagraphDto)
 export class SubnetMetagraphController {
   private readonly logger = new Logger(SubnetMetagraphController.name);
   private readonly maxRetries = 3;
@@ -39,8 +52,21 @@ export class SubnetMetagraphController {
   @ApiResponse({
     status: 200,
     description: 'Subnet metagraph retrieved successfully',
-    type: SubnetMetagraphDto,
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(ApiResponseDto) },
+        {
+          properties: {
+            data: { $ref: getSchemaPath(SubnetMetagraphDto) },
+          },
+        },
+      ],
+    },
   })
+  @ApiCodeSamples([
+    pythonSample('docs/python-examples/get-subnet-metagraph.py'),
+    typescriptSample('docs/typescript-examples/get-subnet-metagraph.ts'),
+  ])
   async getSubnetMetagraph(@Param('netuid') netuid: number) {
     // Validate the netuid parameter
     if (isNaN(netuid) || netuid < 0) {
