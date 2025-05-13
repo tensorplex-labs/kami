@@ -45,6 +45,15 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
+## Deployment
+Deploy your Kami instance as a Docker container.
+
+```bash
+# Using the provided docker compose as example
+docker compose -f docker-compose.kami.yaml up
+```
+
+
 ## API Documentation
 The latest documentation can be found at https://kami.tensorplex.ai/. Swagger UI can also be accessed once compiled: ```http://localhost:KAMI_PORT/chain/docs```
 

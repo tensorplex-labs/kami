@@ -1,0 +1,21 @@
+x-logging: &default-logging
+  options:
+    max-size: "50m"
+
+services:
+  kami:
+    container_name: kami
+    image: ghcr.io/tensorplex-labs/kami:main
+    platform: linux/amd64
+    env_file:
+      - .env
+    expose:
+      - ${KAMI_PORT}
+    # If you want to do not want Kami to be accessible from localhost, comment out the ports line below
+    ports:
+      - ${KAMI_PORT}:${KAMI_PORT}
+    volumes:
+      - ./.env:/app/.env
+      - ${BITTENSOR_DIR}:${BITTENSOR_DIR}
+    command: node dist/main.js
+    logging: *default-logging
