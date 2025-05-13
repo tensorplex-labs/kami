@@ -50,7 +50,7 @@ Deploy your Kami instance as a Docker container.
 
 ```bash
 # Using the provided docker compose as example
-docker compose -f docker-compose.kami.yaml up
+docker compose up -d
 ```
 
 
