@@ -3,7 +3,14 @@ import { ApiCodeSamples, pythonSample } from '@app/commons/decorators/api-code-e
 import { SubtensorException } from 'src/core/substrate/exceptions/substrate-client.exception';
 
 import { Controller, Get, HttpStatus, Logger, Query } from '@nestjs/common';
-import { ApiExtraModels, ApiOkResponse, ApiQuery, ApiTags, getSchemaPath } from '@nestjs/swagger';
+import {
+  ApiExtraModels,
+  ApiOkResponse,
+  ApiOperation,
+  ApiQuery,
+  ApiTags,
+  getSchemaPath,
+} from '@nestjs/swagger';
 
 import { CheckHotkeyDto } from './check-hotkey.dto';
 import {
@@ -25,6 +32,10 @@ export class CheckHotkeyController {
   ) {}
 
   @Get('check-hotkey')
+  @ApiOperation({
+    summary: 'Check if a hotkey is valid on a subnet',
+    description: 'If a block is provided, the hotkey will be checked against the block.',
+  })
   @ApiQuery({
     name: 'netuid',
     description: 'Subnet UID',

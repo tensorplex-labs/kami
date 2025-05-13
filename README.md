@@ -45,10 +45,19 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
-## API Documentation
-Swagger Docs can be accessed once compiled: ```http://localhost:KAMI_PORT/chain/docs```
+## Deployment
+Deploy your Kami instance as a Docker container.
 
-## Run tests
+```bash
+# Using the provided docker compose as example
+docker compose up -d
+```
+
+
+## API Documentation
+The latest documentation can be found at https://kami.tensorplex.ai/. Swagger UI can also be accessed once compiled: ```http://localhost:KAMI_PORT/chain/docs```
+
+## Run tests (Coming soon!)
 
 ```bash
 # unit tests
