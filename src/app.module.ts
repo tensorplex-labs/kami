@@ -16,12 +16,12 @@ import { SubnetMetagraphModule } from './features/subnet-metagraph/subnet-metagr
   imports: [
     SubstrateModule,
     SubnetMetagraphModule,
-    ServeAxonModule,
-    CheckHotkeyModule,
     SubnetHyperparameterModule,
-    LatestBlockModule,
+    ServeAxonModule,
     SetWeightsModule,
     SetCommitRevealWeightsModule,
+    LatestBlockModule,
+    CheckHotkeyModule,
   ],
   providers: [
     {

@@ -40,7 +40,7 @@ export class ApiResponseDto {
   data: any | null;
 
   @ApiProperty({
-    description: 'Error',
+    description: 'Error Details',
     type: ErrorDto,
     example: null,
   })
