@@ -1,3 +1,4 @@
+import { Buffer } from 'buffer';
 import { SubtensorException } from 'src/core/substrate/exceptions/substrate-client.exception';
 import { SubstrateClientService } from 'src/core/substrate/services/substrate-client.service';
 import { SubstrateConnectionService } from 'src/core/substrate/services/substrate-connection.service';
@@ -22,7 +23,7 @@ export class SetCommitRevealWeightsService {
 
       const setCommitRevealWeightsTx = client!.tx.subtensorModule.commitCrv3Weights(
         CallParams.netuid,
-        CallParams.commit,
+        Buffer.from(CallParams.commit, "hex"), // Convert hex string to bytes 
         CallParams.revealRound,
       );
 
