@@ -21,9 +21,11 @@ export class SetCommitRevealWeightsService {
     try {
       const client = await this.substrateConnectionService.getClient();
 
+      const hexCommitString = '0x' + CallParams.commit; 
+
       const setCommitRevealWeightsTx = client!.tx.subtensorModule.commitCrv3Weights(
         CallParams.netuid,
-        Buffer.from(CallParams.commit, "hex"), // Convert hex string to bytes 
+        hexCommitString,
         CallParams.revealRound,
       );
 
