@@ -3,7 +3,7 @@ import { ConnectionStatus } from '@app/commons/interface/connection-status.inter
 import { KeyringPairInfo } from '@app/commons/interface/keyringpair-info.interface';
 import { WalletInfo } from '@app/commons/interface/wallet-info.interface';
 import * as fs from 'fs';
-import path from 'path';
+import { KamiConfigService } from 'src/core/kami-config/kami-config.service';
 
 import { HttpStatus, Injectable, Logger, OnModuleInit } from '@nestjs/common';
 
@@ -43,27 +43,29 @@ export class SubstrateConnectionService implements OnModuleInit {
 
   private isReconnecting = false;
 
-  constructor(
-    config: SubstrateConfig,
-    walletPath?: string,
-    walletName?: string,
-    walletHotkey?: string,
-  ) {
+  constructor(private readonly kamiConfigService: KamiConfigService) {
     this.client = null;
-    this.config = config;
-    this.walletPath =
-      walletPath ||
-      process.env.BITTENSOR_DIR ||
-      path.join(process.env.HOME || '', '.bittensor/wallets');
-    this.walletName = walletName;
-    this.walletHotkey = walletHotkey;
+    // Use KamiConfigService to get SubstrateConfig
+    const subtensorConfig = this.kamiConfigService.getSubtensorConfig();
+    this.config = {
+      nodeUrl: subtensorConfig.subtensorNetwork,
+      timeout: subtensorConfig.subtensorWsProviderTimeout,
+    };
+
+    // Get wallet config from KamiConfigService
+    const walletConfig = this.kamiConfigService.getWalletConfig();
+    this.walletPath = walletConfig.bittensorWalletDir;
+    this.walletName = walletConfig.bittensorWalletColdkey;
+    this.walletHotkey = walletConfig.bittensorWalletHotkey;
+
     this.keyringPairInfo = null;
 
-    // Initialize retry configuration with defaults that can be overridden by env or config
-    this.maxRetries = 5;
-    this.initialRetryDelay = 5000; // 5 seconds
-    this.backoffFactor = 1.5;
-    this.maxRetryDelay = 30000; // 30 seconds
+    // Get retry config from KamiConfigService
+    const retryConfig = this.kamiConfigService.getRetryConfig();
+    this.maxRetries = retryConfig.maxRetries;
+    this.initialRetryDelay = retryConfig.initialRetryDelay;
+    this.backoffFactor = retryConfig.backoffFactor;
+    this.maxRetryDelay = retryConfig.maxRetryDelay;
 
     this.initializeKeyringIfPossible();
   }
@@ -177,7 +179,7 @@ export class SubstrateConnectionService implements OnModuleInit {
         this.config.nodeUrl, // URL
         this.initialRetryDelay, // Auto reconnect delay in ms
         {}, // Headers
-        this.config.timeout || 10000, // Timeout
+        this.config.timeout, // Timeout
       );
 
       // Setup event listeners
