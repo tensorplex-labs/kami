@@ -21,7 +21,7 @@ export class SetCommitRevealWeightsService {
     try {
       const client = await this.substrateConnectionService.getClient();
 
-      const hexCommitString = '0x' + CallParams.commit; 
+      const hexCommitString = '0x' + CallParams.commit;
 
       const setCommitRevealWeightsTx = client!.tx.subtensorModule.commitCrv3Weights(
         CallParams.netuid,
@@ -29,10 +29,11 @@ export class SetCommitRevealWeightsService {
         CallParams.revealRound,
       );
 
-      this.logger.log(`Commit Reveal Call Data: ${setCommitRevealWeightsTx.method.toHex()}`)
-      this.logger.log(`Commit Reveal Call Hash: ${setCommitRevealWeightsTx.method.hash.toHex()}`)
+      this.logger.log(`Commit Reveal Call Data: ${setCommitRevealWeightsTx.method.toHex()}`);
+      this.logger.log(`Commit Reveal Call Hash: ${setCommitRevealWeightsTx.method.hash.toHex()}`);
 
-      const result = await this.substrateClientService.signAndSendTransaction(setCommitRevealWeightsTx);
+      const result =
+        await this.substrateClientService.signAndSendTransaction(setCommitRevealWeightsTx);
 
       return result;
     } catch (error) {

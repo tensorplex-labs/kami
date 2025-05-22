@@ -10,7 +10,7 @@ export function processWalletPath(walletPath: string): string {
 }
 
 export function getNetworkUrl(networkName: string): string {
-  if (networkName.startsWith('wss://')) {
+  if (networkName.startsWith('wss://') || networkName.startsWith('ws://')) {
     return networkName;
   }
 

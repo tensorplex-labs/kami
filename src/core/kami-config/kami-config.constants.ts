@@ -10,18 +10,20 @@ import { getNetworkUrl, processWalletPath } from './kami-config.utils';
 export const SUBTENSOR_NETWORK = {
   finney: 'wss://entrypoint-finney.opentensor.ai:443',
   test: 'wss://test.finney.opentensor.ai:443',
-  dev: 'wss://dev.chain.opentensor.ai:443',
-  'mainnet-lite': 'wss://lite.chain.opentensor.ai:443',
-  'mainnet-archive': 'wss://archive.chain.opentensor.ai:443',
-  'latent-holdings-mainnet-lite': 'wss://lite.sub.latent.to:443',
+  local: 'local',
 };
 
 export const subtensorConfigMapping: EnvMapping<KamiSubtensorConfig>[] = [
   {
     key: 'subtensorNetwork',
     envVar: 'SUBTENSOR_NETWORK',
-    default: 'finney',
+    default: 'wss://lite.sub.latent.to:443',
     transform: value => getNetworkUrl(value),
+  },
+  {
+    key: 'subtensorEndpoint',
+    envVar: 'SUBTENSOR_ENDPOINT',
+    default: 'wss://lite.sub.latent.to:443',
   },
   {
     key: 'subtensorWsProviderAutoConnectMsRetryDelay',

@@ -53,7 +53,11 @@ export class KamiConfigService {
 
   getSubtensorConfig(): KamiSubtensorConfig {
     return {
-      subtensorNetwork: this.config.subtensorNetwork,
+      subtensorNetwork:
+        this.config.subtensorNetwork === 'local'
+          ? this.config.subtensorEndpoint
+          : this.config.subtensorNetwork,
+      subtensorEndpoint: this.config.subtensorEndpoint,
       subtensorWsProviderAutoConnectMsRetryDelay:
         this.config.subtensorWsProviderAutoConnectMsRetryDelay,
       subtensorWsProviderTimeout: this.config.subtensorWsProviderTimeout,

@@ -1,5 +1,6 @@
 export interface KamiSubtensorConfig {
   subtensorNetwork: string;
+  subtensorEndpoint: string;
   subtensorWsProviderAutoConnectMsRetryDelay: number;
   subtensorWsProviderTimeout: number;
 }
