@@ -4,6 +4,11 @@ export function processWalletPath(walletPath: string): string {
   if (walletPath.startsWith('$HOME/') || walletPath === '$HOME') {
     return walletPath.replace('$HOME', process.env.HOME || '');
   }
+
+  if (walletPath.startsWith('~/')) {
+    return walletPath.replace('~', process.env.HOME || '');
+  }
+
   return walletPath;
 }
 
