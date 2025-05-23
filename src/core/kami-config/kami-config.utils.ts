@@ -1,12 +1,10 @@
-import path from 'path';
-
 import { SUBTENSOR_NETWORK } from './kami-config.constants';
 
 export function processWalletPath(walletPath: string): string {
   if (walletPath.startsWith('$HOME/') || walletPath === '$HOME') {
     return walletPath.replace('$HOME', process.env.HOME || '');
   }
-  return path.resolve(walletPath);
+  return walletPath;
 }
 
 export function getNetworkUrl(networkName: string): string {
