@@ -5,6 +5,7 @@ import { BaseExceptionFilter } from './commons/exceptions/base.exception';
 import { TransformInterceptor } from './commons/transform.interceptor';
 import { KamiConfigModule } from './core/kami-config/kami-config.module';
 import { SubstrateModule } from './core/substrate/substrate.module';
+import { AccountNonceModule } from './features/account-nonce/account-nonce.module';
 import { CheckHotkeyModule } from './features/check-hotkey/check-hotkey.module';
 import { LatestBlockModule } from './features/latest-block/latest-block.module';
 import { ServeAxonModule } from './features/serve-axon/serve-axon.module';
@@ -23,6 +24,7 @@ import { SubnetMetagraphModule } from './features/subnet-metagraph/subnet-metagr
     SetCommitRevealWeightsModule,
     LatestBlockModule,
     CheckHotkeyModule,
+    AccountNonceModule,
     KamiConfigModule,
   ],
   providers: [
