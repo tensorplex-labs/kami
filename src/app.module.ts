@@ -11,6 +11,7 @@ import { LatestBlockModule } from './features/latest-block/latest-block.module';
 import { ServeAxonModule } from './features/serve-axon/serve-axon.module';
 import { SetCommitRevealWeightsModule } from './features/set-commit-reveal-weights/set-commit-reveal-weights.module';
 import { SetWeightsModule } from './features/set-weights/set-weights.module';
+import { SignMessageModule } from './features/sign-message/sign-message.module';
 import { SubnetHyperparameterModule } from './features/subnet-hyperparameter/subnet-hyperparameter.module';
 import { SubnetMetagraphModule } from './features/subnet-metagraph/subnet-metagraph.module';
 
@@ -25,6 +26,7 @@ import { SubnetMetagraphModule } from './features/subnet-metagraph/subnet-metagr
     LatestBlockModule,
     CheckHotkeyModule,
     AccountNonceModule,
+    SignMessageModule,
     KamiConfigModule,
   ],
   providers: [
@@ -38,4 +40,4 @@ import { SubnetMetagraphModule } from './features/subnet-metagraph/subnet-metagr
     },
   ],
 })
-export class AppModule {}
+export class AppModule { }

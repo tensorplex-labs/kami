@@ -1,11 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
 
+import Keyring from '@polkadot/keyring';
 import { Bytes } from '@polkadot/types';
 import {
   RuntimeApiMetadataV15,
   RuntimeApiMethodMetadataV15,
   SiLookupTypeId,
 } from '@polkadot/types/interfaces';
+import { hexToU8a, stringToU8a, u8aToHex } from '@polkadot/util';
+import { signatureVerify } from '@polkadot/util-crypto';
 
 import {
   BlockHashNotFoundException,
@@ -21,7 +24,7 @@ import { SubstrateConnectionService } from './substrate-connection.service';
 export class SubstrateClientService {
   private readonly logger = new Logger(SubstrateClientService.name);
 
-  constructor(private readonly substrateConnectionService: SubstrateConnectionService) {}
+  constructor(private readonly substrateConnectionService: SubstrateConnectionService) { }
 
   /**
    * Handles Subtensor-specific errors from blockchain responses
@@ -123,6 +126,40 @@ export class SubstrateClientService {
         `Failed to retrieve available runtime APIs: ${error.message}`,
         error.stack,
       );
+    }
+  }
+
+  async signMessage(message: string): Promise<string> {
+    try {
+      const keyringPairInfo = await this.substrateConnectionService.getKeyringPairInfo();
+
+      const messageU8a = stringToU8a(message);
+
+      const signature = keyringPairInfo.keyringPair.sign(messageU8a);
+      const result = u8aToHex(signature);
+
+      return result;
+    } catch (error) {
+      this.logger.error(`Failed to sign message: ${error.message}`, error.stack);
+
+      this.handleSubtensorError(error);
+    }
+  }
+
+  async verifyMessage(message: string, signature: string, signeeAddress: string): Promise<boolean> {
+    try {
+      const keyring = new Keyring({ type: 'sr25519' });
+
+      const publicKey = keyring.decodeAddress(signeeAddress);
+
+      const signatureU8a = hexToU8a(signature);
+      const isValid = signatureVerify(message, signatureU8a, publicKey);
+
+      return isValid.isValid;
+    } catch (error) {
+      this.logger.error(`Failed to verify signature: ${error.message}`, error.stack);
+
+      this.handleSubtensorError(error);
     }
   }
 
