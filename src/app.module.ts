@@ -40,4 +40,4 @@ import { SubnetMetagraphModule } from './features/subnet-metagraph/subnet-metagr
     },
   ],
 })
-export class AppModule { }
+export class AppModule {}

@@ -24,7 +24,7 @@ import { SubstrateConnectionService } from './substrate-connection.service';
 export class SubstrateClientService {
   private readonly logger = new Logger(SubstrateClientService.name);
 
-  constructor(private readonly substrateConnectionService: SubstrateConnectionService) { }
+  constructor(private readonly substrateConnectionService: SubstrateConnectionService) {}
 
   /**
    * Handles Subtensor-specific errors from blockchain responses

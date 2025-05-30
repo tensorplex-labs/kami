@@ -9,7 +9,7 @@ import { SignMessageException } from './sign-message.exception';
 
 @Injectable()
 export class SignMessageService {
-  constructor(private readonly substrateClientService: SubstrateClientService) { }
+  constructor(private readonly substrateClientService: SubstrateClientService) {}
 
   async signMessage(message: string): Promise<string> {
     try {

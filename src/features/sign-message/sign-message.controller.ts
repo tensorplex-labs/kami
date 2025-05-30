@@ -39,7 +39,7 @@ export class SignMessageController {
     private readonly signMessageService: SignMessageService,
     private readonly signMessageMapper: SignMessageMapper,
     private readonly verifyMessageMapper: VerifyMessageMapper,
-  ) { }
+  ) {}
 
   @Post('sign-message/sign')
   @HttpCode(HttpStatus.CREATED)
