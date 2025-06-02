@@ -2,7 +2,7 @@ import { ApiResponseDto } from '@app/commons/common-response.dto';
 import { ApiCodeSamples, pythonSample } from '@app/commons/decorators/api-code-examples.decorator';
 import { KeyringPairInfoDto } from '@app/commons/dto';
 
-import { Controller, Get, HttpException, HttpStatus, Logger } from '@nestjs/common';
+import { Controller, Get, Logger, UseFilters } from '@nestjs/common';
 import {
   ApiExtraModels,
   ApiOkResponse,
@@ -12,20 +12,14 @@ import {
   getSchemaPath,
 } from '@nestjs/swagger';
 
-import {
-  FileAccessException,
-  InvalidColdkeyFormatException,
-  InvalidHotkeyFormatException,
-  WalletHotkeyNotSetException,
-  WalletNameNotSetException,
-  WalletPathNotSetException,
-} from './exceptions/substrate-connection.exception';
+import { SubstrateExceptionFilter } from './exceptions/substrate.exception-filter';
 import { SubstrateClientService } from './services/substrate-client.service';
 import { SubstrateConnectionService } from './services/substrate-connection.service';
 
 @Controller('substrate')
 @ApiTags('substrate')
 @ApiExtraModels(ApiResponseDto, KeyringPairInfoDto)
+@UseFilters(SubstrateExceptionFilter)
 export class SubstrateController {
   private readonly logger = new Logger(SubstrateController.name);
 
@@ -45,12 +39,8 @@ export class SubstrateController {
   })
   @ApiCodeSamples([pythonSample('docs/python-examples/get_available_runtime_api.py')])
   async getAvailableRuntimeApis() {
-    try {
-      const result = await this.substrateClientService.availableRuntimeApis();
-      return result;
-    } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    const result = await this.substrateClientService.availableRuntimeApis();
+    return result;
   }
 
   @Get('keyring-pair-info')
@@ -73,23 +63,8 @@ export class SubstrateController {
   })
   @ApiCodeSamples([pythonSample('docs/python-examples/get_keyring_pair_info.py')])
   async getKeyringPairInfo() {
-    try {
-      const result = await this.substrateConnectionService.getKeyringPairInfo();
-      this.logger.log(`Keyring pair info retrieved successfully: ${JSON.stringify(result)}`);
-      return result;
-    } catch (error) {
-      if (
-        error instanceof WalletPathNotSetException ||
-        error instanceof WalletNameNotSetException ||
-        error instanceof WalletHotkeyNotSetException ||
-        error instanceof InvalidColdkeyFormatException ||
-        error instanceof InvalidHotkeyFormatException ||
-        error instanceof FileAccessException
-      ) {
-        throw error;
-      }
-
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+    const result = await this.substrateConnectionService.getKeyringPairInfo();
+    this.logger.log(`Keyring pair info retrieved successfully: ${JSON.stringify(result)}`);
+    return result;
   }
 }

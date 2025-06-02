@@ -11,6 +11,12 @@ export class SubnetHyperparameterException extends BaseException {
   }
 }
 
+export class SubnetHyperparameterUnknownException extends SubnetHyperparameterException {
+  constructor(message: string, stackTrace?: string) {
+    super(HttpStatus.INTERNAL_SERVER_ERROR, 'UNKNOWN_ERROR', message, stackTrace);
+  }
+}
+
 export class SubnetHyperparameterNotFoundException extends SubnetHyperparameterException {
   constructor(stackTrace?: string) {
     super(HttpStatus.NOT_FOUND, 'NOT_FOUND', 'Subnet hyperparameter not found', stackTrace);
@@ -20,5 +26,11 @@ export class SubnetHyperparameterNotFoundException extends SubnetHyperparameterE
 export class SubnetHyperparameterFetchException extends SubnetHyperparameterException {
   constructor(message: string, stackTrace?: string) {
     super(HttpStatus.INTERNAL_SERVER_ERROR, 'FETCH_FAILED', message, stackTrace);
+  }
+}
+
+export class SubnetHyperparameterParamsInvalidException extends SubnetHyperparameterException {
+  constructor(message: string, stackTrace?: string) {
+    super(HttpStatus.BAD_REQUEST, 'PARAMS_INVALID', message, stackTrace);
   }
 }

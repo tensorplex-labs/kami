@@ -9,18 +9,18 @@ export class AccountNonceException extends BaseException {
   }
 }
 
-// Specific exception types
-export class AccountNonceFetchException extends AccountNonceException {
+export class AccountNonceUnknownErrorException extends AccountNonceException {
   constructor(message: string, stackTrace?: string) {
     super(
       HttpStatus.INTERNAL_SERVER_ERROR,
-      'FETCH_FAILED',
-      `Error fetching account nonce: ${message}`,
+      'UNKNOWN_ERROR',
+      `Unknown error: ${message}`,
       stackTrace,
     );
   }
 }
 
+// Specific exception types
 export class AccountNonceSS58AddressNotFoundException extends AccountNonceException {
   constructor(stackTrace?: string) {
     super(
@@ -40,5 +40,11 @@ export class AccountNonceSS58AddressIncorrectFormatException extends AccountNonc
       'Invalid decoded address length',
       stackTrace,
     );
+  }
+}
+
+export class AccountNonceParamsInvalidException extends AccountNonceException {
+  constructor(message: string, stackTrace?: string) {
+    super(HttpStatus.BAD_REQUEST, 'PARAMS_INVALID', message, stackTrace);
   }
 }

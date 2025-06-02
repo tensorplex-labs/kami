@@ -30,82 +30,86 @@ export class BaseException extends HttpException {
   }
 }
 
-@Catch()
-export class BaseExceptionFilter implements ExceptionFilter {
-  private readonly logger = new Logger(BaseExceptionFilter.name);
+@Catch(Error)
+export class KamiBaseExceptionFilter implements ExceptionFilter {
+  protected readonly logger = new Logger(this.constructor.name);
 
   catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
 
-    const errorResponse: IApiResponse = {
-      statusCode: HttpStatus.INTERNAL_SERVER_ERROR,
-      success: false,
-      data: null,
-      error: {
-        type: 'INTERNAL_SERVER_ERROR',
-        message: 'Internal server error',
-      },
-    };
+    this.logger.debug(`🔍 ${this.constructor.name} caught: ${exception?.constructor?.name}`);
 
+    const mappedException = this.mapException(exception);
+
+    this.sendErrorResponse(mappedException, response, request);
+  }
+
+  // Implement this method for domain-specific filters
+  protected mapException(exception: unknown): BaseException {
     if (exception instanceof BaseException) {
-      const exceptionResponse = exception.getResponse() as any;
+      this.logger.debug(`✅ Already a BaseException: ${exception.constructor.name}`);
+      return exception;
+    }
 
-      errorResponse.statusCode = exception.getStatus();
-      errorResponse.error = {
-        type: exceptionResponse.type,
-        message: exceptionResponse.message,
-        stackTrace: exceptionResponse.stackTrace,
-      };
-
-      this.logger.warn(
-        `Domain Exception for route: [${request?.url}] [${exceptionResponse.type}] ${exceptionResponse.message}`,
-        exception.stack,
-      );
-    } else if (exception instanceof HttpException) {
-      // Standard NestJS HTTP exceptions
+    if (exception instanceof HttpException) {
       const exceptionResponse = exception.getResponse() as any;
       const status = exception.getStatus();
 
-      errorResponse.statusCode = status;
-      errorResponse.error = {
-        type: `HTTP_${status}`,
-        message:
-          typeof exceptionResponse === 'string'
-            ? exceptionResponse
-            : exceptionResponse.message || 'HTTP exception occurred',
-        stackTrace:
-          typeof exceptionResponse === 'object' && exceptionResponse !== null
-            ? exceptionResponse.message
-              ? { ...exceptionResponse, message: undefined }
-              : exceptionResponse
-            : undefined,
-      };
-
-      this.logger.warn(
-        `HTTP Exception for route: [${request?.url}] ${errorResponse.error?.message}`,
+      return new BaseException(
+        status,
+        `HTTP_${status}`,
+        typeof exceptionResponse === 'string'
+          ? exceptionResponse
+          : exceptionResponse.message || 'HTTP exception occurred',
         exception.stack,
-      );
-    } else if (exception instanceof Error) {
-      // Standard JS errors
-      errorResponse.error = {
-        type: 'INTERNAL_ERROR',
-        message: exception.message || 'An unexpected error occurred',
-      };
-
-      this.logger.error(
-        `Unexpected Error for route: [${request?.url}] ${exception.message}`,
-        exception.stack,
-      );
-    } else {
-      // Unknown exceptions (not Error instances)
-      this.logger.error(
-        `Unknown Exception for route: [${request?.url}] ${JSON.stringify(exception)}`,
       );
     }
 
-    // Return the formatted error response
-    response.status(errorResponse.statusCode).json(errorResponse);
+    if (exception instanceof Error) {
+      return new BaseException(
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        'INTERNAL_ERROR',
+        exception.message || 'An unexpected error occurred',
+        exception.stack,
+      );
+    }
+
+    // Unknown exceptions
+    return new BaseException(
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      'UNKNOWN_ERROR',
+      'An unknown error occurred',
+      undefined,
+    );
+  }
+
+  protected sendErrorResponse(
+    exception: BaseException,
+    response: Response,
+    request: Request,
+  ): void {
+    const exceptionResponse = exception.getResponse() as any;
+    const status = exception.getStatus();
+
+    this.logger.warn(
+      `🔥 ${this.constructor.name} Exception for route: [${request?.url}] [${exceptionResponse.type}] ${exceptionResponse.message}`,
+      exception.stack,
+    );
+
+    const errorResponse: IApiResponse = {
+      statusCode: status,
+      success: false,
+      data: null,
+      error: {
+        type: exceptionResponse.type,
+        message: exceptionResponse.message,
+        stackTrace: exceptionResponse.stackTrace,
+      },
+    };
+
+    this.logger.debug(`📤 Sending error response: ${JSON.stringify(errorResponse, null, 2)}`);
+    response.status(status).json(errorResponse);
   }
 }

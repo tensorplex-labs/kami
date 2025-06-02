@@ -1,15 +1,8 @@
 import { ApiResponseDto } from '@app/commons/common-response.dto';
-import { SubtensorException } from 'src/core/substrate/exceptions/substrate-client.exception';
+import { DomainValidationPipe } from '@app/commons/utils/domain-validation.pipe';
+import { SubstrateExceptionFilter } from 'src/core/substrate/exceptions/substrate.exception-filter';
 
-import {
-  Body,
-  Controller,
-  HttpCode,
-  HttpStatus,
-  Logger,
-  Post,
-  ValidationPipe,
-} from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Logger, Post, UseFilters } from '@nestjs/common';
 import {
   ApiBody,
   ApiExtraModels,
@@ -25,11 +18,16 @@ import {
   VerifyMessageParamDto,
   VerifyMessageResponseDto,
 } from './sign-message.dto';
-import { SignMessageException } from './sign-message.exception';
+import {
+  SignMessageParamsInvalidException,
+  VerifyMessageParamsInvalidException,
+} from './sign-message.exception';
+import { SignMessageExceptionFilter } from './sign-message.exception-filter';
 import { SignMessageMapper, VerifyMessageMapper } from './sign-message.mapper';
 import { SignMessageService } from './sign-message.service';
 
 @Controller('substrate')
+@UseFilters(SignMessageExceptionFilter, SubstrateExceptionFilter)
 @ApiTags('substrate')
 @ApiExtraModels(ApiResponseDto, SignMessageResponseDto, VerifyMessageResponseDto)
 export class SignMessageController {
@@ -63,24 +61,16 @@ export class SignMessageController {
       ],
     },
   })
-  async signMessage(@Body(ValidationPipe) callParams: SignMessageParamDto) {
-    try {
-      this.logger.log(`Signing message with keyring pair..`);
+  async signMessage(
+    @Body(new DomainValidationPipe(SignMessageParamsInvalidException))
+    callParams: SignMessageParamDto,
+  ) {
+    this.logger.log(`Signing message with keyring pair..`);
 
-      const signature = await this.signMessageService.signMessage(callParams.message);
+    const signature = await this.signMessageService.signMessage(callParams.message);
 
-      this.logger.log(`Signed Message: ${signature}`);
-      return this.signMessageMapper.toDto(signature);
-    } catch (error) {
-      this.logger.error(`Error getting account nonce: ${error.message}`);
-      if (error instanceof SignMessageException) {
-        throw error;
-      }
-      if (error instanceof SubtensorException) {
-        throw error;
-      }
-      throw new SignMessageException(HttpStatus.BAD_REQUEST, 'UNKNOWN', error.message, error.stack);
-    }
+    this.logger.log(`Signed Message: ${signature}`);
+    return this.signMessageMapper.toDto(signature);
   }
 
   @Post('sign-message/verify')
@@ -105,23 +95,15 @@ export class SignMessageController {
       ],
     },
   })
-  async verifyMessage(@Body(ValidationPipe) callParams: VerifyMessageParamDto) {
-    try {
-      this.logger.log(`Verifying message with keyring pair..`);
+  async verifyMessage(
+    @Body(new DomainValidationPipe(VerifyMessageParamsInvalidException))
+    callParams: VerifyMessageParamDto,
+  ) {
+    this.logger.log(`Verifying message with keyring pair..`);
 
-      const isValid = await this.signMessageService.verifyMessage(callParams);
+    const isValid = await this.signMessageService.verifyMessage(callParams);
 
-      this.logger.log(`Signature validity: ${isValid}`);
-      return this.verifyMessageMapper.toDto(isValid);
-    } catch (error) {
-      this.logger.error(`Error getting account nonce: ${error.message}`);
-      if (error instanceof SignMessageException) {
-        throw error;
-      }
-      if (error instanceof SubtensorException) {
-        throw error;
-      }
-      throw new SignMessageException(HttpStatus.BAD_REQUEST, 'UNKNOWN', error.message, error.stack);
-    }
+    this.logger.log(`Signature validity: ${isValid}`);
+    return this.verifyMessageMapper.toDto(isValid);
   }
 }

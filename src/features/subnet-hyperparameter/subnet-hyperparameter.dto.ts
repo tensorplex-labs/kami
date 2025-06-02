@@ -1,13 +1,13 @@
 import { Type } from 'class-transformer';
-import { IsInt, IsNumber, Min } from 'class-validator';
+import { IsInt, IsNotEmpty, Min } from 'class-validator';
 
 import { ApiProperty } from '@nestjs/swagger';
 
 export class SubnetHyperparamsDto {
-  @IsNumber()
   @IsInt()
   @Min(0)
   @Type(() => Number)
+  @IsNotEmpty()
   netuid: number;
 }
 
