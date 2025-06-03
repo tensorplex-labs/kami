@@ -1,4 +1,4 @@
-import { IsInt, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsIn, IsInt, IsNotEmpty, IsOptional } from 'class-validator';
 
 import { ApiProperty } from '@nestjs/swagger';
 
@@ -30,7 +30,8 @@ export class AxonCallParamsDto {
     description: 'IP Type (v4 or v6)',
     example: 4,
   })
-  @IsInt()
+  @IsNotEmpty()
+  @IsIn([4, 6], { message: 'IP type must be either 4 or 6' })
   ipType: number;
 
   @ApiProperty({
@@ -45,7 +46,7 @@ export class AxonCallParamsDto {
     description: 'Protocol',
     example: 4,
   })
-  @IsInt()
+  @IsIn([4, 6], { message: 'Protocol must be either 4 or 6' })
   protocol: number;
 
   @ApiProperty({
