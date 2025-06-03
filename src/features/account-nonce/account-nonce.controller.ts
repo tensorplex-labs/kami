@@ -19,9 +19,9 @@ import { AccountNonceMapper } from './account-nonce.mapper';
 import { AccountNonceService } from './account-nonce.service';
 
 @Controller('substrate')
+@UseFilters(AccountNonceExceptionFilter, SubstrateExceptionFilter)
 @ApiTags('substrate')
 @ApiExtraModels(ApiResponseDto, AccountNonceDto)
-@UseFilters(AccountNonceExceptionFilter, SubstrateExceptionFilter)
 export class AccountNonceController {
   private readonly logger = new Logger(AccountNonceController.name);
 

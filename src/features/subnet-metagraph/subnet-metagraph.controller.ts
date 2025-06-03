@@ -27,9 +27,9 @@ import { SubnetMetagraphExceptionFilter } from './subnet-metagraph.exception-fil
 import { SubnetMetagraphService } from './subnet-metagraph.service';
 
 @Controller('chain')
+@UseFilters(SubnetMetagraphExceptionFilter, SubstrateExceptionFilter)
 @ApiTags('subnet')
 @ApiExtraModels(ApiResponseDto, SubnetMetagraphDto)
-@UseFilters(SubnetMetagraphExceptionFilter, SubstrateExceptionFilter)
 export class SubnetMetagraphController {
   private readonly logger = new Logger(SubnetMetagraphController.name);
 

@@ -17,9 +17,9 @@ import { SubstrateClientService } from './services/substrate-client.service';
 import { SubstrateConnectionService } from './services/substrate-connection.service';
 
 @Controller('substrate')
+@UseFilters(SubstrateExceptionFilter)
 @ApiTags('substrate')
 @ApiExtraModels(ApiResponseDto, KeyringPairInfoDto)
-@UseFilters(SubstrateExceptionFilter)
 export class SubstrateController {
   private readonly logger = new Logger(SubstrateController.name);
 

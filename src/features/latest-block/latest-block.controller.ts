@@ -17,9 +17,9 @@ import { LatestBlockMapper } from './latest-block.mapper';
 import { LatestBlockService } from './latest-block.service';
 
 @Controller('chain')
+@UseFilters(LatestBlockExceptionFilter, SubstrateExceptionFilter)
 @ApiTags('substrate')
 @ApiExtraModels(ApiResponseDto, LatestBlockDto)
-@UseFilters(LatestBlockExceptionFilter, SubstrateExceptionFilter)
 export class LatestBlockController {
   private readonly logger = new Logger(LatestBlockController.name);
 

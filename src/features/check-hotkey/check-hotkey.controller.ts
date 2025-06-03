@@ -20,9 +20,9 @@ import { CheckHotkeyMapper } from './check-hotkey.mapper';
 import { CheckHotkeyService } from './check-hotkey.service';
 
 @Controller('chain')
+@UseFilters(CheckHotkeyExceptionFilter, SubstrateExceptionFilter)
 @ApiTags('subnet')
 @ApiExtraModels(ApiResponseDto, CheckHotkeyDto)
-@UseFilters(CheckHotkeyExceptionFilter, SubstrateExceptionFilter)
 export class CheckHotkeyController {
   private readonly logger = new Logger(CheckHotkeyController.name);
 

@@ -30,10 +30,10 @@ import { SetCommitRevealWeightsParamsDto } from './set-commit-reveal-weights.dto
 import { SetCommitRevealWeightsService } from './set-commit-reveal-weights.service';
 
 @Controller('chain')
-@ApiTags('subnet')
 @UseInterceptors(ClassSerializerInterceptor)
-@ApiExtraModels(ApiResponseDto)
 @UseFilters(SetCommitRevealWeightExceptionFilter, SubstrateExceptionFilter)
+@ApiTags('subnet')
+@ApiExtraModels(ApiResponseDto)
 export class SetCommitRevealWeightsController {
   private readonly logger = new Logger(SetCommitRevealWeightsController.name);
   constructor(private readonly setCommitRevealWeightsService: SetCommitRevealWeightsService) {}

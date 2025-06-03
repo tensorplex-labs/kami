@@ -1,11 +1,10 @@
-import { BaseException } from '@app/commons/exceptions/base.exception';
 import { ConnectionStatus } from '@app/commons/interface/connection-status.interface';
 import { KeyringPairInfo } from '@app/commons/interface/keyringpair-info.interface';
 import { WalletInfo } from '@app/commons/interface/wallet-info.interface';
 import * as fs from 'fs';
 import { KamiConfigService } from 'src/core/kami-config/kami-config.service';
 
-import { HttpStatus, Injectable, Logger, OnModuleInit, UseFilters } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 
 import { ApiPromise, Keyring, WsProvider } from '@polkadot/api';
 import { KeyringPair } from '@polkadot/keyring/types';
@@ -13,7 +12,6 @@ import { KeyringPair } from '@polkadot/keyring/types';
 // Import the new exception classes
 import {
   ConnectionFailedException,
-  FileAccessException,
   InvalidColdkeyFormatException,
   InvalidHotkeyFormatException,
   KeyringPairNotSetException,
@@ -66,8 +64,6 @@ export class SubstrateConnectionService implements OnModuleInit {
     this.initialRetryDelay = retryConfig.initialRetryDelay;
     this.backoffFactor = retryConfig.backoffFactor;
     this.maxRetryDelay = retryConfig.maxRetryDelay;
-
-    this.initializeKeyringIfPossible();
   }
 
   async onModuleInit() {
@@ -77,22 +73,20 @@ export class SubstrateConnectionService implements OnModuleInit {
       await this.connect();
 
       // Then try to initialize keyring if wallet info is available
-      if (this.walletPath && this.walletName && this.walletHotkey) {
-        try {
-          await this.setKeyringPair();
-          this.logger.log(`Keyring pair initialized successfully for wallet: ${this.walletName}`);
-        } catch (error) {
-          // Just log the error but don't throw - this is optional initialization
-          this.logger.warn(`Failed to initialize keyring pair: ${error.message}`);
-        }
-      } else {
+      if (!this.walletPath || !this.walletName || !this.walletHotkey) {
         this.logger.warn(
           'Wallet environment variables not fully set. Keyring initialization skipped.',
+        );
+      } else {
+        await this.setKeyringPair();
+        this.logger[this.keyringPairInfo ? 'log' : 'warn'](
+          this.keyringPairInfo
+            ? `Keyring pair initialized successfully for wallet: ${this.walletName}`
+            : 'Failed to initialize keyring pair despite valid wallet configuration.',
         );
       }
     } catch (error) {
       this.logger.error(`Failed to initialize substrate connection: ${error.message}`);
-      // Don't throw error to allow app to start, connection will be retried when needed
     }
   }
 
@@ -111,9 +105,8 @@ export class SubstrateConnectionService implements OnModuleInit {
       throw new WalletHotkeyNotSetException();
     }
 
-    const correctedWalletPath = this.walletPath.replace('$HOME', process.env.HOME || '');
     this.keyringPairInfo = await this.getKeyringPair(
-      correctedWalletPath,
+      this.walletPath,
       this.walletName,
       this.walletHotkey,
     );
@@ -137,6 +130,7 @@ export class SubstrateConnectionService implements OnModuleInit {
 
     // Create a provider with auto-reconnect enabled
     // The second parameter is the reconnect delay in milliseconds
+    // TODO: Reimplement websocket provider without using polkadot library to handle better reconnection logic
     const provider = new WsProvider(
       this.config.nodeUrl, // URL
       this.initialRetryDelay, // Auto reconnect delay in ms
@@ -323,38 +317,9 @@ export class SubstrateConnectionService implements OnModuleInit {
    */
   async getKeyringPairInfo(): Promise<KeyringPairInfo> {
     if (!this.keyringPairInfo) {
-      await this.setKeyringPair();
-    }
-
-    if (!this.keyringPairInfo) {
       throw new KeyringPairNotSetException();
     }
 
     return this.keyringPairInfo;
-  }
-
-  private async initializeKeyringIfPossible(): Promise<void> {
-    // Only try to set keyring if all wallet info is available
-    if (this.walletPath && this.walletName && this.walletHotkey) {
-      try {
-        // Use setTimeout to make this non-blocking
-        setTimeout(async () => {
-          try {
-            await this.setKeyringPair();
-            this.logger.log(`Keyring pair initialized successfully for wallet: ${this.walletName}`);
-          } catch (error) {
-            // Just log the error but don't throw - this is optional initialization
-            this.logger.warn(`Failed to initialize keyring pair: ${error.message}`);
-          }
-        }, 0);
-      } catch (error) {
-        // Non-critical error, just log it
-        this.logger.warn(`Failed to schedule keyring initialization: ${error.message}`);
-      }
-    } else {
-      this.logger.warn(
-        'Wallet environment variables not fully set. Keyring initialization skipped.',
-      );
-    }
   }
 }

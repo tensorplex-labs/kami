@@ -29,10 +29,10 @@ import { ServeAxonParamsInvalidException } from './serve-axon.exception';
 import { ServeAxonExceptionFilter } from './serve-axon.exception-filter';
 import { ServeAxonService } from './serve-axon.service';
 
-@ApiTags('subnet')
 @Controller('chain')
 @UseInterceptors(ClassSerializerInterceptor)
 @UseFilters(ServeAxonExceptionFilter, SubstrateExceptionFilter)
+@ApiTags('subnet')
 @ApiExtraModels(ApiResponseDto)
 export class ServeAxonController {
   private readonly logger = new Logger(ServeAxonController.name);
