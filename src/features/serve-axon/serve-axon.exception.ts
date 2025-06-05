@@ -11,9 +11,20 @@ export class ServeAxonException extends BaseException {
   }
 }
 
+export class ServeAxonUnknownErrorException extends ServeAxonException {
+  constructor(message: string, stackTrace?: string) {
+    super(
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      'UNKNOWN_ERROR',
+      `Unknown error: ${message}`,
+      stackTrace,
+    );
+  }
+}
+
 // Specific exception types
-export class ServeAxonParamsMissingException extends ServeAxonException {
-  constructor(stackTrace?: any) {
-    super(HttpStatus.BAD_REQUEST, 'PARAMS_MISSING', 'Serve axon params missing', stackTrace);
+export class ServeAxonParamsInvalidException extends ServeAxonException {
+  constructor(message: string, stackTrace?: string) {
+    super(HttpStatus.BAD_REQUEST, 'PARAMS_INVALID', message, stackTrace);
   }
 }

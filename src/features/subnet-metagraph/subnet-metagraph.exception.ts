@@ -11,6 +11,12 @@ export class SubnetMetagraphException extends BaseException {
   }
 }
 
+export class SubnetMetagraphUnknownException extends SubnetMetagraphException {
+  constructor(message: string, stackTrace?: string) {
+    super(HttpStatus.INTERNAL_SERVER_ERROR, 'UNKNOWN_ERROR', message, stackTrace);
+  }
+}
+
 // Specific exception types
 export class SubnetMetagraphNotFoundException extends SubnetMetagraphException {
   constructor(subnetId?: string | number, stackTrace?: string) {
@@ -46,5 +52,11 @@ export class SubnetMetagraphPermissionException extends SubnetMetagraphException
   constructor(action: string, stackTrace?: string) {
     const message = `Permission denied for subnet metagraph action: ${action}`;
     super(HttpStatus.FORBIDDEN, 'PERMISSION_DENIED', message, stackTrace);
+  }
+}
+
+export class SubnetMetagraphParamsInvalidException extends SubnetMetagraphException {
+  constructor(message: string, stackTrace?: string) {
+    super(HttpStatus.BAD_REQUEST, 'PARAMS_INVALID', message, stackTrace);
   }
 }

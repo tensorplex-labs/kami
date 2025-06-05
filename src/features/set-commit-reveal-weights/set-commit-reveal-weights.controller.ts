@@ -1,6 +1,7 @@
 import { ApiResponseDto } from '@app/commons/common-response.dto';
 import { ApiCodeSamples, pythonSample } from '@app/commons/decorators/api-code-examples.decorator';
-import { SubtensorException } from 'src/core/substrate/exceptions/substrate-client.exception';
+import { DomainValidationPipe } from '@app/commons/utils/domain-validation.pipe';
+import { SubstrateExceptionFilter } from 'src/core/substrate/exceptions/substrate.exception-filter';
 
 import {
   Body,
@@ -10,8 +11,8 @@ import {
   HttpStatus,
   Logger,
   Post,
+  UseFilters,
   UseInterceptors,
-  ValidationPipe,
 } from '@nestjs/common';
 import {
   ApiBody,
@@ -22,17 +23,16 @@ import {
   getSchemaPath,
 } from '@nestjs/swagger';
 
-import {
-  SetCommitRevealWeightException,
-  SetCommitRevealWeightParamsMissingException,
-} from './set-commit-reveal-weight.exception';
+import { SetCommitRevealWeightParamsInvalidException } from './set-commit-reveal-weight.exception';
+import { SetCommitRevealWeightExceptionFilter } from './set-commit-reveal-weight.exception-filter';
 import { CommitRevealWeightsCallParams } from './set-commit-reveal-weights.call-params.interface';
 import { SetCommitRevealWeightsParamsDto } from './set-commit-reveal-weights.dto';
 import { SetCommitRevealWeightsService } from './set-commit-reveal-weights.service';
 
 @Controller('chain')
-@ApiTags('subnet')
 @UseInterceptors(ClassSerializerInterceptor)
+@UseFilters(SetCommitRevealWeightExceptionFilter, SubstrateExceptionFilter)
+@ApiTags('subnet')
 @ApiExtraModels(ApiResponseDto)
 export class SetCommitRevealWeightsController {
   private readonly logger = new Logger(SetCommitRevealWeightsController.name);
@@ -65,28 +65,19 @@ export class SetCommitRevealWeightsController {
     },
   })
   @ApiCodeSamples([pythonSample('docs/python-examples/set_weights.py')])
-  async setCommitRevealWeights(@Body(ValidationPipe) callParams: CommitRevealWeightsCallParams) {
-    try {
-      if (!callParams) {
-        throw new SetCommitRevealWeightParamsMissingException();
-      }
-      this.logger.log(`Setting commit reveal weights with params: ${JSON.stringify(callParams)}`);
-      const result = await this.setCommitRevealWeightsService.setCommitRevealWeights(callParams);
-      return result;
-    } catch (error) {
-      this.logger.error(`Error setting commit reveal weights: ${error.message}`);
-      if (error instanceof SetCommitRevealWeightParamsMissingException) {
-        throw error;
-      }
-      if (error instanceof SubtensorException) {
-        throw error;
-      }
-      throw new SetCommitRevealWeightException(
-        HttpStatus.INTERNAL_SERVER_ERROR,
-        'UNKNOWN',
-        error.message,
-        error.stack,
-      );
-    }
+  async setCommitRevealWeights(
+    @Body(new DomainValidationPipe(SetCommitRevealWeightParamsInvalidException))
+    callParams: SetCommitRevealWeightsParamsDto,
+  ) {
+    const setCommitRevealWeightsCallParams: CommitRevealWeightsCallParams = {
+      netuid: callParams.netuid,
+      commit: callParams.commit,
+      revealRound: callParams.revealRound,
+    };
+    this.logger.log(`Setting commit reveal weights with params: ${JSON.stringify(callParams)}`);
+    const result = await this.setCommitRevealWeightsService.setCommitRevealWeights(
+      setCommitRevealWeightsCallParams,
+    );
+    return result;
   }
 }

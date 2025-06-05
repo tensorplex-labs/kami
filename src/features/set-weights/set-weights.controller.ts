@@ -1,6 +1,7 @@
 import { ApiResponseDto } from '@app/commons/common-response.dto';
 import { ApiCodeSamples, pythonSample } from '@app/commons/decorators/api-code-examples.decorator';
-import { SubtensorException } from 'src/core/substrate/exceptions/substrate-client.exception';
+import { DomainValidationPipe } from '@app/commons/utils/domain-validation.pipe';
+import { SubstrateExceptionFilter } from 'src/core/substrate/exceptions/substrate.exception-filter';
 
 import {
   Body,
@@ -10,6 +11,7 @@ import {
   HttpStatus,
   Logger,
   Post,
+  UseFilters,
   UseInterceptors,
   ValidationPipe,
 } from '@nestjs/common';
@@ -24,12 +26,14 @@ import {
 
 import { SetWeightsCallParams } from './set-weights.call-params.interface';
 import { SetWeightsParamsDto } from './set-weights.dto';
-import { SetWeightsException, SetWeightsParamsMissingException } from './set-weights.exception';
+import { SetWeightsParamsInvalidException } from './set-weights.exception';
+import { SetWeightsExceptionFilter } from './set-weights.exception-filter';
 import { SetWeightsService } from './set-weights.service';
 
 @Controller('chain')
-@ApiTags('subnet')
 @UseInterceptors(ClassSerializerInterceptor)
+@UseFilters(SetWeightsExceptionFilter, SubstrateExceptionFilter)
+@ApiTags('subnet')
 @ApiExtraModels(ApiResponseDto)
 export class SetWeightsController {
   private readonly logger = new Logger(SetWeightsController.name);
@@ -62,30 +66,19 @@ export class SetWeightsController {
     },
   })
   @ApiCodeSamples([pythonSample('docs/python-examples/set_weights.py')])
-  async setWeights(@Body(ValidationPipe) callParams: SetWeightsCallParams) {
-    try {
-      if (!callParams) {
-        throw new SetWeightsParamsMissingException();
-      }
-
-      this.logger.log(`Setting weights with params: ${JSON.stringify(callParams)}`);
-      const result = await this.setWeightsService.setWeights(callParams);
-      this.logger.log(`Weights set with result: ${JSON.stringify(result)}`);
-      return result;
-    } catch (error) {
-      this.logger.error(`Error setting weights: ${error.message}`);
-      if (error instanceof SetWeightsParamsMissingException) {
-        throw error;
-      }
-      if (error instanceof SubtensorException) {
-        throw error;
-      }
-      throw new SetWeightsException(
-        HttpStatus.INTERNAL_SERVER_ERROR,
-        'UNKNOWN',
-        error.message,
-        error.stack,
-      );
-    }
+  async setWeights(
+    @Body(new DomainValidationPipe(SetWeightsParamsInvalidException))
+    callParams: SetWeightsParamsDto,
+  ) {
+    const setWeightsCallParams: SetWeightsCallParams = {
+      netuid: callParams.netuid,
+      dests: callParams.dests,
+      weights: callParams.weights,
+      versionKey: callParams.versionKey,
+    };
+    this.logger.log(`Setting weights with params: ${JSON.stringify(setWeightsCallParams)}`);
+    const result = await this.setWeightsService.setWeights(setWeightsCallParams);
+    this.logger.log(`Weights set with result: ${JSON.stringify(result)}`);
+    return result;
   }
 }

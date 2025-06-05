@@ -1,8 +1,9 @@
 import { ApiResponseDto } from '@app/commons/common-response.dto';
 import { ApiCodeSamples, pythonSample } from '@app/commons/decorators/api-code-examples.decorator';
-import { SubtensorException } from 'src/core/substrate/exceptions/substrate-client.exception';
+import { DomainValidationPipe } from '@app/commons/utils/domain-validation.pipe';
+import { SubstrateExceptionFilter } from 'src/core/substrate/exceptions/substrate.exception-filter';
 
-import { Controller, Get, HttpStatus, Logger, Query } from '@nestjs/common';
+import { Controller, Get, Logger, Query, UseFilters } from '@nestjs/common';
 import {
   ApiExtraModels,
   ApiOkResponse,
@@ -12,15 +13,14 @@ import {
   getSchemaPath,
 } from '@nestjs/swagger';
 
-import { CheckHotkeyDto } from './check-hotkey.dto';
-import {
-  CheckHotkeyException,
-  CheckHotkeyNetuidHotkeyMissingException,
-} from './check-hotkey.exception';
+import { CheckHotkeyDto, CheckHotkeyParamsDto } from './check-hotkey.dto';
+import { CheckHotkeyParamsInvalidException } from './check-hotkey.exception';
+import { CheckHotkeyExceptionFilter } from './check-hotkey.exception-filter';
 import { CheckHotkeyMapper } from './check-hotkey.mapper';
 import { CheckHotkeyService } from './check-hotkey.service';
 
 @Controller('chain')
+@UseFilters(CheckHotkeyExceptionFilter, SubstrateExceptionFilter)
 @ApiTags('subnet')
 @ApiExtraModels(ApiResponseDto, CheckHotkeyDto)
 export class CheckHotkeyController {
@@ -71,37 +71,26 @@ export class CheckHotkeyController {
   })
   @ApiCodeSamples([pythonSample('docs/python-examples/check_hotkey.py')])
   async checkHotkey(
-    @Query('netuid') netuid: number,
-    @Query('hotkey') hotkey: string,
-    @Query('block') block?: number,
+    @Query(new DomainValidationPipe(CheckHotkeyParamsInvalidException))
+    param: CheckHotkeyParamsDto,
   ) {
-    try {
-      if (!netuid || !hotkey) {
-        throw new CheckHotkeyNetuidHotkeyMissingException();
-      }
-      this.logger.log(`Checking hotkey for netuid: ${netuid}, hotkey: ${hotkey}`);
+    const netuid = param.netuid;
+    const hotkey = param.hotkey;
+    const block = param.block ?? null;
 
-      let isHotkeyValid: boolean = false;
-      if (block) {
-        isHotkeyValid = await this.checkHotkeyService.checkHotkey(netuid, hotkey, block);
+    this.logger.log(`Checking hotkey for netuid: ${netuid}, hotkey: ${hotkey}`);
 
-        this.logger.log(`Hotkey ${hotkey} is valid: ${isHotkeyValid}`);
-        return this.checkHotkeyMapper.toDto(isHotkeyValid);
-      } else {
-        isHotkeyValid = await this.checkHotkeyService.checkHotkey(netuid, hotkey);
+    let isHotkeyValid: boolean = false;
+    if (block) {
+      isHotkeyValid = await this.checkHotkeyService.checkHotkey(netuid, hotkey, block);
 
-        this.logger.log(`Hotkey ${hotkey} is valid: ${isHotkeyValid}`);
-        return this.checkHotkeyMapper.toDto(isHotkeyValid);
-      }
-    } catch (error) {
-      this.logger.error(`Error checking hotkey: ${error.message}`);
-      if (error instanceof CheckHotkeyNetuidHotkeyMissingException) {
-        throw error;
-      }
-      if (error instanceof SubtensorException) {
-        throw error;
-      }
-      throw new CheckHotkeyException(HttpStatus.BAD_REQUEST, 'UNKNOWN', error.message, error.stack);
+      this.logger.log(`Hotkey ${hotkey} is valid: ${isHotkeyValid}`);
+      return this.checkHotkeyMapper.toDto(isHotkeyValid);
+    } else {
+      isHotkeyValid = await this.checkHotkeyService.checkHotkey(netuid, hotkey);
+
+      this.logger.log(`Hotkey ${hotkey} is valid: ${isHotkeyValid}`);
+      return this.checkHotkeyMapper.toDto(isHotkeyValid);
     }
   }
 }

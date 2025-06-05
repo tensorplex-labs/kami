@@ -1,5 +1,5 @@
 export interface CommitRevealWeightsCallParams {
   netuid: number;
-  commit: string;
+  commit: Buffer;
   revealRound: number;
 }

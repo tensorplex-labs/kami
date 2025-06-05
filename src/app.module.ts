@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { APP_FILTER, APP_INTERCEPTOR } from '@nestjs/core';
 
-import { BaseExceptionFilter } from './commons/exceptions/base.exception';
+import { KamiBaseExceptionFilter } from './commons/exceptions/base.exception';
 import { TransformInterceptor } from './commons/transform.interceptor';
 import { KamiConfigModule } from './core/kami-config/kami-config.module';
 import { SubstrateModule } from './core/substrate/substrate.module';
@@ -32,7 +32,7 @@ import { SubnetMetagraphModule } from './features/subnet-metagraph/subnet-metagr
   providers: [
     {
       provide: APP_FILTER,
-      useClass: BaseExceptionFilter,
+      useClass: KamiBaseExceptionFilter,
     },
     {
       provide: APP_INTERCEPTOR,
@@ -40,4 +40,4 @@ import { SubnetMetagraphModule } from './features/subnet-metagraph/subnet-metagr
     },
   ],
 })
-export class AppModule { }
+export class AppModule {}
