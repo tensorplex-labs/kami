@@ -1,6 +1,5 @@
 import { ConnectionStatus } from '@app/commons/interface/connection-status.interface';
 import { KeyringPairInfo } from '@app/commons/interface/keyringpair-info.interface';
-import { WalletInfo } from '@app/commons/interface/wallet-info.interface';
 import * as fs from 'fs';
 import { KamiConfigService } from 'src/core/kami-config/kami-config.service';
 
@@ -15,7 +14,6 @@ import {
   InvalidColdkeyFormatException,
   InvalidHotkeyFormatException,
   KeyringPairNotSetException,
-  ReconnectionFailedException,
   WalletHotkeyNotSetException,
   WalletNameNotSetException,
   WalletPathNotSetException,
@@ -90,47 +88,9 @@ export class SubstrateConnectionService implements OnModuleInit {
     }
   }
 
-  async setKeyringPair() {
-    this.logger.log(`Setting keyring pair for wallet: ${this.walletName}`);
-
-    if (!this.walletPath) {
-      throw new WalletPathNotSetException();
-    }
-
-    if (!this.walletName) {
-      throw new WalletNameNotSetException();
-    }
-
-    if (!this.walletHotkey) {
-      throw new WalletHotkeyNotSetException();
-    }
-
-    this.keyringPairInfo = await this.getKeyringPair(
-      this.walletPath,
-      this.walletName,
-      this.walletHotkey,
-    );
-  }
-
-  async getCurrentWalletInfo(): Promise<WalletInfo> {
-    if (!this.keyringPairInfo) {
-      throw new KeyringPairNotSetException();
-    }
-
-    const walletInfo: WalletInfo = {
-      coldkey: this.keyringPairInfo.walletColdkey,
-      hotkey: this.keyringPairInfo.keyringPair.address,
-    };
-
-    return walletInfo;
-  }
-
   async connect(): Promise<ConnectionStatus> {
     this.logger.log(`Connecting to ${this.config.nodeUrl}...`);
 
-    // Create a provider with auto-reconnect enabled
-    // The second parameter is the reconnect delay in milliseconds
-    // TODO: Reimplement websocket provider without using polkadot library to handle better reconnection logic
     const provider = new WsProvider(
       this.config.nodeUrl, // URL
       this.initialRetryDelay, // Auto reconnect delay in ms
@@ -156,23 +116,6 @@ export class SubstrateConnectionService implements OnModuleInit {
     // Create API with this provider
     this.client = new ApiPromise({ provider });
 
-    // Handle API events as well
-    this.client.on('connected', () => {
-      this.logger.log('Substrate client established');
-    });
-
-    this.client.on('disconnected', () => {
-      this.logger.warn('Substrate client disconnected');
-    });
-
-    this.client.on('error', error => {
-      this.logger.error(`Substrate client error: ${error?.message ?? 'Unknown error'}`);
-    });
-
-    this.client.on('ready', () => {
-      this.logger.log('Substrate client is ready');
-    });
-
     // Wait for API to be ready
     await this.client.isReady;
 
@@ -188,70 +131,9 @@ export class SubstrateConnectionService implements OnModuleInit {
     return this.connectionStatus;
   }
 
-  async reconnect(): Promise<ConnectionStatus> {
-    // Prevent multiple concurrent reconnection attempts
-    if (this.isReconnecting) {
-      this.logger.debug('Reconnection already in progress, waiting...');
-      return new Promise(resolve => {
-        // Poll until reconnection is complete or timeout
-        const interval = setInterval(() => {
-          if (!this.isReconnecting && this.connectionStatus.isConnected) {
-            clearInterval(interval);
-            resolve(this.connectionStatus);
-          }
-        }, 100);
-
-        // Set a timeout in case reconnection stalls
-        setTimeout(() => {
-          clearInterval(interval);
-          if (!this.connectionStatus.isConnected) {
-            resolve({ isConnected: false });
-          }
-        }, 30000);
-      });
-    }
-
-    try {
-      this.isReconnecting = true;
-
-      // Check if API exists and is still usable
-      if (this.client) {
-        try {
-          // Try to use existing connection if possible
-          await this.client.isReady;
-
-          // If we get here, connection is already established
-          this.connectionStatus.isConnected = true;
-          return this.connectionStatus;
-        } catch (error) {
-          this.logger.debug(`Existing client is not usable: ${error?.message}`);
-
-          // Disconnect client if it exists but is not usable
-          try {
-            await this.client.disconnect();
-          } catch (disconnectError) {
-            this.logger.debug(`Error disconnecting client: ${disconnectError?.message}`);
-          }
-
-          this.client = null;
-        }
-      }
-
-      // Create a new connection if needed
-      this.logger.debug('Creating new connection');
-      return await this.connect();
-    } catch (error) {
-      this.logger.error(`Failed to reconnect: ${error?.message ?? 'Unknown error'}`);
-      throw new ReconnectionFailedException(error?.message ?? 'Reconnection failed', error.stack);
-    } finally {
-      this.isReconnecting = false;
-    }
-  }
-
   // Public method to get client
   async getClient(): Promise<ApiPromise> {
     if (!this.client || !this.connectionStatus.isConnected) {
-      // await this.reconnect();
       this.logger.log('No client');
       throw new ConnectionFailedException(`Client could not be initialized`);
     } else {
@@ -309,6 +191,28 @@ export class SubstrateConnectionService implements OnModuleInit {
       keyringPair: hotkey,
       walletColdkey: coldkey,
     };
+  }
+
+  async setKeyringPair() {
+    this.logger.log(`Setting keyring pair for wallet: ${this.walletName}`);
+
+    if (!this.walletPath) {
+      throw new WalletPathNotSetException();
+    }
+
+    if (!this.walletName) {
+      throw new WalletNameNotSetException();
+    }
+
+    if (!this.walletHotkey) {
+      throw new WalletHotkeyNotSetException();
+    }
+
+    this.keyringPairInfo = await this.getKeyringPair(
+      this.walletPath,
+      this.walletName,
+      this.walletHotkey,
+    );
   }
 
   /**
