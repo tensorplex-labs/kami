@@ -25,7 +25,6 @@ import {
 
 import { SetCommitRevealWeightParamsInvalidException } from './set-commit-reveal-weight.exception';
 import { SetCommitRevealWeightExceptionFilter } from './set-commit-reveal-weight.exception-filter';
-import { CommitRevealWeightsCallParams } from './set-commit-reveal-weights.call-params.interface';
 import { SetCommitRevealWeightsParamsDto } from './set-commit-reveal-weights.dto';
 import { SetCommitRevealWeightsService } from './set-commit-reveal-weights.service';
 
@@ -69,15 +68,8 @@ export class SetCommitRevealWeightsController {
     @Body(new DomainValidationPipe(SetCommitRevealWeightParamsInvalidException))
     callParams: SetCommitRevealWeightsParamsDto,
   ) {
-    const setCommitRevealWeightsCallParams: CommitRevealWeightsCallParams = {
-      netuid: callParams.netuid,
-      commit: callParams.commit,
-      revealRound: callParams.revealRound,
-    };
     this.logger.log(`Setting commit reveal weights with params: ${JSON.stringify(callParams)}`);
-    const result = await this.setCommitRevealWeightsService.setCommitRevealWeights(
-      setCommitRevealWeightsCallParams,
-    );
+    const result = await this.setCommitRevealWeightsService.setCommitRevealWeights(callParams);
     return result;
   }
 }

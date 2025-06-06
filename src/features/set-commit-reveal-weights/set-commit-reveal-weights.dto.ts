@@ -20,7 +20,7 @@ export class SetCommitRevealWeightsParamsDto {
       "b'\x82\x84\x14\xb7\xf7\x9f\x02\xd97\x94\xaakD\x0b\xfa3o\x15\xdfY\xc8\x0b\x16\xc6\xe6\x07s=\xa4f\xcd\xb8\...00AES_GCM_",
   })
   @IsNotEmpty()
-  commit: Buffer;
+  commit: string;
 
   @ApiProperty({
     description: 'Reveal Round',

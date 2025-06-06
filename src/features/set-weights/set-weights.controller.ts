@@ -70,14 +70,8 @@ export class SetWeightsController {
     @Body(new DomainValidationPipe(SetWeightsParamsInvalidException))
     callParams: SetWeightsParamsDto,
   ) {
-    const setWeightsCallParams: SetWeightsCallParams = {
-      netuid: callParams.netuid,
-      dests: callParams.dests,
-      weights: callParams.weights,
-      versionKey: callParams.versionKey,
-    };
-    this.logger.log(`Setting weights with params: ${JSON.stringify(setWeightsCallParams)}`);
-    const result = await this.setWeightsService.setWeights(setWeightsCallParams);
+    this.logger.log(`Setting weights with params: ${JSON.stringify(callParams)}`);
+    const result = await this.setWeightsService.setWeights(callParams);
     this.logger.log(`Weights set with result: ${JSON.stringify(result)}`);
     return result;
   }
