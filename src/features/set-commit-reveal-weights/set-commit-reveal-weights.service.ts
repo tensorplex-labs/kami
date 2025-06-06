@@ -1,12 +1,9 @@
-import { Buffer } from 'buffer';
-import { SubtensorException } from 'src/core/substrate/exceptions/substrate-client.exception';
 import { SubstrateClientService } from 'src/core/substrate/services/substrate-client.service';
 import { SubstrateConnectionService } from 'src/core/substrate/services/substrate-connection.service';
 
-import { HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 
-import { SetCommitRevealWeightException } from './set-commit-reveal-weight.exception';
-import { CommitRevealWeightsCallParams } from './set-commit-reveal-weights.call-params.interface';
+import { SetCommitRevealWeightsParamsDto } from './set-commit-reveal-weights.dto';
 
 @Injectable()
 export class SetCommitRevealWeightsService {
@@ -17,35 +14,23 @@ export class SetCommitRevealWeightsService {
     private readonly substrateConnectionService: SubstrateConnectionService,
   ) {}
 
-  async setCommitRevealWeights(CallParams: CommitRevealWeightsCallParams): Promise<string> {
-    try {
-      const client = await this.substrateConnectionService.getClient();
+  async setCommitRevealWeights(CallParams: SetCommitRevealWeightsParamsDto): Promise<string> {
+    const client = await this.substrateConnectionService.getClient();
 
-      const hexCommitString = '0x' + CallParams.commit;
+    const hexCommitString = '0x' + CallParams.commit;
 
-      const setCommitRevealWeightsTx = client!.tx.subtensorModule.commitCrv3Weights(
-        CallParams.netuid,
-        hexCommitString,
-        CallParams.revealRound,
-      );
+    const setCommitRevealWeightsTx = client.tx.subtensorModule.commitCrv3Weights(
+      CallParams.netuid,
+      hexCommitString,
+      CallParams.revealRound,
+    );
 
-      this.logger.log(`Commit Reveal Call Data: ${setCommitRevealWeightsTx.method.toHex()}`);
-      this.logger.log(`Commit Reveal Call Hash: ${setCommitRevealWeightsTx.method.hash.toHex()}`);
+    this.logger.log(`Commit Reveal Call Data: ${setCommitRevealWeightsTx.method.toHex()}`);
+    this.logger.log(`Commit Reveal Call Hash: ${setCommitRevealWeightsTx.method.hash.toHex()}`);
 
-      const result =
-        await this.substrateClientService.signAndSendTransaction(setCommitRevealWeightsTx);
+    const result =
+      await this.substrateClientService.signAndSendTransaction(setCommitRevealWeightsTx);
 
-      return result;
-    } catch (error) {
-      if (error instanceof SubtensorException) {
-        throw error;
-      }
-      throw new SetCommitRevealWeightException(
-        HttpStatus.INTERNAL_SERVER_ERROR,
-        'UNKNOWN',
-        error.message,
-        error.stack,
-      );
-    }
+    return result;
   }
 }
