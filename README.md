@@ -55,7 +55,7 @@ docker compose up -d
 
 
 ## API Documentation
-The latest documentation can be found at https://kami.tensorplex.ai/. Swagger UI can also be accessed once compiled: ```http://localhost:KAMI_PORT/chain/docs```
+The latest documentation can be found at https://kami.tensorplex.ai/. Swagger UI can also be accessed once compiled: ```http://localhost:KAMI_PORT/docs```
 
 ## Run tests (Coming soon!)
 

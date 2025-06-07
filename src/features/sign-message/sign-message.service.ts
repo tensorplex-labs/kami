@@ -9,50 +9,24 @@ import { SignMessageException } from './sign-message.exception';
 
 @Injectable()
 export class SignMessageService {
-  constructor(private readonly substrateClientService: SubstrateClientService) { }
+  constructor(private readonly substrateClientService: SubstrateClientService) {}
 
   async signMessage(message: string): Promise<string> {
-    try {
-      const client = this.substrateClientService;
-      const signature = await client.signMessage(message);
+    const client = this.substrateClientService;
+    const signature = await client.signMessage(message);
 
-      return signature;
-    } catch (error) {
-      if (error instanceof SubtensorException) {
-        throw error;
-      }
-
-      throw new SignMessageException(
-        HttpStatus.INTERNAL_SERVER_ERROR,
-        'UNKNOWN',
-        error.message,
-        error.stack,
-      );
-    }
+    return signature;
   }
 
   async verifyMessage(callParams: VerifyMessageParamDto): Promise<boolean> {
-    try {
-      const client = this.substrateClientService;
+    const client = this.substrateClientService;
 
-      const isValid = await client.verifyMessage(
-        callParams.message,
-        callParams.signature,
-        callParams.signeeAddress,
-      );
+    const isValid = await client.verifyMessage(
+      callParams.message,
+      callParams.signature,
+      callParams.signeeAddress,
+    );
 
-      return isValid;
-    } catch (error) {
-      if (error instanceof SubtensorException) {
-        throw error;
-      }
-
-      throw new SignMessageException(
-        HttpStatus.INTERNAL_SERVER_ERROR,
-        'UNKNOWN',
-        error.message,
-        error.stack,
-      );
-    }
+    return isValid;
   }
 }

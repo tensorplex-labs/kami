@@ -14,7 +14,7 @@ async function bootstrap() {
   const config = new DocumentBuilder()
     .setTitle('Tensorplex Kami')
     .setDescription(
-      `Ultra-light server library written in TypeScript for interacting with the Bittensor chain.\n\nExample code samples provided work with the Kami boilerplate Python code in the repo [here](https://github.com/tensorplex-labs/kami/tree/main/docs/python-examples).\n\nYou may also test out the endpoints through [Swagger UI](http://localhost:${process.env.KAMI_PORT}/chain/docs) once the Kami instance is running locally.`,
+      `Ultra-light server library written in TypeScript for interacting with the Bittensor chain.\n\nExample code samples provided work with the Kami boilerplate Python code in the repo [here](https://github.com/tensorplex-labs/kami/tree/main/docs/python-examples).\n\nYou may also test out the endpoints through [Swagger UI](http://localhost:${process.env.KAMI_PORT}/docs) once the Kami instance is running locally.`,
     )
     .setVersion('1.0')
     .addServer(`http://localhost:${process.env.KAMI_PORT}`, 'Development')
@@ -30,7 +30,7 @@ async function bootstrap() {
   fs.writeFileSync(outputPath, JSON.stringify(document));
   console.log(`Swagger JSON saved to ${outputPath}`);
 
-  SwaggerModule.setup('chain/docs', app, document);
+  SwaggerModule.setup('docs', app, document);
 
   await app.listen(process.env.KAMI_PORT ?? 3000);
 }

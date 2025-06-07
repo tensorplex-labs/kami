@@ -11,4 +11,4 @@ import { SignMessageService } from './sign-message.service';
   controllers: [SignMessageController],
   providers: [SignMessageService, SignMessageMapper, VerifyMessageMapper],
 })
-export class SignMessageModule { }
+export class SignMessageModule {}

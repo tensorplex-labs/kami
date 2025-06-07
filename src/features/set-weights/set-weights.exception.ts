@@ -11,9 +11,20 @@ export class SetWeightsException extends BaseException {
   }
 }
 
+export class SetWeightsUnknownException extends SetWeightsException {
+  constructor(message: string, stackTrace?: string) {
+    super(
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      'UNKNOWN_ERROR',
+      `Unknown error: ${message}`,
+      stackTrace,
+    );
+  }
+}
+
 // Specific exception types
-export class SetWeightsParamsMissingException extends SetWeightsException {
-  constructor(stackTrace?: any) {
-    super(HttpStatus.BAD_REQUEST, 'PARAMS_MISSING', 'Set weights params missing', stackTrace);
+export class SetWeightsParamsInvalidException extends SetWeightsException {
+  constructor(message: string, stackTrace?: string) {
+    super(HttpStatus.BAD_REQUEST, 'PARAMS_INVALID', message, stackTrace);
   }
 }

@@ -1,11 +1,8 @@
 import { ApiResponseDto } from '@app/commons/common-response.dto';
-import { SubtensorException } from 'src/core/substrate/exceptions/substrate-client.exception';
-import {
-  AccountNonceException,
-  AccountNonceFetchException,
-} from 'src/features/account-nonce/account-nonce.exception';
+import { DomainValidationPipe } from '@app/commons/utils/domain-validation.pipe';
+import { SubstrateExceptionFilter } from 'src/core/substrate/exceptions/substrate.exception-filter';
 
-import { Controller, Get, HttpStatus, Logger, Param, Query } from '@nestjs/common';
+import { Controller, Get, Logger, Param, UseFilters } from '@nestjs/common';
 import {
   ApiExtraModels,
   ApiOkResponse,
@@ -15,11 +12,14 @@ import {
   getSchemaPath,
 } from '@nestjs/swagger';
 
-import { AccountNonceDto } from './account-nonce.dto';
+import { AccountNonceDto, AccountNonceParamsDto } from './account-nonce.dto';
+import { AccountNonceParamsInvalidException } from './account-nonce.exception';
+import { AccountNonceExceptionFilter } from './account-nonce.exception-filter';
 import { AccountNonceMapper } from './account-nonce.mapper';
 import { AccountNonceService } from './account-nonce.service';
 
 @Controller('substrate')
+@UseFilters(AccountNonceExceptionFilter, SubstrateExceptionFilter)
 @ApiTags('substrate')
 @ApiExtraModels(ApiResponseDto, AccountNonceDto)
 export class AccountNonceController {
@@ -55,28 +55,14 @@ export class AccountNonceController {
       ],
     },
   })
-  async getAccountNonce(@Param('account') account: string) {
-    try {
-      this.logger.log(`Getting account nonce`);
-
-      const accountNonce = await this.accountNonceService.getAccountNonce(account);
-
-      this.logger.log(`Account nonce: ${accountNonce}`);
-      return this.accountNonceMapper.toDto(accountNonce);
-    } catch (error) {
-      this.logger.error(`Error getting account nonce: ${error.message}`);
-      if (error instanceof AccountNonceException) {
-        throw error;
-      }
-      if (error instanceof SubtensorException) {
-        throw error;
-      }
-      throw new AccountNonceException(
-        HttpStatus.BAD_REQUEST,
-        'UNKNOWN',
-        error.message,
-        error.stack,
-      );
-    }
+  async getAccountNonce(
+    @Param(new DomainValidationPipe(AccountNonceParamsInvalidException))
+    param: AccountNonceParamsDto,
+  ) {
+    const account = param.account;
+    this.logger.log(`Getting account nonce for ${account}`);
+    const accountNonce = await this.accountNonceService.getAccountNonce(account);
+    this.logger.log(`Account nonce: ${accountNonce}`);
+    return this.accountNonceMapper.toDto(accountNonce);
   }
 }

@@ -11,6 +11,12 @@ export class LatestBlockException extends BaseException {
   }
 }
 
+export class LatestBlockUnknownErrorException extends LatestBlockException {
+  constructor(message: string, stackTrace?: string) {
+    super(HttpStatus.INTERNAL_SERVER_ERROR, 'UNKNOWN_ERROR', message, stackTrace);
+  }
+}
+
 // Specific exception types
 export class LatestBlockNotFoundException extends LatestBlockException {
   constructor(message: string, stackTrace?: string) {

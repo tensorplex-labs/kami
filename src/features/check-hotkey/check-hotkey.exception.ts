@@ -11,6 +11,17 @@ export class CheckHotkeyException extends BaseException {
   }
 }
 
+export class CheckHotkeyUnknownErrorException extends CheckHotkeyException {
+  constructor(message: string, stackTrace?: string) {
+    super(
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      'UNKNOWN_ERROR',
+      `Unknown error: ${message}`,
+      stackTrace,
+    );
+  }
+}
+
 // Specific exception types
 export class CheckHotkeyFetchException extends CheckHotkeyException {
   constructor(message: string, stackTrace?: string) {
@@ -23,13 +34,19 @@ export class CheckHotkeyFetchException extends CheckHotkeyException {
   }
 }
 
-export class CheckHotkeyNetuidHotkeyMissingException extends CheckHotkeyException {
-  constructor(stackTrace?: string) {
+export class CheckHotkeyBlockNotFoundException extends CheckHotkeyException {
+  constructor(message: string, stackTrace?: string) {
     super(
-      HttpStatus.BAD_REQUEST,
-      'NETUID_HOTKEY_MISSING',
-      'Netuid and hotkey are required',
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      'BLOCK_NOT_FOUND',
+      `Block not found: ${message}`,
       stackTrace,
     );
+  }
+}
+
+export class CheckHotkeyParamsInvalidException extends CheckHotkeyException {
+  constructor(message: string, stackTrace?: string) {
+    super(HttpStatus.BAD_REQUEST, 'PARAMS_INVALID', message, stackTrace);
   }
 }

@@ -1,8 +1,8 @@
 import { ApiResponseDto } from '@app/commons/common-response.dto';
 import { ApiCodeSamples, pythonSample } from '@app/commons/decorators/api-code-examples.decorator';
-import { SubtensorException } from 'src/core/substrate/exceptions/substrate-client.exception';
+import { SubstrateExceptionFilter } from 'src/core/substrate/exceptions/substrate.exception-filter';
 
-import { Controller, Get, HttpStatus, Logger } from '@nestjs/common';
+import { Controller, Get, Logger, UseFilters } from '@nestjs/common';
 import {
   ApiExtraModels,
   ApiOkResponse,
@@ -12,11 +12,12 @@ import {
 } from '@nestjs/swagger';
 
 import { LatestBlockDto } from './latest-block.dto';
-import { LatestBlockException } from './latest-block.exception';
+import { LatestBlockExceptionFilter } from './latest-block.exception-filter';
 import { LatestBlockMapper } from './latest-block.mapper';
 import { LatestBlockService } from './latest-block.service';
 
 @Controller('chain')
+@UseFilters(LatestBlockExceptionFilter, SubstrateExceptionFilter)
 @ApiTags('substrate')
 @ApiExtraModels(ApiResponseDto, LatestBlockDto)
 export class LatestBlockController {
@@ -47,23 +48,9 @@ export class LatestBlockController {
   })
   @ApiCodeSamples([pythonSample('docs/python-examples/get_latest_block.py')])
   async getLatestBlock() {
-    try {
-      // this.logger.debug('Fetching latest block');
-      const block = await this.latestBlockService.getLatestBlock();
+    this.logger.debug('Fetching latest block');
+    const block = await this.latestBlockService.getLatestBlock();
 
-      return this.latestBlockMapper.toDto(block);
-    } catch (error) {
-      this.logger.error(`Error fetching latest block: ${error.message}`);
-      if (error instanceof SubtensorException) {
-        throw error;
-      }
-
-      throw new LatestBlockException(
-        HttpStatus.INTERNAL_SERVER_ERROR,
-        'UNKNOWN',
-        error.message,
-        error.stack,
-      );
-    }
+    return this.latestBlockMapper.toDto(block);
   }
 }

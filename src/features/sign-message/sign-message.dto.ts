@@ -51,7 +51,7 @@ export class VerifyMessageParamDto {
 
   @ApiProperty({
     description:
-      'The signaturethat is crafted for message to verify against in hex, will be converted to u8a during verification.',
+      'The signature that is crafted for message to verify against in hex, will be converted to u8a during verification.',
     example: `string`,
   })
   @IsNotEmpty()

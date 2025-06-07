@@ -11,14 +11,15 @@ export class SetCommitRevealWeightException extends BaseException {
   }
 }
 
+export class SetCommitRevealWeightUnknownException extends SetCommitRevealWeightException {
+  constructor(message: string, stackTrace?: string) {
+    super(HttpStatus.INTERNAL_SERVER_ERROR, 'UNKNOWN_ERROR', message, stackTrace);
+  }
+}
+
 // Specific exception types
-export class SetCommitRevealWeightParamsMissingException extends SetCommitRevealWeightException {
-  constructor(stackTrace?: any) {
-    super(
-      HttpStatus.BAD_REQUEST,
-      'PARAMS_MISSING',
-      'Set commit reveal weight params missing',
-      stackTrace,
-    );
+export class SetCommitRevealWeightParamsInvalidException extends SetCommitRevealWeightException {
+  constructor(message: string, stackTrace?: string) {
+    super(HttpStatus.BAD_REQUEST, 'PARAMS_INVALID', message, stackTrace);
   }
 }

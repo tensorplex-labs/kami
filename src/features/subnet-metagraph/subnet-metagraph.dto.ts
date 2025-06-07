@@ -1,10 +1,20 @@
 import { DivideBy } from '@app/commons/decorators';
 import { UnicodeToString } from '@app/commons/decorators/unicode-to-string-transform.decorator';
 import { UtfToString } from '@app/commons/decorators/utf-to-string-transform.decorator';
+import { Type } from 'class-transformer';
+import { IsInt, IsNotEmpty, Min } from 'class-validator';
 
 import { ApiProperty } from '@nestjs/swagger';
 
 import { AxonInfoDto, IdentitiesInfoDto, SubnetIdentityDto } from '../../commons/dto';
+
+export class SubnetMetagraphParamsDto {
+  @IsInt()
+  @Min(0)
+  @Type(() => Number)
+  @IsNotEmpty()
+  netuid: number;
+}
 
 export class SubnetMetagraphDto {
   @ApiProperty({

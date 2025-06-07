@@ -6,7 +6,7 @@ import { HttpStatus } from '@nestjs/common';
 export class SubstrateConnectionException extends BaseException {
   constructor(statusCode: HttpStatus, type: string, message: string, stackTrace?: string) {
     const errorCategory = 'SUBSTRATE_CONNECTION';
-    super(statusCode, type, `${errorCategory}.${message}`, stackTrace);
+    super(statusCode, `${errorCategory}.${type}`, message, stackTrace);
   }
 }
 
