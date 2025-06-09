@@ -4,8 +4,7 @@ import { SubstrateConnectionService } from 'src/core/substrate/services/substrat
 
 import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 
-import { SetWeightsCallParams } from './set-weights.call-params.interface';
-import { SetWeightsException } from './set-weights.exception';
+import { SetWeightsParamsDto } from './set-weights.dto';
 
 @Injectable()
 export class SetWeightsService {
@@ -16,29 +15,17 @@ export class SetWeightsService {
     private readonly substrateConnectionService: SubstrateConnectionService,
   ) {}
 
-  async setWeights(CallParams: SetWeightsCallParams): Promise<any> {
-    try {
-      const client = await this.substrateConnectionService.getClient();
-      const setWeightsTx = client.tx.subtensorModule.setWeights(
-        CallParams.netuid,
-        CallParams.dests,
-        CallParams.weights,
-        CallParams.versionKey,
-      );
+  async setWeights(CallParams: SetWeightsParamsDto): Promise<any> {
+    const client = await this.substrateConnectionService.getClient();
+    const setWeightsTx = client.tx.subtensorModule.setWeights(
+      CallParams.netuid,
+      CallParams.dests,
+      CallParams.weights,
+      CallParams.versionKey,
+    );
 
-      const result = await this.substrateClientService.signAndSendTransaction(setWeightsTx);
+    const result = await this.substrateClientService.signAndSendTransaction(setWeightsTx);
 
-      return result;
-    } catch (error) {
-      if (error instanceof SubtensorException) {
-        throw error;
-      }
-      throw new SetWeightsException(
-        HttpStatus.INTERNAL_SERVER_ERROR,
-        'UNKNOWN',
-        error.message,
-        error.stack,
-      );
-    }
+    return result;
   }
 }

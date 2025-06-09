@@ -1,7 +1,8 @@
 import { ApiResponseDto } from '@app/commons/common-response.dto';
 import { pythonSample } from '@app/commons/decorators/api-code-examples.decorator';
 import { ApiCodeSamples } from '@app/commons/decorators/api-code-examples.decorator';
-import { SubtensorException } from 'src/core/substrate/exceptions/substrate-client.exception';
+import { DomainValidationPipe } from '@app/commons/utils/domain-validation.pipe';
+import { SubstrateExceptionFilter } from 'src/core/substrate/exceptions/substrate.exception-filter';
 
 import {
   Body,
@@ -11,8 +12,8 @@ import {
   HttpStatus,
   Logger,
   Post,
+  UseFilters,
   UseInterceptors,
-  ValidationPipe,
 } from '@nestjs/common';
 import {
   ApiBody,
@@ -23,14 +24,15 @@ import {
   getSchemaPath,
 } from '@nestjs/swagger';
 
-import { AxonCallParams } from './serve-axon.call-params.interface';
 import { AxonCallParamsDto } from './serve-axon.dto';
-import { ServeAxonException, ServeAxonParamsMissingException } from './serve-axon.exception';
+import { ServeAxonParamsInvalidException } from './serve-axon.exception';
+import { ServeAxonExceptionFilter } from './serve-axon.exception-filter';
 import { ServeAxonService } from './serve-axon.service';
 
-@ApiTags('subnet')
 @Controller('chain')
 @UseInterceptors(ClassSerializerInterceptor)
+@UseFilters(ServeAxonExceptionFilter, SubstrateExceptionFilter)
+@ApiTags('subnet')
 @ApiExtraModels(ApiResponseDto)
 export class ServeAxonController {
   private readonly logger = new Logger(ServeAxonController.name);
@@ -63,32 +65,13 @@ export class ServeAxonController {
     },
   })
   @ApiCodeSamples([pythonSample('docs/python-examples/serve_axons.py')])
-  async serveAxon(@Body(ValidationPipe) callParams: AxonCallParams) {
-    try {
-      if (!callParams) {
-        throw new ServeAxonParamsMissingException();
-      }
-
-      this.logger.log(`Serving axon with params: ${JSON.stringify(callParams)}`);
-      const result = await this.serveAxonService.serveAxon(callParams);
-      this.logger.log(`Axon served with result: ${JSON.stringify(result)}`);
-      return result;
-    } catch (error) {
-      this.logger.error(`Error serving axon: ${error.message}`);
-      if (error instanceof ServeAxonParamsMissingException) {
-        throw error;
-      }
-
-      if (error instanceof SubtensorException) {
-        throw error;
-      }
-
-      throw new ServeAxonException(
-        HttpStatus.INTERNAL_SERVER_ERROR,
-        'UNKNOWN',
-        error.message,
-        error.stack,
-      );
-    }
+  async serveAxon(
+    @Body(new DomainValidationPipe(ServeAxonParamsInvalidException))
+    callParams: AxonCallParamsDto,
+  ) {
+    this.logger.log(`Serving axon with params: ${JSON.stringify(callParams)}`);
+    const result = await this.serveAxonService.serveAxon(callParams);
+    this.logger.log(`Axon served with result: ${JSON.stringify(result)}`);
+    return result;
   }
 }
