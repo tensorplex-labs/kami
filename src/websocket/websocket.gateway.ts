@@ -51,24 +51,42 @@ export class WebsocketClient implements OnGatewayInit, OnGatewayConnection, OnGa
   }
 
   @SubscribeMessage('subscribe-blocks')
-  async handleBlockSubscription(client: any) {
+  async handleBlockSubscription(client: any, finalised: boolean) {
     try {
-      this.logger.log(`Client ${client.id} subscribed to blocks`);
+      let unsubscribe;
 
       const apiClient = await this.substrateConnectionService.getClient();
 
-      const unsubscribe = await apiClient.rpc.chain.subscribeNewHeads(header => {
-        const blockInfo: BlockInfo = {
-          blockNumber: header.number.toNumber(),
-          parentHash: header.parentHash.toHex(),
-          stateRoot: header.stateRoot.toHex(),
-          extrinsicsRoot: header.extrinsicsRoot.toHex(),
-        };
+      if (finalised === true) {
+        this.logger.log(`Client ${client.id} subscribed to finalised blocks`);
+        unsubscribe = await apiClient.rpc.chain.subscribeFinalizedHeads(header => {
+          const blockInfo: BlockInfo = {
+            blockNumber: header.number.toNumber(),
+            parentHash: header.parentHash.toHex(),
+            stateRoot: header.stateRoot.toHex(),
+            extrinsicsRoot: header.extrinsicsRoot.toHex(),
+          };
 
-        this.logger.debug(`New block ${blockInfo.blockNumber} for client ${client.id}`);
+          this.logger.debug(`New block ${blockInfo.blockNumber} for client ${client.id}`);
 
-        client.emit('new-block', blockInfo);
-      });
+          client.emit('new-block', blockInfo);
+        });
+      } else {
+        this.logger.log(`Client ${client.id} subscribed to new included blocks`);
+
+        unsubscribe = await apiClient.rpc.chain.subscribeNewHeads(header => {
+          const blockInfo: BlockInfo = {
+            blockNumber: header.number.toNumber(),
+            parentHash: header.parentHash.toHex(),
+            stateRoot: header.stateRoot.toHex(),
+            extrinsicsRoot: header.extrinsicsRoot.toHex(),
+          };
+
+          this.logger.debug(`New block ${blockInfo.blockNumber} for client ${client.id}`);
+
+          client.emit('new-block', blockInfo);
+        });
+      }
 
       client.data.blockUnsubscribe = unsubscribe;
 

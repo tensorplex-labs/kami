@@ -9,7 +9,7 @@ socket.on('connect', () => {
   socket.emit('ping', 'hello');
 
   console.log('Subscribing to blocks...');
-  socket.emit('subscribe-blocks');
+  socket.emit('subscribe-blocks', true);
 });
 
 socket.on('pong', (data: any) => {
