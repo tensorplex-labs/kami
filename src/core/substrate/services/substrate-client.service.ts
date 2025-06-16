@@ -1,3 +1,5 @@
+import { BlockInfo } from 'src/features/latest-block/latest-block.interface';
+
 import { Injectable, Logger, UseFilters } from '@nestjs/common';
 
 import Keyring from '@polkadot/keyring';
@@ -106,5 +108,48 @@ export class SubstrateClientService {
 
     const blockHashHex = blockHash.toHex();
     return blockHashHex;
+  }
+
+  async subscribeToFinalizedBlocks(callback: (blockInfo: BlockInfo) => void): Promise<() => void> {
+    const client = await this.substrateConnectionService.getClient();
+
+    const unsubscribe = await client.rpc.chain.subscribeFinalizedHeads(header => {
+      const blockInfo: BlockInfo = {
+        blockNumber: header.number.toNumber(),
+        parentHash: header.parentHash.toHex(),
+        stateRoot: header.stateRoot.toHex(),
+        extrinsicsRoot: header.extrinsicsRoot.toHex(),
+      };
+      callback(blockInfo);
+    });
+
+    return unsubscribe;
+  }
+
+  async subscribeToNewBlocks(callback: (blockInfo: BlockInfo) => void): Promise<() => void> {
+    const client = await this.substrateConnectionService.getClient();
+
+    const unsubscribe = await client.rpc.chain.subscribeNewHeads(header => {
+      const blockInfo: BlockInfo = {
+        blockNumber: header.number.toNumber(),
+        parentHash: header.parentHash.toHex(),
+        stateRoot: header.stateRoot.toHex(),
+        extrinsicsRoot: header.extrinsicsRoot.toHex(),
+      };
+      callback(blockInfo);
+    });
+
+    return unsubscribe;
+  }
+
+  async subscribeToBlocks(
+    finalised: boolean,
+    callback: (blockInfo: BlockInfo) => void,
+  ): Promise<() => void> {
+    if (finalised) {
+      return this.subscribeToFinalizedBlocks(callback);
+    } else {
+      return this.subscribeToNewBlocks(callback);
+    }
   }
 }

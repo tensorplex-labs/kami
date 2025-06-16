@@ -1,5 +1,5 @@
 import { Server } from 'socket.io';
-import { SubstrateConnectionService } from 'src/core/substrate/services/substrate-connection.service';
+import { SubstrateClientService } from 'src/core/substrate/services/substrate-client.service';
 import { BlockInfo } from 'src/features/latest-block/latest-block.interface';
 
 import { Logger } from '@nestjs/common';
@@ -16,7 +16,7 @@ import {
 export class WebsocketClient implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   private readonly logger = new Logger(WebsocketClient.name);
 
-  constructor(private readonly substrateConnectionService: SubstrateConnectionService) {}
+  constructor(private readonly substrateClientService: SubstrateClientService) {}
 
   @WebSocketServer() io: Server;
 
@@ -53,40 +53,13 @@ export class WebsocketClient implements OnGatewayInit, OnGatewayConnection, OnGa
   @SubscribeMessage('subscribe-blocks')
   async handleBlockSubscription(client: any, finalised: boolean) {
     try {
-      let unsubscribe;
-
-      const apiClient = await this.substrateConnectionService.getClient();
-
-      if (finalised === true) {
-        this.logger.log(`Client ${client.id} subscribed to finalised blocks`);
-        unsubscribe = await apiClient.rpc.chain.subscribeFinalizedHeads(header => {
-          const blockInfo: BlockInfo = {
-            blockNumber: header.number.toNumber(),
-            parentHash: header.parentHash.toHex(),
-            stateRoot: header.stateRoot.toHex(),
-            extrinsicsRoot: header.extrinsicsRoot.toHex(),
-          };
-
+      const unsubscribe = await this.substrateClientService.subscribeToBlocks(
+        finalised,
+        (blockInfo: BlockInfo) => {
           this.logger.debug(`New block ${blockInfo.blockNumber} for client ${client.id}`);
-
           client.emit('new-block', blockInfo);
-        });
-      } else {
-        this.logger.log(`Client ${client.id} subscribed to new included blocks`);
-
-        unsubscribe = await apiClient.rpc.chain.subscribeNewHeads(header => {
-          const blockInfo: BlockInfo = {
-            blockNumber: header.number.toNumber(),
-            parentHash: header.parentHash.toHex(),
-            stateRoot: header.stateRoot.toHex(),
-            extrinsicsRoot: header.extrinsicsRoot.toHex(),
-          };
-
-          this.logger.debug(`New block ${blockInfo.blockNumber} for client ${client.id}`);
-
-          client.emit('new-block', blockInfo);
-        });
-      }
+        },
+      );
 
       client.data.blockUnsubscribe = unsubscribe;
 
