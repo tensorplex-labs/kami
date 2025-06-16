@@ -14,7 +14,7 @@ import { SetWeightsModule } from './features/set-weights/set-weights.module';
 import { SignMessageModule } from './features/sign-message/sign-message.module';
 import { SubnetHyperparameterModule } from './features/subnet-hyperparameter/subnet-hyperparameter.module';
 import { SubnetMetagraphModule } from './features/subnet-metagraph/subnet-metagraph.module';
-import { WebSocketModule } from './websocket/websocket.module';
+import { WebSocketModule } from './features/websocket/websocket.module';
 
 @Module({
   imports: [
