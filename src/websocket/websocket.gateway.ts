@@ -12,6 +12,19 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 
+/**
+ * WebSocket Gateway for real-time block subscriptions
+ *
+ * @event subscribe-blocks Subscribe to new blocks (true for finalized blocks, false for new blocks)
+ * @event new-block Emitted when a new block is published and returns {@link BlockInfo}
+ * @event subscription-confirmed Emitted when block subscription is successful
+ * @event subscription-error Emitted when block subscription fails
+ * @event ping Test connection
+ * @event pong Emitted when ping is received
+ *
+ * @see [Python example](../../docs/python-examples/block_subscription.py) Complete Python example
+ *
+ */
 @WebSocketGateway()
 export class WebsocketClient implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
   private readonly logger = new Logger(WebsocketClient.name);
