@@ -12,6 +12,7 @@ import {
   getSchemaPath,
 } from '@nestjs/swagger';
 
+import { SubstrateRuntimeSpecVersionDto } from './dto/substrate-runtime-spec-version.dto';
 import { SubstrateExceptionFilter } from './exceptions/substrate.exception-filter';
 import { SubstrateClientService } from './services/substrate-client.service';
 import { SubstrateConnectionService } from './services/substrate-connection.service';
@@ -65,6 +66,32 @@ export class SubstrateController {
   async getKeyringPairInfo() {
     const result = await this.substrateConnectionService.getKeyringPairInfo();
     this.logger.log(`Keyring pair info retrieved successfully: ${JSON.stringify(result)}`);
+    return result;
+  }
+
+  @Get('runtime-spec-version')
+  @ApiOperation({
+    summary: 'Get runtime spec version',
+    description: 'Retrieves the current runtime spec version',
+  })
+  @ApiOkResponse({
+    description: 'Runtime spec version retrieved successfully',
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(ApiResponseDto) },
+        {
+          properties: {
+            data: {
+              $ref: getSchemaPath(SubstrateRuntimeSpecVersionDto),
+              example: { specVersion: 273 },
+            },
+          },
+        },
+      ],
+    },
+  })
+  async getRuntimeSpecVersion() {
+    const result = await this.substrateClientService.getRuntimeSpecVersion();
     return result;
   }
 }
