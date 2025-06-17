@@ -126,7 +126,9 @@ export class SubstrateController {
 
     return {
       latestBlock: latestBlock.blockNumber,
-      runtimeSpecVersion: runtimeSpecVersionDuringHealthCheck.specVersion,
+      runtimeSpecVersionDuringKamiInitialization:
+        this.substrateClientService.runtimeSpecVersion.specVersion,
+      runtimeSpecVersionDuringHealthCheck: runtimeSpecVersionDuringHealthCheck.specVersion,
     };
   }
 }
