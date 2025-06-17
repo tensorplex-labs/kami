@@ -1,6 +1,8 @@
 import { ApiResponseDto } from '@app/commons/common-response.dto';
 import { ApiCodeSamples, pythonSample } from '@app/commons/decorators/api-code-examples.decorator';
 import { KeyringPairInfoDto } from '@app/commons/dto';
+import { LatestBlockNotFoundException } from 'src/features/latest-block/latest-block.exception';
+import { LatestBlockService } from 'src/features/latest-block/latest-block.service';
 
 import { Controller, Get, Logger, UseFilters } from '@nestjs/common';
 import {
@@ -13,6 +15,7 @@ import {
 } from '@nestjs/swagger';
 
 import { SubstrateRuntimeSpecVersionDto } from './dto/substrate-runtime-spec-version.dto';
+import { SubstrateRuntimeVersionNotAvailableException } from './exceptions/substrate-client.exception';
 import { SubstrateExceptionFilter } from './exceptions/substrate.exception-filter';
 import { SubstrateClientService } from './services/substrate-client.service';
 import { SubstrateConnectionService } from './services/substrate-connection.service';
@@ -27,6 +30,7 @@ export class SubstrateController {
   constructor(
     private readonly substrateClientService: SubstrateClientService,
     private readonly substrateConnectionService: SubstrateConnectionService,
+    private readonly latestBlockService: LatestBlockService,
   ) {}
 
   @Get('available-runtime-apis')
@@ -93,5 +97,36 @@ export class SubstrateController {
   async getRuntimeSpecVersion() {
     const result = await this.substrateClientService.getRuntimeSpecVersion();
     return result;
+  }
+
+  @Get('health')
+  @ApiOperation({
+    summary: 'Health check',
+    description: 'Checks the health of Kami instance',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Kami instance is healthy',
+  })
+  async healthCheck() {
+    const runtimeSpecVersionDuringHealthCheck =
+      await this.substrateClientService.getRuntimeSpecVersion();
+
+    if (
+      runtimeSpecVersionDuringHealthCheck.specVersion !==
+      this.substrateClientService.runtimeSpecVersion.specVersion
+    ) {
+      throw new SubstrateRuntimeVersionNotAvailableException();
+    }
+
+    const latestBlock = await this.latestBlockService.getLatestBlock();
+    if (!latestBlock) {
+      throw new LatestBlockNotFoundException('Latest block not found');
+    }
+
+    return {
+      latestBlock: latestBlock.blockNumber,
+      runtimeSpecVersion: runtimeSpecVersionDuringHealthCheck.specVersion,
+    };
   }
 }

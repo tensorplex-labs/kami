@@ -7,6 +7,7 @@ import {
   SubtensorException,
   UnknownBlockStateAlreadyDiscardedException,
 } from 'src/core/substrate/exceptions/substrate-client.exception';
+import { LatestBlockNotFoundException } from 'src/features/latest-block/latest-block.exception';
 
 import { Catch, HttpStatus } from '@nestjs/common';
 
@@ -66,6 +67,11 @@ export class SubstrateExceptionFilter extends KamiBaseExceptionFilter {
 
     if (error instanceof BaseException) {
       throw error;
+    }
+
+    if (error instanceof LatestBlockNotFoundException) {
+      this.logger.log(`✅ Mapped to LatestBlockException`);
+      return error;
     }
 
     // Catch all

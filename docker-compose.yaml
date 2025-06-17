@@ -19,3 +19,9 @@ services:
       - ${BITTENSOR_DIR}:${BITTENSOR_DIR}
     command: node dist/main.js
     logging: *default-logging
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://${KAMI_HOST}:${KAMI_PORT}/substrate/health"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 50s

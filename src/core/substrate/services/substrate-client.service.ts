@@ -23,7 +23,7 @@ import { SubstrateConnectionService } from './substrate-connection.service';
 @Injectable()
 export class SubstrateClientService implements OnApplicationBootstrap {
   private readonly logger = new Logger(SubstrateClientService.name);
-  private runtimeSpecVersion: SubstrateRuntimeSpecVersionDto;
+  public runtimeSpecVersion: SubstrateRuntimeSpecVersionDto;
 
   constructor(private readonly substrateConnectionService: SubstrateConnectionService) {}
 
