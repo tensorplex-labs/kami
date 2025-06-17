@@ -3,7 +3,7 @@ import { ApiProperty } from '@nestjs/swagger';
 export class SubstrateRuntimeSpecVersionDto {
   @ApiProperty({
     description: 'Spec version',
-    example: 1,
+    example: 273,
   })
   specVersion: number;
 

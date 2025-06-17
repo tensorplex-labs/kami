@@ -14,6 +14,7 @@ import {
   getSchemaPath,
 } from '@nestjs/swagger';
 
+import { SubstrateHealthCheckDto } from './dto/substrate-health-check.dto';
 import { SubstrateRuntimeSpecVersionDto } from './dto/substrate-runtime-spec-version.dto';
 import { SubstrateRuntimeVersionNotAvailableException } from './exceptions/substrate-client.exception';
 import { SubstrateExceptionFilter } from './exceptions/substrate.exception-filter';
@@ -23,7 +24,12 @@ import { SubstrateConnectionService } from './services/substrate-connection.serv
 @Controller('substrate')
 @UseFilters(SubstrateExceptionFilter)
 @ApiTags('substrate')
-@ApiExtraModels(ApiResponseDto, KeyringPairInfoDto)
+@ApiExtraModels(
+  ApiResponseDto,
+  KeyringPairInfoDto,
+  SubstrateHealthCheckDto,
+  SubstrateRuntimeSpecVersionDto,
+)
 export class SubstrateController {
   private readonly logger = new Logger(SubstrateController.name);
 
@@ -87,7 +93,6 @@ export class SubstrateController {
           properties: {
             data: {
               $ref: getSchemaPath(SubstrateRuntimeSpecVersionDto),
-              example: { specVersion: 273 },
             },
           },
         },
@@ -104,9 +109,20 @@ export class SubstrateController {
     summary: 'Health check',
     description: 'Checks the health of Kami instance',
   })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponse({
     description: 'Kami instance is healthy',
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(ApiResponseDto) },
+        {
+          properties: {
+            data: {
+              $ref: getSchemaPath(SubstrateHealthCheckDto),
+            },
+          },
+        },
+      ],
+    },
   })
   async healthCheck() {
     const runtimeSpecVersionDuringHealthCheck =
@@ -124,11 +140,11 @@ export class SubstrateController {
       throw new LatestBlockNotFoundException('Latest block not found');
     }
 
-    return {
+    return new SubstrateHealthCheckDto({
       latestBlock: latestBlock.blockNumber,
       runtimeSpecVersionDuringKamiInitialization:
         this.substrateClientService.runtimeSpecVersion.specVersion,
       runtimeSpecVersionDuringHealthCheck: runtimeSpecVersionDuringHealthCheck.specVersion,
-    };
+    });
   }
 }
