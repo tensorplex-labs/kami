@@ -1,9 +1,10 @@
+import { LatestBlockService } from 'src/features/latest-block/latest-block.service';
+
 import { Global, Logger, Module } from '@nestjs/common';
 
 import { KamiConfigModule } from '../kami-config/kami-config.module';
 import { SubstrateClientService } from './services/substrate-client.service';
 import { SubstrateConnectionService } from './services/substrate-connection.service';
-import { SubstrateConfig } from './substrate-config.interface';
 import { SubstrateController } from './substrate.controller';
 
 @Global()
@@ -18,6 +19,7 @@ import { SubstrateController } from './substrate.controller';
       inject: [SubstrateConnectionService],
     },
     Logger,
+    LatestBlockService,
   ],
   controllers: [SubstrateController],
   exports: [SubstrateClientService, SubstrateConnectionService],

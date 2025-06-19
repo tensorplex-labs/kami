@@ -212,3 +212,14 @@ export class SS58AddressInvalidChecksumException extends SubstrateClientExceptio
     super(HttpStatus.BAD_REQUEST, 'SS58_ADDRESS_INVALID_CHECKSUM', message, stackTrace);
   }
 }
+
+export class SubstrateRuntimeVersionNotAvailableException extends SubstrateClientException {
+  constructor(message?: string, stackTrace?: string) {
+    super(
+      HttpStatus.INTERNAL_SERVER_ERROR,
+      'SUBSTRATE_RUNTIME_VERSION_NOT_AVAILABLE',
+      message || 'Substrate runtime version not available',
+      stackTrace,
+    );
+  }
+}

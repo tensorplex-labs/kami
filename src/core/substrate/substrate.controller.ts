@@ -1,6 +1,8 @@
 import { ApiResponseDto } from '@app/commons/common-response.dto';
 import { ApiCodeSamples, pythonSample } from '@app/commons/decorators/api-code-examples.decorator';
 import { KeyringPairInfoDto } from '@app/commons/dto';
+import { LatestBlockNotFoundException } from 'src/features/latest-block/latest-block.exception';
+import { LatestBlockService } from 'src/features/latest-block/latest-block.service';
 
 import { Controller, Get, Logger, UseFilters } from '@nestjs/common';
 import {
@@ -12,6 +14,9 @@ import {
   getSchemaPath,
 } from '@nestjs/swagger';
 
+import { SubstrateHealthCheckDto } from './dto/substrate-health-check.dto';
+import { SubstrateRuntimeSpecVersionDto } from './dto/substrate-runtime-spec-version.dto';
+import { SubstrateRuntimeVersionNotAvailableException } from './exceptions/substrate-client.exception';
 import { SubstrateExceptionFilter } from './exceptions/substrate.exception-filter';
 import { SubstrateClientService } from './services/substrate-client.service';
 import { SubstrateConnectionService } from './services/substrate-connection.service';
@@ -19,13 +24,19 @@ import { SubstrateConnectionService } from './services/substrate-connection.serv
 @Controller('substrate')
 @UseFilters(SubstrateExceptionFilter)
 @ApiTags('substrate')
-@ApiExtraModels(ApiResponseDto, KeyringPairInfoDto)
+@ApiExtraModels(
+  ApiResponseDto,
+  KeyringPairInfoDto,
+  SubstrateHealthCheckDto,
+  SubstrateRuntimeSpecVersionDto,
+)
 export class SubstrateController {
   private readonly logger = new Logger(SubstrateController.name);
 
   constructor(
     private readonly substrateClientService: SubstrateClientService,
     private readonly substrateConnectionService: SubstrateConnectionService,
+    private readonly latestBlockService: LatestBlockService,
   ) {}
 
   @Get('available-runtime-apis')
@@ -66,5 +77,74 @@ export class SubstrateController {
     const result = await this.substrateConnectionService.getKeyringPairInfo();
     this.logger.log(`Keyring pair info retrieved successfully: ${JSON.stringify(result)}`);
     return result;
+  }
+
+  @Get('runtime-spec-version')
+  @ApiOperation({
+    summary: 'Get runtime spec version',
+    description: 'Retrieves the current runtime spec version',
+  })
+  @ApiOkResponse({
+    description: 'Runtime spec version retrieved successfully',
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(ApiResponseDto) },
+        {
+          properties: {
+            data: {
+              $ref: getSchemaPath(SubstrateRuntimeSpecVersionDto),
+            },
+          },
+        },
+      ],
+    },
+  })
+  async getRuntimeSpecVersion() {
+    const result = await this.substrateClientService.getRuntimeSpecVersion();
+    return result;
+  }
+
+  @Get('health')
+  @ApiOperation({
+    summary: 'Health check',
+    description: 'Checks the health of Kami instance',
+  })
+  @ApiOkResponse({
+    description: 'Kami instance is healthy',
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(ApiResponseDto) },
+        {
+          properties: {
+            data: {
+              $ref: getSchemaPath(SubstrateHealthCheckDto),
+            },
+          },
+        },
+      ],
+    },
+  })
+  async healthCheck() {
+    const runtimeSpecVersionDuringHealthCheck =
+      await this.substrateClientService.getRuntimeSpecVersion();
+
+    if (
+      runtimeSpecVersionDuringHealthCheck.specVersion !==
+      this.substrateClientService.runtimeSpecVersion.specVersion
+    ) {
+      throw new SubstrateRuntimeVersionNotAvailableException();
+    }
+
+    const latestBlock = await this.latestBlockService.getLatestBlock();
+    if (!latestBlock) {
+      throw new LatestBlockNotFoundException('Latest block not found');
+    }
+
+    return new SubstrateHealthCheckDto({
+      latestBlock: latestBlock.blockNumber,
+      runtimeSpecVersionDuringKamiInitialization:
+        this.substrateClientService.runtimeSpecVersion.specVersion,
+      runtimeSpecVersionDuringHealthCheck: runtimeSpecVersionDuringHealthCheck.specVersion,
+    });
   }
 }
