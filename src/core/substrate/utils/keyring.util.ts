@@ -6,7 +6,7 @@ import { Logger } from '@nestjs/common';
 import { Keyring } from '@polkadot/keyring';
 import { KeyringPair } from '@polkadot/keyring/types';
 
-export async function getKeyringPair(
+export async function GetKeyringPair(
   walletPath: string | undefined,
   walletName: string | undefined,
   walletHotkey: string | undefined,
@@ -29,12 +29,19 @@ export async function getKeyringPair(
     const hotkeyFileContent = await fs.promises.readFile(hotkeyPath, 'utf-8');
     const hotkeyJsonContent = JSON.parse(hotkeyFileContent);
 
-    if (!hotkeyJsonContent.secretPhrase) {
-      throw new Error('Invalid hotkey format: missing secretPhrase');
-    }
-
     const keyring: Keyring = new Keyring({ type: 'sr25519' });
-    const hotkey: KeyringPair = keyring.addFromMnemonic(hotkeyJsonContent.secretPhrase);
+
+    let hotkey: KeyringPair;
+
+    if (hotkeyJsonContent.secretPhrase) {
+      Logger.log(`Creating keyring pair with mnemonic...`);
+      hotkey = keyring.addFromMnemonic(hotkeyJsonContent.secretPhrase);
+    } else if (hotkeyJsonContent.secretSeed) {
+      Logger.log(`Creating keyring pair with seed...`);
+      hotkey = keyring.addFromUri(hotkeyJsonContent.secretSeed);
+    } else {
+      throw new Error('Invalid hotkey format: missing secretPhrase or secretSeed');
+    }
 
     return {
       keyringPair: hotkey,

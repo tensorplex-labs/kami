@@ -19,6 +19,7 @@ import {
   WalletPathNotSetException,
 } from '../exceptions/substrate-connection.exception';
 import { SubstrateConfig } from '../interface/substrate-config.interface';
+import { GetKeyringPair } from '../utils/keyring.util';
 
 @Injectable()
 export class SubstrateConnectionService implements OnModuleInit {
@@ -141,58 +142,6 @@ export class SubstrateConnectionService implements OnModuleInit {
     }
   }
 
-  async getKeyringPair(
-    walletPath: string | undefined,
-    walletName: string | undefined,
-    walletHotkey: string | undefined,
-  ): Promise<KeyringPairInfo> {
-    if (!walletPath) {
-      throw new WalletPathNotSetException();
-    }
-
-    if (!walletName) {
-      throw new WalletNameNotSetException();
-    }
-
-    if (!walletHotkey) {
-      throw new WalletHotkeyNotSetException();
-    }
-
-    const coldkeyPath = `${walletPath}/wallets/${walletName}/coldkeypub.txt`;
-    const hotkeyPath = `${walletPath}/wallets/${walletName}/hotkeys/${walletHotkey}`;
-
-    await fs.promises.access(coldkeyPath, fs.constants.R_OK);
-    await fs.promises.access(hotkeyPath, fs.constants.R_OK);
-
-    let coldkeyContent, hotkeyFileContent;
-
-    coldkeyContent = await fs.promises.readFile(coldkeyPath, 'utf-8');
-    hotkeyFileContent = await fs.promises.readFile(hotkeyPath, 'utf-8');
-
-    let coldkeyJsonContent, hotkeyJsonContent;
-
-    coldkeyJsonContent = JSON.parse(coldkeyContent);
-
-    hotkeyJsonContent = JSON.parse(hotkeyFileContent);
-
-    if (!coldkeyJsonContent.ss58Address) {
-      throw new InvalidColdkeyFormatException('Missing ss58Address in coldkey file');
-    }
-    const coldkey = coldkeyJsonContent.ss58Address;
-
-    if (!hotkeyJsonContent.secretPhrase) {
-      throw new InvalidHotkeyFormatException('Missing secretPhrase in hotkey file');
-    }
-
-    const keyring: Keyring = new Keyring({ type: 'sr25519' });
-    const hotkey: KeyringPair = keyring.addFromMnemonic(hotkeyJsonContent.secretPhrase);
-
-    return {
-      keyringPair: hotkey,
-      walletColdkey: coldkey,
-    };
-  }
-
   async setKeyringPair() {
     this.logger.log(`Setting keyring pair for wallet: ${this.walletName}`);
 
@@ -208,7 +157,7 @@ export class SubstrateConnectionService implements OnModuleInit {
       throw new WalletHotkeyNotSetException();
     }
 
-    this.keyringPairInfo = await this.getKeyringPair(
+    this.keyringPairInfo = await GetKeyringPair(
       this.walletPath,
       this.walletName,
       this.walletHotkey,
