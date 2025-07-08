@@ -18,7 +18,7 @@ import {
   WalletNameNotSetException,
   WalletPathNotSetException,
 } from '../exceptions/substrate-connection.exception';
-import { SubstrateConfig } from '../substrate-config.interface';
+import { SubstrateConfig } from '../interface/substrate-config.interface';
 import { GetKeyringPair } from '../utils/keyring.util';
 
 @Injectable()

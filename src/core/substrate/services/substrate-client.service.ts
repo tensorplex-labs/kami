@@ -1,4 +1,6 @@
-import { Injectable, Logger, UseFilters } from '@nestjs/common';
+import { BlockInfo } from 'src/features/latest-block/latest-block.interface';
+
+import { Injectable, Logger, OnApplicationBootstrap } from '@nestjs/common';
 
 import Keyring from '@polkadot/keyring';
 import { Bytes } from '@polkadot/types';
@@ -10,17 +12,28 @@ import {
 import { hexToU8a, stringToU8a, u8aToHex } from '@polkadot/util';
 import { signatureVerify } from '@polkadot/util-crypto';
 
+import { SubstrateRuntimeSpecVersionDto } from '../dto/substrate-runtime-spec-version.dto';
 import {
   BlockHashNotFoundException,
   InvalidParameterException,
+  SubstrateRuntimeVersionNotAvailableException,
 } from '../exceptions/substrate-client.exception';
 import { SubstrateConnectionService } from './substrate-connection.service';
 
 @Injectable()
-export class SubstrateClientService {
+export class SubstrateClientService implements OnApplicationBootstrap {
   private readonly logger = new Logger(SubstrateClientService.name);
+  public runtimeSpecVersion: SubstrateRuntimeSpecVersionDto;
 
   constructor(private readonly substrateConnectionService: SubstrateConnectionService) {}
+
+  async onApplicationBootstrap() {
+    await this.substrateConnectionService.getClient();
+    this.runtimeSpecVersion = await this.getRuntimeSpecVersion();
+    this.logger.log(
+      `Runtime spec version during Kami initialization: ${this.runtimeSpecVersion.specVersion}`,
+    );
+  }
 
   async queryRuntimeApi(runtimeDefName: string, methodName: string, params: any): Promise<any> {
     const client = await this.substrateConnectionService.getClient();
@@ -106,5 +119,75 @@ export class SubstrateClientService {
 
     const blockHashHex = blockHash.toHex();
     return blockHashHex;
+  }
+
+  async subscribeToFinalizedBlocks(callback: (blockInfo: BlockInfo) => void): Promise<() => void> {
+    const client = await this.substrateConnectionService.getClient();
+
+    const unsubscribe = await client.rpc.chain.subscribeFinalizedHeads(header => {
+      const blockInfo: BlockInfo = {
+        blockNumber: header.number.toNumber(),
+        parentHash: header.parentHash.toHex(),
+        stateRoot: header.stateRoot.toHex(),
+        extrinsicsRoot: header.extrinsicsRoot.toHex(),
+      };
+      callback(blockInfo);
+    });
+
+    return unsubscribe;
+  }
+
+  async subscribeToNewBlocks(callback: (blockInfo: BlockInfo) => void): Promise<() => void> {
+    const client = await this.substrateConnectionService.getClient();
+
+    const unsubscribe = await client.rpc.chain.subscribeNewHeads(header => {
+      const blockInfo: BlockInfo = {
+        blockNumber: header.number.toNumber(),
+        parentHash: header.parentHash.toHex(),
+        stateRoot: header.stateRoot.toHex(),
+        extrinsicsRoot: header.extrinsicsRoot.toHex(),
+      };
+      callback(blockInfo);
+    });
+
+    return unsubscribe;
+  }
+
+  async subscribeToBlocks(
+    finalised: boolean,
+    callback: (blockInfo: BlockInfo) => void,
+  ): Promise<() => void> {
+    if (finalised) {
+      return this.subscribeToFinalizedBlocks(callback);
+    } else {
+      return this.subscribeToNewBlocks(callback);
+    }
+  }
+
+  async getRuntimeSpecVersion(): Promise<SubstrateRuntimeSpecVersionDto> {
+    const client = await this.substrateConnectionService.getClient();
+
+    const runtimeVersion = await client.rpc.state.getRuntimeVersion();
+
+    if (!runtimeVersion) {
+      throw new SubstrateRuntimeVersionNotAvailableException();
+    }
+
+    this.logger.log(`Current runtime spec version: ${runtimeVersion.specVersion}`);
+
+    const runtimeSpecVersion = new SubstrateRuntimeSpecVersionDto({
+      specVersion: runtimeVersion.specVersion.toNumber(),
+    });
+
+    if (this.runtimeSpecVersion) {
+      this.logger.log(
+        `Runtime spec version during Kami initialization: ${this.runtimeSpecVersion.specVersion}`,
+      );
+      this.logger.log(
+        `Is Runtime spec version different from Kami initialization? ${runtimeSpecVersion.specVersion !== this.runtimeSpecVersion.specVersion}`,
+      );
+    }
+
+    return runtimeSpecVersion;
   }
 }

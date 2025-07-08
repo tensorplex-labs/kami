@@ -15,6 +15,7 @@ dependencies = [
     "dotenv>=0.9.9",
     "loguru>=0.7.3",
     "pydantic>=2.11.4",
+    "python-socketio[asyncio-client]>=5.13.0",
 ]
 
 [tool.setuptools]
