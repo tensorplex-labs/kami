@@ -13,7 +13,7 @@ export class SubnetMetagraphService {
   constructor(
     private readonly substrateClientService: SubstrateClientService,
     private readonly substrateConnectionService: SubstrateConnectionService,
-  ) { }
+  ) {}
 
   async getSubnetMetagraph(netuid: number): Promise<SubnetMetagraph> {
     try {
