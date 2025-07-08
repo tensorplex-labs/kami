@@ -36,20 +36,6 @@ export class SubnetMetagraphService {
         throw error;
       }
 
-      if (
-        error.message &&
-        error.message.includes('API SubnetInfoRuntimeApi not found in runtime metadata')
-      ) {
-        this.logger.error(
-          `🚨 Critical error: ${error.message}. The runtime API is not available. Initiating graceful shutdown...`,
-        );
-
-        setTimeout(() => {
-          this.logger.log('🛑 Exiting application gracefully due to runtime incompatibility...');
-          process.exit(0);
-        }, 1000);
-      }
-
       throw new SubnetMetagraphException(
         HttpStatus.INTERNAL_SERVER_ERROR,
         'UNKNOWN',
