@@ -4,10 +4,12 @@ import { SubstrateConnectionService } from 'src/core/substrate/services/substrat
 import { SubnetMetagraphException } from 'src/features/subnet-metagraph/subnet-metagraph.exception';
 import { SubnetMetagraph } from 'src/features/subnet-metagraph/subnet-metagraph.interface';
 
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 
 @Injectable()
 export class SubnetMetagraphService {
+  private readonly logger = new Logger(SubnetMetagraphService.name);
+
   constructor(
     private readonly substrateClientService: SubstrateClientService,
     private readonly substrateConnectionService: SubstrateConnectionService,
