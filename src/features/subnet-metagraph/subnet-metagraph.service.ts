@@ -4,14 +4,16 @@ import { SubstrateConnectionService } from 'src/core/substrate/services/substrat
 import { SubnetMetagraphException } from 'src/features/subnet-metagraph/subnet-metagraph.exception';
 import { SubnetMetagraph } from 'src/features/subnet-metagraph/subnet-metagraph.interface';
 
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable, Logger } from '@nestjs/common';
 
 @Injectable()
 export class SubnetMetagraphService {
+  private readonly logger = new Logger(SubnetMetagraphService.name);
+
   constructor(
     private readonly substrateClientService: SubstrateClientService,
     private readonly substrateConnectionService: SubstrateConnectionService,
-  ) {}
+  ) { }
 
   async getSubnetMetagraph(netuid: number): Promise<SubnetMetagraph> {
     try {
@@ -32,6 +34,20 @@ export class SubnetMetagraphService {
     } catch (error) {
       if (error instanceof SubstrateConnectionException) {
         throw error;
+      }
+
+      if (
+        error.message &&
+        error.message.includes('API SubnetInfoRuntimeApi not found in runtime metadata')
+      ) {
+        this.logger.error(
+          `🚨 Critical error: ${error.message}. The runtime API is not available. Initiating graceful shutdown...`,
+        );
+
+        setTimeout(() => {
+          this.logger.log('🛑 Exiting application gracefully due to runtime incompatibility...');
+          process.exit(0);
+        }, 1000);
       }
 
       throw new SubnetMetagraphException(
