@@ -16,7 +16,7 @@ export class SubnetHyperparameterService {
   async getSubnetHyperparameters(netuid: number): Promise<SubnetHyperparameters> {
     const client = await this.substrateConnectionService.getClient();
 
-    const runtimeApiName: string = 'SubnetInfoRuntimeApis';
+    const runtimeApiName: string = 'SubnetInfoRuntimeApi';
     const methodName: string = 'get_subnet_hyperparams';
     const encodedParams: Uint8Array = client.registry.createType('u16', netuid).toU8a();
 
