@@ -30,7 +30,7 @@ export class SubstrateClientException extends BaseException {
     super(statusCode, `${errorCategory}.${type}`, message, stackTrace);
     setTimeout(() => {
       this.logger.log('🛑 Exiting application due to substrate error...');
-      process.exit(0);
+      process.exit(1);
     }, 1000);
   }
 }
