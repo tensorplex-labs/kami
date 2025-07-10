@@ -1,3 +1,4 @@
+
 import { SubstrateConnectionService } from 'src/core/substrate/services/substrate-connection.service';
 
 import { Injectable, Logger } from '@nestjs/common';
@@ -12,7 +13,6 @@ export class LatestBlockService {
 
   async getLatestBlock(): Promise<BlockInfo> {
     const client = await this.substrateConnectionService.getClient();
-
     this.logger.debug(`Retrieving latest block`);
     const blockHead = await client.rpc.chain.getHeader();
     const result: BlockInfo = {
