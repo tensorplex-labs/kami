@@ -1,6 +1,6 @@
 import { BaseException } from '@app/commons/exceptions/base.exception';
 
-import { HttpStatus } from '@nestjs/common';
+import { HttpStatus, Logger } from '@nestjs/common';
 
 // Existing error codes from Subtensor
 export enum SubtensorErrorCode {
@@ -24,9 +24,14 @@ export enum SubtensorErrorCode {
 
 // Base exception for substrate client operations
 export class SubstrateClientException extends BaseException {
+  private readonly logger = new Logger(SubstrateClientException.name);
   constructor(statusCode: HttpStatus, type: string, message: string, stackTrace?: string) {
     const errorCategory = 'SUBSTRATE_CLIENT';
     super(statusCode, `${errorCategory}.${type}`, message, stackTrace);
+    setTimeout(() => {
+      this.logger.log('🛑 Exiting application due to substrate error...');
+      process.exit(1);
+    }, 1000);
   }
 }
 

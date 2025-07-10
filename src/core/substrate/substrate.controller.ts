@@ -125,6 +125,7 @@ export class SubstrateController {
     },
   })
   async healthCheck() {
+    this.logger.log('Starting health check');
     const runtimeSpecVersionDuringHealthCheck =
       await this.substrateClientService.getRuntimeSpecVersion();
 

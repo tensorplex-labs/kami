@@ -29,7 +29,8 @@ export class SubstrateExceptionFilter extends KamiBaseExceptionFilter {
     // Known error patterns
     if (
       message.includes('WebSocket is not connected'.toLowerCase()) ||
-      stack?.includes('WebSocket is not connected'.toLowerCase())
+      stack?.includes('WebSocket is not connected'.toLowerCase()) ||
+      message.includes('No response received from RPC endpoint'.toLowerCase())
     ) {
       return new ConnectionFailedException(error.message, error.stack);
     }
