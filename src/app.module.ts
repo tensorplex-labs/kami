@@ -10,6 +10,7 @@ import { CheckHotkeyModule } from './features/check-hotkey/check-hotkey.module';
 import { LatestBlockModule } from './features/latest-block/latest-block.module';
 import { ServeAxonModule } from './features/serve-axon/serve-axon.module';
 import { SetCommitRevealWeightsModule } from './features/set-commit-reveal-weights/set-commit-reveal-weights.module';
+import { SetTimelockedWeightsModule } from './features/set-timelocked-weights/set-timelocked-weights.module';
 import { SetWeightsModule } from './features/set-weights/set-weights.module';
 import { SignMessageModule } from './features/sign-message/sign-message.module';
 import { SubnetHyperparameterModule } from './features/subnet-hyperparameter/subnet-hyperparameter.module';
@@ -30,6 +31,7 @@ import { WebSocketModule } from './features/websocket/websocket.module';
     SignMessageModule,
     KamiConfigModule,
     WebSocketModule,
+    SetTimelockedWeightsModule,
   ],
   providers: [
     {
