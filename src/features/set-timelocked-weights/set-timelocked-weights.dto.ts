@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsNotEmpty } from 'class-validator';
+import { IsNotEmpty, IsOptional } from 'class-validator';
 import { IsInt } from 'class-validator';
 
 import { ApiProperty } from '@nestjs/swagger';
@@ -35,9 +35,10 @@ export class SetTimelockedWeightsParamsDto {
     description: 'Commit Reveal Version',
     example: 4,
     default: 4,
+    required: false,
   })
   @IsInt()
-  @IsNotEmpty()
+  @IsOptional()
   @Type(() => Number)
   commitRevealVersion: number = 4;
 
