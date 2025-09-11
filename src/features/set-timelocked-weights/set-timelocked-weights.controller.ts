@@ -1,0 +1,74 @@
+import { ApiResponseDto } from '@app/commons/common-response.dto';
+import { ApiCodeSamples, pythonSample } from '@app/commons/decorators/api-code-examples.decorator';
+import { DomainValidationPipe } from '@app/commons/utils/domain-validation.pipe';
+import { SubstrateExceptionFilter } from 'src/core/substrate/exceptions/substrate.exception-filter';
+
+import {
+  Body,
+  ClassSerializerInterceptor,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Logger,
+  Post,
+  UseFilters,
+  UseInterceptors,
+} from '@nestjs/common';
+import {
+  ApiBody,
+  ApiExtraModels,
+  ApiOkResponse,
+  ApiOperation,
+  ApiTags,
+  getSchemaPath,
+} from '@nestjs/swagger';
+
+import { SetTimelockedWeightParamsInvalidException } from './set-timelocked-weight.exception';
+import { SetTimelockedWeightExceptionFilter } from './set-timelocked-weight.exception-filter';
+import { SetTimelockedWeightsParamsDto } from './set-timelocked-weights.dto';
+import { SetTimelockedWeightsService } from './set-timelocked-weights.service';
+
+@Controller('chain')
+@UseInterceptors(ClassSerializerInterceptor)
+@UseFilters(SetTimelockedWeightExceptionFilter, SubstrateExceptionFilter)
+@ApiTags('subnet')
+@ApiExtraModels(ApiResponseDto)
+export class SetTimelockedWeightsController {
+  private readonly logger = new Logger(SetTimelockedWeightsController.name);
+  constructor(private readonly setTimelockedWeightsService: SetTimelockedWeightsService) {}
+
+  @Post('set-timelocked-weights')
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({
+    summary: 'Set timelocked weights',
+    description: 'Must setup Bittensor wallet in env',
+  })
+  @ApiBody({
+    type: SetTimelockedWeightsParamsDto,
+  })
+  @ApiOkResponse({
+    description: 'Operation completed successfully',
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(ApiResponseDto) },
+        {
+          properties: {
+            data: {
+              type: 'string',
+              description: 'Extrinsic hash',
+              example: '0xce230ef4308b4073e448a4b92ea7ebf40385568ebe93598b6cde7cc3658dc499',
+            },
+          },
+        },
+      ],
+    },
+  })
+  async setTimelockedWeights(
+    @Body(new DomainValidationPipe(SetTimelockedWeightParamsInvalidException))
+    callParams: SetTimelockedWeightsParamsDto,
+  ) {
+    this.logger.log(`Setting commit reveal weights with params: ${JSON.stringify(callParams)}`);
+    const result = await this.setTimelockedWeightsService.setTimelockedWeights(callParams);
+    return result;
+  }
+}
