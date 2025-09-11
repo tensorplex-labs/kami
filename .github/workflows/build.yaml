@@ -11,7 +11,7 @@ on:
 jobs:
   build_npm:
     name: Build Node Packages
-    runs-on: self-hosted
+    runs-on: arc-runner-set
     permissions:
       contents: write
     steps:
