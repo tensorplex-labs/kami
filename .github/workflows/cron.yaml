@@ -1,0 +1,14 @@
+name: GHCR Cleanup
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 16 * * *" # UTC Time!
+jobs:
+  cleanup_ghcr:
+    name: Cleanup untagged images
+    runs-on: arc-runner-set
+    permissions:
+      packages: write
+    steps:
+      - name: Ghcr.io Cleanup Action
+        uses: dataaxiom/ghcr-cleanup-action@v1.0.16
