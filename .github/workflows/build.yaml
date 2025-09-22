@@ -7,7 +7,7 @@ on:
       - dev
       - staging
       - main
-      - refactor/git-ci
+
 
 jobs:
   # build_npm:
