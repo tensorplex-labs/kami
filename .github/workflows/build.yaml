@@ -8,37 +8,41 @@ on:
       - staging
       - main
 
+
 jobs:
-  build_npm:
-    name: Build Node Packages
-    runs-on: arc-runner-set
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+  # build_npm:
+  #   name: Build Node Packages
+  #   runs-on: arc-runner-set
+  #   permissions:
+  #     contents: write
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '21.7.3'
+  #     - name: Setup Node
+  #       uses: actions/setup-node@v4
+  #       with:
+  #         node-version: '21.7.3'
 
-      - name: Cache node modules
-        id: cache-npm
-        uses: actions/cache@v4.2.2
-        with:
-          path: |
-            node_modules
-            ~/.npm
-          key: dojo-chain-api-node-modules-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            dojo-chain-api-node-modules-
+  #     - name: Cache node modules
+  #       id: cache-npm
+  #       uses: actions/cache@v4.2.2
+  #       with:
+  #         path: |
+  #           node_modules
+  #           ~/.npm
+  #         key: dojo-chain-api-node-modules-${{ hashFiles('**/package-lock.json') }}
+  #         restore-keys: |
+  #           dojo-chain-api-node-modules-
 
-      - name: NPM Install
-        run: npm install --force
+  #     - name: NPM Install
+  #       run: npm install --force
 
-      - name: Run Build
-        run: npm run build
+  #     - name: Run Build
+  #       run: npm run build
+
+  #     - name: List DIR
+  #       run: ls -alth
 
   build_kami_image:
     name: Build Kami Image
@@ -46,8 +50,8 @@ jobs:
     permissions:
         contents: read
         packages: write
-    needs:
-      - build_npm
+    # needs:
+    #   - build_npm
 
   build_docs_image:
     name: Build Kami Docs Image
@@ -55,6 +59,6 @@ jobs:
     permissions:
         contents: read
         packages: write
-    needs:
-      - build_npm
+    # needs:
+    #   - build_npm
     
